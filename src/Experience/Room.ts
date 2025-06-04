@@ -1,5 +1,5 @@
 import RoomExperience from "./RoomExperience";
-import FURNITURE_LAYOUT from "./furniture-layout.json";
+import MaterialFactory from "./Utils/MaterialFactory";
 import * as THREE from "three";
 
 export default class Room {
@@ -15,15 +15,25 @@ export default class Room {
   async setupRoom() {
     // Créer les murs, sol, plafond
     this.createFloor();
-    this.createWalls();
+    //this.createWalls();
 
     // Charger et placer tous les meubles
     //await this.furniture.loadAll();
 
     console.log("Chambre entièrement chargée !");
   }
-  createFloor() {}
-  createWalls() {
+  createFloor() {
+    const floorMaterial = MaterialFactory.createMiyazakiMaterial(
+      new THREE.Color(0x8b4513) // Brun bois
+    );
+    const floorGeometry = new THREE.PlaneGeometry(6, 8);
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+
+    this.scene.add(floor);
+  }
+  /*   createWalls() {
     const { width, length, height } = FURNITURE_LAYOUT.room.size;
 
     // Mur nord (avec fenêtre)
@@ -64,7 +74,5 @@ export default class Room {
     const windowPane = new THREE.Mesh(windowGeometry, glassMaterial);
     windowPane.position.set(0, 0, 0.01); // Légèrement devant le mur
     wall.add(windowPane);
-  }
+  } */
 }
-
-export { Furniture, FURNITURE_LAYOUT };
