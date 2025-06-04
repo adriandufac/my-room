@@ -3,6 +3,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import Sizes from "./Utils/Sizes";
 import Time from "./Utils/Time";
 import Room from "./Room";
+import { GUI } from "dat.gui";
 
 // Déclaration pour window.experience
 declare global {
@@ -22,6 +23,7 @@ export default class RoomExperience {
   controls!: OrbitControls;
   renderer!: THREE.WebGLRenderer;
   room!: Room;
+  gui!: GUI;
 
   constructor(canvas?: HTMLCanvasElement) {
     // Singleton
@@ -41,6 +43,8 @@ export default class RoomExperience {
     this.sizes = new Sizes();
     this.time = new Time();
     this.scene = new THREE.Scene();
+
+    this.gui = new GUI();
 
     this.setupScene();
     this.setupCamera();
@@ -62,9 +66,28 @@ export default class RoomExperience {
     this.scene.background = new THREE.Color(0x87ceeb); // Bleu ciel
     this.scene.fog = new THREE.Fog(0x87ceeb, 1, 100); // Brouillard atmosphérique
 
+    const lightFolder = this.gui.addFolder("Lights");
     // Lumière ambiante douce
     const ambientLight = new THREE.AmbientLight(0xffe4b5, 0.4);
+    lightFolder
+      .add(ambientLight, "intensity", 0, 1, 0.01)
+      .name("Ambient Light Intensity");
     this.scene.add(ambientLight);
+
+    const sunLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    sunLight.position.set(5, 10, 5);
+    sunLight.castShadow = true;
+    this.scene.add(sunLight);
+    lightFolder
+      .add(sunLight, "intensity", 0, 1, 0.01)
+      .name("Sun Light Intensity");
+    lightFolder
+      .add(sunLight.position, "x", -10, 10, 0.1)
+      .name("Sun X Position");
+    lightFolder.add(sunLight.position, "y", 0, 20, 0.1).name("Sun Y Position");
+    lightFolder
+      .add(sunLight.position, "z", -10, 10, 0.1)
+      .name("Sun Z Position");
   }
 
   setupCamera(): void {
