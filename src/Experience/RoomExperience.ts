@@ -3,6 +3,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import Sizes from "./Utils/Sizes";
 import Time from "./Utils/Time";
 import Room from "./Room";
+import SunCycle from "./SunCycle"; // Import de la nouvelle classe
 import { GUI } from "dat.gui";
 
 // Déclaration pour window.experience
@@ -24,6 +25,11 @@ export default class RoomExperience {
   renderer!: THREE.WebGLRenderer;
   room!: Room;
   gui!: GUI;
+
+  // Ajout du cycle du soleil
+  sunLight!: THREE.DirectionalLight;
+  ambientLight!: THREE.AmbientLight;
+  sunCycle!: SunCycle;
 
   constructor(canvas?: HTMLCanvasElement) {
     // Singleton
@@ -50,6 +56,7 @@ export default class RoomExperience {
     this.setupCamera();
     this.setupRenderer();
     this.setupControls();
+    this.setupSunCycle(); // Nouveau : configuration du cycle du soleil
     this.room = new Room();
 
     // Resize event
@@ -62,32 +69,36 @@ export default class RoomExperience {
       this.update();
     });
   }
+
   setupScene(): void {
     this.scene.background = new THREE.Color(0x87ceeb); // Bleu ciel
     this.scene.fog = new THREE.Fog(0x87ceeb, 1, 100); // Brouillard atmosphérique
 
-    const lightFolder = this.gui.addFolder("Lights");
-    // Lumière ambiante douce
-    const ambientLight = new THREE.AmbientLight(0xffe4b5, 1);
-    lightFolder
-      .add(ambientLight, "intensity", 0, 1, 0.01)
-      .name("Ambient Light Intensity");
-    this.scene.add(ambientLight);
+    // Lumière ambiante douce (sera gérée par SunCycle)
+    this.ambientLight = new THREE.AmbientLight(0xffe4b5, 0.3);
+    this.scene.add(this.ambientLight);
 
-    const sunLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    sunLight.position.set(5, 10, 5);
-    sunLight.castShadow = true;
-    this.scene.add(sunLight);
-    lightFolder
-      .add(sunLight, "intensity", 0, 1, 0.01)
-      .name("Sun Light Intensity");
-    lightFolder
-      .add(sunLight.position, "x", -10, 10, 0.1)
-      .name("Sun X Position");
-    lightFolder.add(sunLight.position, "y", 0, 20, 0.1).name("Sun Y Position");
-    lightFolder
-      .add(sunLight.position, "z", -10, 10, 0.1)
-      .name("Sun Z Position");
+    // Configuration du soleil (sera géré par SunCycle)
+    this.sunLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    this.sunLight.position.set(-3, 5, -8); // Position initiale (lever - derrière, légèrement à gauche)
+    this.sunLight.castShadow = true;
+
+    // Configuration des ombres avec une couverture plus large
+    this.sunLight.shadow.mapSize.width = 2048;
+    this.sunLight.shadow.mapSize.height = 2048;
+    // Les paramètres de la caméra seront configurés par SunCycle
+
+    this.scene.add(this.sunLight);
+  }
+
+  setupSunCycle(): void {
+    // Initialiser le cycle du soleil après avoir créé la sunLight et ambientLight
+    this.sunCycle = new SunCycle(
+      this.sunLight,
+      this.ambientLight,
+      this.gui,
+      this.scene
+    );
   }
 
   setupCamera(): void {
@@ -128,6 +139,7 @@ export default class RoomExperience {
     this.controls.maxPolarAngle = Math.PI / 2; // Empêche de passer sous le sol
     this.controls.target.set(0, 1, 0); // Point de focus au centre de la chambre
   }
+
   resize(): void {
     console.log("resizing");
     this.camera.aspect = this.sizes.width / this.sizes.height;
@@ -136,7 +148,19 @@ export default class RoomExperience {
   }
 
   update(): void {
+    // Mettre à jour le cycle du soleil avec deltaTime
+    if (this.sunCycle && this.time.delta) {
+      this.sunCycle.update(this.time.delta / 1000); // Convertir ms en secondes
+    }
+
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
+  }
+
+  // Méthode pour nettoyer les ressources
+  dispose(): void {
+    if (this.sunCycle) {
+      this.sunCycle.dispose();
+    }
   }
 }

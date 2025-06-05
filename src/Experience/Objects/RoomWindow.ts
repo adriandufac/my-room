@@ -40,6 +40,8 @@ export default class RoomWindow extends FurnitureItem {
           });
 
           child.material = glassMaterial;
+          child.castShadow = false; // La vitre ne projette pas d'ombre
+          child.receiveShadow = true; // La vitre reçoit les ombres
         }
       }
     });

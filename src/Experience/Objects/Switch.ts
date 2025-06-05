@@ -31,7 +31,7 @@ export default class Switch extends FurnitureItem {
   protected onModelSetup(model: THREE.Group): void {
     // Ajouter une vraie lumière au switch
     this.light = new THREE.SpotLight(0xf0f0ea, 0, 20, Math.PI / 2.5);
-    this.light.position.set(0.9, 0.6, 1);
+    this.light.position.set(0.9, 0.3, 1);
     this.light.castShadow = true;
 
     model.add(this.light);

@@ -45,7 +45,7 @@ export default class ComputerScreen {
       screenModel.traverse((child) => {
         if (child instanceof THREE.Mesh) {
           child.castShadow = true;
-          child.receiveShadow = true;
+          child.receiveShadow = false;
 
           // ✅ STYLE MIYAZAKI : Convertir en MeshToonMaterial
           if (child.material instanceof THREE.MeshStandardMaterial) {

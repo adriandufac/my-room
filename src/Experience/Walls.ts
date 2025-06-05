@@ -44,7 +44,8 @@ export default class Walls {
     );
     this.leftWall = new THREE.Mesh(leftWallGeometry, this.wallMaterial);
     this.leftWall.position.set(0, this.wallParams.height / 2, -4); // Position Z négative = fond
-    this.leftWall.receiveShadow = true;
+    this.leftWall.receiveShadow = false;
+    this.leftWall.castShadow = true; // Pour les ombres
     this.scene.add(this.leftWall);
 
     this.createBackWallWithWindow();
@@ -79,7 +80,8 @@ export default class Walls {
         wallZ
       );
       topWall.rotation.y = wallRotation;
-      topWall.receiveShadow = true;
+      topWall.receiveShadow = false;
+      topWall.castShadow = true; // Pour les ombres
       this.scene.add(topWall);
     }
 
@@ -96,7 +98,8 @@ export default class Walls {
       );
       bottomWall.position.set(wallX, bottomHeight / 2, wallZ);
       bottomWall.rotation.y = wallRotation;
-      bottomWall.receiveShadow = true;
+      bottomWall.castShadow = true; // Pour les ombres
+      bottomWall.receiveShadow = false;
       this.scene.add(bottomWall);
     }
 
@@ -113,7 +116,8 @@ export default class Walls {
         wallZ - this.wallParams.backWallWidth / 2 + leftWidth / 2
       );
       leftWall.rotation.y = wallRotation;
-      leftWall.receiveShadow = true;
+      leftWall.castShadow = true; // Pour les ombres
+      leftWall.receiveShadow = false;
       this.scene.add(leftWall);
     }
 
@@ -130,7 +134,8 @@ export default class Walls {
         wallZ + this.wallParams.backWallWidth / 2 - rightWidth / 2
       );
       rightWall.rotation.y = wallRotation;
-      rightWall.receiveShadow = true;
+      rightWall.castShadow = true; // Pour les ombres
+      rightWall.receiveShadow = false;
       this.scene.add(rightWall);
     }
 

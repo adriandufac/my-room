@@ -14,11 +14,13 @@ import Walls from "./Walls";
 import RoomWindow from "./Objects/RoomWindow";
 import Chair from "./Objects/Chair";
 import Switch from "./Objects/Switch";
+import Roof from "./Roof";
 
 export default class Room {
   experience: RoomExperience;
   scene: THREE.Scene;
   floor!: Floor;
+  roof!: Roof;
   desk!: Desk;
   deskLamp!: DeskLamp;
   gui: GUI;
@@ -37,6 +39,7 @@ export default class Room {
     this.gui = this.experience.gui;
 
     this.floor = new Floor();
+    this.roof = new Roof();
     this.desk = new Desk();
     this.vinylePlayer = new VinylePlayer();
     this.deskLamp = new DeskLamp();
