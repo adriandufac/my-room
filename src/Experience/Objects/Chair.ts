@@ -10,7 +10,7 @@ export default class Chair extends FurnitureItem {
         positionY: 0.0,
         positionZ: 0.2,
         rotation: 1.55,
-        scale: 1.9,
+        scale: { x: 1.9, y: 1.9, z: 1.9 },
       },
       guiRanges: {
         scale: [0.001, 3, 0.001],

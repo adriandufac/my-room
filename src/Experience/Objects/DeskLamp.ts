@@ -15,7 +15,7 @@ export default class DeskLamp extends FurnitureItem {
         positionY: 2.05,
         positionZ: 1.8,
         rotation: 5.5,
-        scale: 1.2,
+        scale: { x: 1.2, y: 1.2, z: 1.2 },
       },
       clickable: true,
       hoverable: true,
@@ -27,7 +27,7 @@ export default class DeskLamp extends FurnitureItem {
 
   protected onModelSetup(model: THREE.Group): void {
     // Ajouter une vraie lumière à la lampe
-    this.light = new THREE.SpotLight(0xffffff, 0, 10, Math.PI / 4);
+    this.light = new THREE.SpotLight(0xffffff, 0, 10, Math.PI / 6);
     this.light.position.set(-0.4, 0.2, 0);
     this.light.castShadow = true;
 

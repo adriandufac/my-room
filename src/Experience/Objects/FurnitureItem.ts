@@ -11,7 +11,7 @@ export interface FurnitureParams {
   positionY: number;
   positionZ: number;
   rotation: number;
-  scale: number;
+  scale: { x: number; y: number; z: number };
 }
 
 export interface FurnitureConfig {
@@ -96,7 +96,11 @@ export default abstract class FurnitureItem {
       this.params.positionZ
     );
     this.model.rotation.y = this.params.rotation;
-    this.model.scale.setScalar(this.params.scale);
+    this.model.scale.set(
+      this.params.scale.x,
+      this.params.scale.y,
+      this.params.scale.z
+    );
 
     // Ombres et matériaux
     this.model.traverse((child) => {
@@ -330,10 +334,8 @@ export default abstract class FurnitureItem {
     // Scale
     const scaleRange = ranges.scale || [0.001, 1.5, 0.001];
     folder
-      .add(this.params, "scale", ...scaleRange)
-      .onChange((value: number) => {
-        if (this.model) this.model.scale.setScalar(value);
-      });
+      .add(this.params.scale, "x", ...scaleRange)
+      .onChange((value: number) => {});
 
     // Visibility
     folder.add(this.model, "visible");

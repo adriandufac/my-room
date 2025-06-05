@@ -11,6 +11,7 @@ export default class Walls {
   // Murs
   backWall!: THREE.Mesh | THREE.Group;
   leftWall!: THREE.Mesh;
+  rightWall!: THREE.Mesh;
 
   // Matériaux
   wallMaterial!: THREE.MeshToonMaterial;
@@ -48,12 +49,24 @@ export default class Walls {
     this.leftWall.castShadow = true; // Pour les ombres
     this.scene.add(this.leftWall);
 
+    const rightWallGeometry = new THREE.PlaneGeometry(
+      this.wallParams.leftWallWidth,
+      this.wallParams.height
+    );
+
+    this.rightWall = new THREE.Mesh(rightWallGeometry, this.wallMaterial);
+    this.rightWall.position.set(0, this.wallParams.height / 2, 4);
+    this.rightWall.rotation.y = Math.PI; // Rotation de 180° pour le mur droit
+    this.rightWall.receiveShadow = false;
+    this.rightWall.castShadow = true; // Pour les ombres
+    this.scene.add(this.rightWall);
+
     this.createBackWallWithWindow();
   }
 
   private createBackWallWithWindow(): void {
     const wallThickness = 0.2;
-    const windowWidth = 3.0;
+    const windowWidth = 5;
     const windowHeight = 2.2;
     const windowY = 2.75;
     const windowX = 0;

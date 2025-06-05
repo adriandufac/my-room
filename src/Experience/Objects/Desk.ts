@@ -10,7 +10,7 @@ export default class Desk extends FurnitureItem {
         positionY: 0.7,
         positionZ: 2,
         rotation: 1.57,
-        scale: 0.02,
+        scale: { x: 0.02, y: 0.02, z: 0.02 },
       },
       guiRanges: {
         scale: [0.001, 0.5, 0.001],

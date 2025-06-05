@@ -16,7 +16,7 @@ export default class SunCycle {
     nightDuration: 120, // 2 minutes en secondes
     enabled: true,
     speed: 1, // Multiplicateur de vitesse
-    showHelper: true, // Afficher les helpers
+    showHelper: false, // Afficher les helpers
     showShadowCamera: false, // Afficher la caméra des ombres
     resetCycle: () => this.resetCycle(),
   };

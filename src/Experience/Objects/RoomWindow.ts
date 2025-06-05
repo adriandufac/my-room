@@ -11,7 +11,7 @@ export default class RoomWindow extends FurnitureItem {
         positionY: 2.75,
         positionZ: 0,
         rotation: 1.57,
-        scale: 0.9,
+        scale: { x: 1.5, y: 0.9, z: 0.9 },
       },
       guiRanges: {
         scale: [0.001, 3, 0.001],

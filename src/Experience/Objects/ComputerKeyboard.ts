@@ -11,7 +11,7 @@ export default class ComputerKeyboard extends FurnitureItem {
         positionY: 1.5,
         positionZ: 0.8,
         rotation: 4.7,
-        scale: 0.4,
+        scale: { x: 0.4, y: 0.4, z: 0.4 },
       },
       guiRanges: {
         positionX: [-5, 10, 0.1],
@@ -21,27 +21,5 @@ export default class ComputerKeyboard extends FurnitureItem {
     };
 
     super(config);
-  }
-
-  // Personnalisations spécifiques au clavier (optionnel)
-  protected onModelSetup(model: THREE.Group): void {
-    // Logique spécifique au clavier si nécessaire
-    console.log("Keyboard loaded and setup complete");
-  }
-
-  protected onGUISetup(folder: any): void {
-    // Contrôles spécifiques au clavier
-    folder
-      .add(
-        {
-          reset: () => this.resetPosition(),
-        },
-        "reset"
-      )
-      .name("Reset Position");
-  }
-
-  private resetPosition(): void {
-    this.setPosition(1.5, 1.5, 0.8);
   }
 }

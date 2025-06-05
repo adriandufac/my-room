@@ -10,7 +10,7 @@ export default class VinyleFurniture extends FurnitureItem {
         positionY: 0.01,
         positionZ: -3.6,
         rotation: 0,
-        scale: 1.9,
+        scale: { x: 1.9, y: 1.9, z: 1.9 },
       },
       guiRanges: {
         scale: [0.001, 3, 0.001],

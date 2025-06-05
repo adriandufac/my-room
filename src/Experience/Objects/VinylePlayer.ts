@@ -23,7 +23,7 @@ export default class VinylePlayer extends FurnitureItem {
         positionY: 1.72,
         positionZ: -3.6,
         rotation: 0,
-        scale: 0.0035,
+        scale: { x: 0.0035, y: 0.0035, z: 0.0035 },
       },
       guiRanges: {
         scale: [0.001, 0.004, 0.0005],

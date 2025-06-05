@@ -15,7 +15,7 @@ export default class Switch extends FurnitureItem {
         positionY: 3,
         positionZ: 3.2,
         rotation: 3.22,
-        scale: 3,
+        scale: { x: 3, y: 3, z: 3 },
       },
       guiRanges: {
         scale: [0.001, 3, 0.001],
@@ -79,7 +79,6 @@ export default class Switch extends FurnitureItem {
             if (this.lightHelper) this.lightHelper.update();
           }
         });
-
       folder
         .add(lightParams, "lightPosX", -2, 2, 0.1)
         .name("Light X")
