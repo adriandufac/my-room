@@ -71,8 +71,10 @@ export default class RoomExperience {
   }
 
   setupScene(): void {
-    this.scene.background = new THREE.Color(0x87ceeb); // Bleu ciel
+    // Le background sera géré par SunCycle
     this.scene.fog = new THREE.Fog(0x87ceeb, 1, 100); // Brouillard atmosphérique
+
+    const lightFolder = this.gui.addFolder("Lights");
 
     // Lumière ambiante douce (sera gérée par SunCycle)
     this.ambientLight = new THREE.AmbientLight(0xffe4b5, 0.3);
@@ -96,8 +98,8 @@ export default class RoomExperience {
     this.sunCycle = new SunCycle(
       this.sunLight,
       this.ambientLight,
-      this.gui,
-      this.scene
+      this.scene,
+      this.gui
     );
   }
 

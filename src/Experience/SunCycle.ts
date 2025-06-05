@@ -4,6 +4,7 @@ import { GUI } from "dat.gui";
 export default class SunCycle {
   private sunLight: THREE.DirectionalLight;
   private ambientLight: THREE.AmbientLight;
+  private scene: THREE.Scene;
   private gui: GUI;
 
   // Helpers pour visualiser la lumière
@@ -48,16 +49,22 @@ export default class SunCycle {
     ambientNightIntensity: 0.3, // Intensité la nuit
     ambientDayIntensity: 0.7, // Intensité à midi
     enableAmbientCycle: true, // Activer le cycle ambiant
+
+    // AJOUT: Couleurs du background selon l'heure (simplifié)
+    backgroundDayColor: "#87CEEB", // Bleu ciel du jour
+    backgroundNightColor: "#0B1426", // Bleu très sombre de la nuit
+    enableBackgroundCycle: true, // Activer le cycle de background
   };
 
   constructor(
     sunLight: THREE.DirectionalLight,
     ambientLight: THREE.AmbientLight,
-    gui: GUI,
-    scene: THREE.Scene
+    scene: THREE.Scene,
+    gui: GUI
   ) {
     this.sunLight = sunLight;
     this.ambientLight = ambientLight;
+    this.scene = scene;
     this.gui = gui;
 
     this.setupShadowCamera();
@@ -196,6 +203,21 @@ export default class SunCycle {
       .add(this.sunSettings, "ambientDayIntensity", 0, 2, 0.01)
       .name("Day Intensity")
       .onChange(() => this.updateAmbientLight());
+
+    // AJOUT: Contrôles du background (simplifié)
+    const backgroundFolder = sunFolder.addFolder("Background Colors");
+    backgroundFolder
+      .add(this.sunSettings, "enableBackgroundCycle")
+      .name("Enable Background Cycle")
+      .onChange(() => this.updateBackground());
+    backgroundFolder
+      .addColor(this.sunSettings, "backgroundDayColor")
+      .name("Day Color")
+      .onChange(() => this.updateBackground());
+    backgroundFolder
+      .addColor(this.sunSettings, "backgroundNightColor")
+      .name("Night Color")
+      .onChange(() => this.updateBackground());
   }
 
   private initializeSun(): void {
@@ -216,6 +238,13 @@ export default class SunCycle {
 
     // AJOUT: Initialiser la lumière ambiante
     this.ambientLight.intensity = this.sunSettings.ambientNightIntensity;
+
+    // AJOUT: Initialiser le background
+    if (this.sunSettings.enableBackgroundCycle) {
+      this.scene.background = new THREE.Color(
+        this.sunSettings.backgroundNightColor
+      );
+    }
   }
 
   private resetCycle(): void {
@@ -260,6 +289,40 @@ export default class SunCycle {
     }
   }
 
+  // AJOUT: Calcul de la couleur du background selon le moment de la journée (simplifié)
+  private calculateBackgroundColor(progress: number): THREE.Color {
+    const night = new THREE.Color(this.sunSettings.backgroundNightColor);
+    const day = new THREE.Color(this.sunSettings.backgroundDayColor);
+
+    if (progress <= 0.25) {
+      // 0% → 25%: Dark blue → Day blue
+      const t = progress / 0.25;
+      return night.clone().lerp(day, t);
+    } else if (progress <= 0.75) {
+      // 25% → 75%: Stays day blue
+      return day.clone();
+    } else {
+      // 75% → 100%: Day blue → Dark blue
+      const t = (progress - 0.75) / 0.25;
+      return day.clone().lerp(night, t);
+    }
+  }
+
+  // AJOUT: Méthode pour mettre à jour le background via GUI
+  private updateBackground(): void {
+    if (this.sunSettings.enableBackgroundCycle) {
+      if (this.isDay) {
+        const dayProgress = this.elapsedTime / this.cycleSettings.dayDuration;
+        const backgroundColor = this.calculateBackgroundColor(dayProgress);
+        this.scene.background = backgroundColor;
+      } else {
+        this.scene.background = new THREE.Color(
+          this.sunSettings.backgroundNightColor
+        );
+      }
+    }
+  }
+
   private updateDayPhase(): void {
     const dayProgress = this.elapsedTime / this.cycleSettings.dayDuration;
 
@@ -289,6 +352,12 @@ export default class SunCycle {
       this.ambientLight.intensity = ambientIntensity;
     }
 
+    // AJOUT: Mettre à jour le background
+    if (this.sunSettings.enableBackgroundCycle) {
+      const backgroundColor = this.calculateBackgroundColor(dayProgress);
+      this.scene.background = backgroundColor;
+    }
+
     // Mettre à jour les helpers
     this.updateHelpers();
   }
@@ -314,6 +383,13 @@ export default class SunCycle {
     // AJOUT: Mettre à jour la lumière ambiante pour la nuit
     if (this.sunSettings.enableAmbientCycle) {
       this.ambientLight.intensity = this.sunSettings.ambientNightIntensity;
+    }
+
+    // AJOUT: Mettre à jour le background pour la nuit
+    if (this.sunSettings.enableBackgroundCycle) {
+      this.scene.background = new THREE.Color(
+        this.sunSettings.backgroundNightColor
+      );
     }
 
     // Mettre à jour les helpers même pendant la nuit
