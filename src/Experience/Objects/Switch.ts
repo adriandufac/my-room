@@ -1,45 +1,48 @@
 import FurnitureItem, { type FurnitureConfig } from "./FurnitureItem";
 import * as THREE from "three";
 
-export default class DeskLamp extends FurnitureItem {
+export default class Switch extends FurnitureItem {
   private light?: THREE.SpotLight;
   private lightHelper?: THREE.SpotLightHelper;
   private isLightOn: boolean = false;
 
   constructor() {
     const config: FurnitureConfig = {
-      name: "Desk Lamp",
-      modelPath: "/models/deskLamp/scene.gltf",
+      name: "Switch",
+      modelPath: "/models/switch/scene.gltf",
       defaultParams: {
-        positionX: 2.5,
-        positionY: 2.05,
-        positionZ: 1.8,
-        rotation: 5.5,
-        scale: 1.2,
+        positionX: 2.9,
+        positionY: 3,
+        positionZ: 3.2,
+        rotation: 3.22,
+        scale: 3,
+      },
+      guiRanges: {
+        scale: [0.001, 3, 0.001],
       },
       clickable: true,
       hoverable: true,
-      clickType: "desk-lamp",
+      clickType: "switch",
     };
 
     super(config);
   }
 
   protected onModelSetup(model: THREE.Group): void {
-    // Ajouter une vraie lumière à la lampe
-    this.light = new THREE.SpotLight(0xffffff, 0, 10, Math.PI / 4);
-    this.light.position.set(-0.4, 0.2, 0);
+    // Ajouter une vraie lumière au switch
+    this.light = new THREE.SpotLight(0xf0f0ea, 0, 20, Math.PI / 2.5);
+    this.light.position.set(0.9, 0.6, 1);
     this.light.castShadow = true;
 
     model.add(this.light);
 
-    this.lightHelper = new THREE.SpotLightHelper(this.light);
-    this.lightHelper.visible = false;
-    model.add(this.lightHelper);
+    this.lightHelper = new THREE.SpotLightHelper(this.light, 0.2);
+    this.lightHelper.visible = false; // Par défaut, l'aide n'est pas visible
+    model.add(this.lightHelper); // ✅ EXACTEMENT comme DeskLamp
   }
 
   protected onClick(intersect: THREE.Intersection): void {
-    console.log("Lamp clicked!");
+    console.log("Switch clicked!");
     this.toggleLight();
   }
 
@@ -47,7 +50,7 @@ export default class DeskLamp extends FurnitureItem {
     this.isLightOn = !this.isLightOn;
 
     if (this.light) {
-      this.light.intensity = this.isLightOn ? 10 : 0;
+      this.light.intensity = this.isLightOn ? 20 : 0;
       if (this.lightHelper) this.lightHelper.update();
     }
   }
@@ -66,13 +69,10 @@ export default class DeskLamp extends FurnitureItem {
         lightPosY: this.light.position.y,
         lightPosZ: this.light.position.z,
         showHelper: true,
-        targetX: this.light.target.position.x,
-        targetY: this.light.target.position.y,
-        targetZ: this.light.target.position.z,
       };
 
       folder
-        .add(lightParams, "intensity", 0, 10, 0.1)
+        .add(lightParams, "intensity", 0, 20, 0.1)
         .onChange((value: number) => {
           if (this.light) {
             this.light.intensity = value;
@@ -132,40 +132,6 @@ export default class DeskLamp extends FurnitureItem {
           if (this.lightHelper) this.lightHelper.update();
         }
       });
-
-      const directionFolder = folder.addFolder("Light Direction");
-
-      directionFolder
-        .add(lightParams, "targetX", -5, 5, 0.1)
-        .name("Target X")
-        .onChange((value: number) => {
-          if (this.light) {
-            this.light.target.position.x = value;
-            if (this.lightHelper) this.lightHelper.update();
-          }
-        });
-
-      directionFolder
-        .add(lightParams, "targetY", -5, 5, 0.1)
-        .name("Target Y")
-        .onChange((value: number) => {
-          if (this.light) {
-            this.light.target.position.y = value;
-            if (this.lightHelper) this.lightHelper.update();
-          }
-        });
-
-      directionFolder
-        .add(lightParams, "targetZ", -5, 5, 0.1)
-        .name("Target Z")
-        .onChange((value: number) => {
-          if (this.light) {
-            this.light.target.position.z = value;
-            if (this.lightHelper) this.lightHelper.update();
-          }
-        });
-
-      directionFolder.open();
     }
   }
 

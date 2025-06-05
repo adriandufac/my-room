@@ -13,6 +13,7 @@ import VinylePlayer from "./Objects/VinylePlayer";
 import Walls from "./Walls";
 import RoomWindow from "./Objects/RoomWindow";
 import Chair from "./Objects/Chair";
+import Switch from "./Objects/Switch";
 
 export default class Room {
   experience: RoomExperience;
@@ -28,6 +29,7 @@ export default class Room {
   walls: Walls;
   roomWindow: RoomWindow;
   chair: Chair;
+  switch: Switch;
 
   constructor() {
     this.experience = new RoomExperience();
@@ -44,5 +46,6 @@ export default class Room {
     this.walls = new Walls();
     this.roomWindow = new RoomWindow();
     this.chair = new Chair();
+    this.switch = new Switch();
   }
 }
