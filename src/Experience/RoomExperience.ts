@@ -68,7 +68,7 @@ export default class RoomExperience {
 
     const lightFolder = this.gui.addFolder("Lights");
     // Lumière ambiante douce
-    const ambientLight = new THREE.AmbientLight(0xffe4b5, 0.4);
+    const ambientLight = new THREE.AmbientLight(0xffe4b5, 1);
     lightFolder
       .add(ambientLight, "intensity", 0, 1, 0.01)
       .name("Ambient Light Intensity");
