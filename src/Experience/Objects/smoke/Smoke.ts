@@ -14,9 +14,9 @@ export default class Smoke {
 
   // Paramètres de position
   smokeParams = {
-    x: 1.66,
-    y: 1.57,
-    z: 1.25,
+    x: 1.55,
+    y: 1.68,
+    z: 1.22,
   };
 
   constructor() {

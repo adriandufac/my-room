@@ -7,7 +7,7 @@ export default class Desk extends FurnitureItem {
       modelPath: "/models/desk/scene.gltf",
       defaultParams: {
         positionX: 2.1,
-        positionY: 0.7,
+        positionY: 0.71,
         positionZ: 2,
         rotation: 1.57,
         scale: { x: 0.02, y: 0.02, z: 0.02 },

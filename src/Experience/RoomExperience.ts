@@ -164,6 +164,9 @@ export default class RoomExperience {
         this.sunCycle.cycleProgress
       ); // Mettre à jour le chat avec les paramètres du cycle du soleil
     }
+    if (this.room.screen && this.time.delta) {
+      this.room.screen.update(this.time.delta / 1000); // Mettre à jour l'écran
+    }
 
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
