@@ -15,6 +15,7 @@ import RoomWindow from "./Objects/RoomWindow";
 import Chair from "./Objects/Chair";
 import Switch from "./Objects/Switch";
 import Roof from "./Roof";
+import Painting from "./Objects/Painting";
 
 export default class Room {
   experience: RoomExperience;
@@ -32,6 +33,7 @@ export default class Room {
   roomWindow: RoomWindow;
   chair: Chair;
   switch: Switch;
+  painting: Painting;
 
   constructor() {
     this.experience = new RoomExperience();
@@ -39,7 +41,7 @@ export default class Room {
     this.gui = this.experience.gui;
 
     this.floor = new Floor();
-    this.roof = new Roof();
+    //this.roof = new Roof();
     this.desk = new Desk();
     this.vinylePlayer = new VinylePlayer();
     this.deskLamp = new DeskLamp();
@@ -50,5 +52,6 @@ export default class Room {
     this.roomWindow = new RoomWindow();
     this.chair = new Chair();
     this.switch = new Switch();
+    this.painting = new Painting();
   }
 }

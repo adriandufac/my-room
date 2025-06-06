@@ -31,12 +31,13 @@ export default class Roof {
     });
 
     // Même taille que le floor
-    const roofGeometry = new THREE.PlaneGeometry(6, 8);
+    const roofGeometry = new THREE.BoxGeometry(0.1, 8, 6);
     this.roof = new THREE.Mesh(roofGeometry, this.roofMaterial);
 
     // Positionner le toit à 4 unités de hauteur (hauteur des murs)
     this.roof.position.y = 4;
     this.roof.rotation.x = Math.PI / 2; // Rotation opposée au floor
+    this.roof.rotation.y = Math.PI / 2;
     this.roof.receiveShadow = false;
     this.roof.castShadow = true;
 

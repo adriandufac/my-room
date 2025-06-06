@@ -86,8 +86,10 @@ export default class RoomExperience {
     this.sunLight.castShadow = true;
 
     // Configuration des ombres avec une couverture plus large
-    this.sunLight.shadow.mapSize.width = 2048;
-    this.sunLight.shadow.mapSize.height = 2048;
+    this.sunLight.shadow.mapSize.width = 4096;
+    this.sunLight.shadow.mapSize.height = 4096;
+    this.sunLight.shadow.bias = 0.003; // Valeur négative
+    this.sunLight.shadow.normalBias = 0.2; // Bias basé sur les normales
     // Les paramètres de la caméra seront configurés par SunCycle
 
     this.scene.add(this.sunLight);

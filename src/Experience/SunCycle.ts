@@ -45,6 +45,11 @@ export default class SunCycle {
     shadowCameraNear: 0.1, // Distance proche
     shadowCameraFar: 50, // Distance lointaine
 
+    // AJOUT: Paramètres anti-acné d'ombres
+    shadowBias: 0.003, // Bias des ombres
+    shadowNormalBias: 0.2, // Normal bias des ombres
+    shadowMapSize: 4096, // Résolution de la shadow map
+
     // AJOUT: Paramètres de la lumière ambiante
     ambientNightIntensity: 0.3, // Intensité la nuit
     ambientDayIntensity: 0.7, // Intensité à midi
@@ -81,6 +86,12 @@ export default class SunCycle {
     this.sunLight.shadow.camera.bottom = -this.sunSettings.shadowCameraSize;
     this.sunLight.shadow.camera.near = this.sunSettings.shadowCameraNear;
     this.sunLight.shadow.camera.far = this.sunSettings.shadowCameraFar;
+
+    // AJOUT: Configuration anti-acné d'ombres
+    this.sunLight.shadow.bias = this.sunSettings.shadowBias;
+    this.sunLight.shadow.normalBias = this.sunSettings.shadowNormalBias;
+    this.sunLight.shadow.mapSize.width = this.sunSettings.shadowMapSize;
+    this.sunLight.shadow.mapSize.height = this.sunSettings.shadowMapSize;
 
     // Mise à jour de la matrice de projection
     this.sunLight.shadow.camera.updateProjectionMatrix();
@@ -187,6 +198,20 @@ export default class SunCycle {
     shadowFolder
       .add(this.sunSettings, "shadowCameraFar", 10, 100, 5)
       .name("Far Distance")
+      .onChange(() => this.updateShadowCamera());
+
+    // AJOUT: Contrôles anti-acné d'ombres
+    shadowFolder
+      .add(this.sunSettings, "shadowBias", -0.001, 0.003, 0.000001)
+      .name("Shadow Bias")
+      .onChange(() => this.updateShadowCamera());
+    shadowFolder
+      .add(this.sunSettings, "shadowNormalBias", 0, 1, 0.01)
+      .name("Normal Bias")
+      .onChange(() => this.updateShadowCamera());
+    shadowFolder
+      .add(this.sunSettings, "shadowMapSize", [1024, 2048, 4096, 8192])
+      .name("Shadow Map Size")
       .onChange(() => this.updateShadowCamera());
 
     // AJOUT: Contrôles de la lumière ambiante
@@ -487,6 +512,12 @@ export default class SunCycle {
     this.sunLight.shadow.camera.bottom = -this.sunSettings.shadowCameraSize;
     this.sunLight.shadow.camera.near = this.sunSettings.shadowCameraNear;
     this.sunLight.shadow.camera.far = this.sunSettings.shadowCameraFar;
+
+    // AJOUT: Mise à jour des paramètres anti-acné
+    this.sunLight.shadow.bias = this.sunSettings.shadowBias;
+    this.sunLight.shadow.normalBias = this.sunSettings.shadowNormalBias;
+    this.sunLight.shadow.mapSize.width = this.sunSettings.shadowMapSize;
+    this.sunLight.shadow.mapSize.height = this.sunSettings.shadowMapSize;
 
     // Mise à jour de la matrice de projection
     this.sunLight.shadow.camera.updateProjectionMatrix();

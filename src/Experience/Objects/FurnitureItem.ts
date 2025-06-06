@@ -335,7 +335,19 @@ export default abstract class FurnitureItem {
     const scaleRange = ranges.scale || [0.001, 1.5, 0.001];
     folder
       .add(this.params.scale, "x", ...scaleRange)
-      .onChange((value: number) => {});
+      .onChange((value: number) => {
+        if (this.model) this.model.scale.x = value;
+      });
+    folder
+      .add(this.params.scale, "y", ...scaleRange)
+      .onChange((value: number) => {
+        if (this.model) this.model.scale.y = value;
+      });
+    folder
+      .add(this.params.scale, "z", ...scaleRange)
+      .onChange((value: number) => {
+        if (this.model) this.model.scale.z = value;
+      });
 
     // Visibility
     folder.add(this.model, "visible");
