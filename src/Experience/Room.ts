@@ -16,6 +16,10 @@ import Chair from "./Objects/Chair";
 import Switch from "./Objects/Switch";
 import Roof from "./Roof";
 import Painting from "./Objects/Painting";
+import Smoke from "./Objects/smoke/Smoke";
+import CoffeeCup from "./Objects/CoffeeCup";
+import Carpet from "./Objects/Carpet";
+import Cat from "./Objects/Cat";
 
 export default class Room {
   experience: RoomExperience;
@@ -34,6 +38,10 @@ export default class Room {
   chair: Chair;
   switch: Switch;
   painting: Painting;
+  smoke: Smoke;
+  coffeeCup: CoffeeCup;
+  carpet: Carpet;
+  cat: Cat;
 
   constructor() {
     this.experience = new RoomExperience();
@@ -53,5 +61,9 @@ export default class Room {
     this.chair = new Chair();
     this.switch = new Switch();
     this.painting = new Painting();
+    this.smoke = new Smoke();
+    this.coffeeCup = new CoffeeCup();
+    this.carpet = new Carpet();
+    this.cat = new Cat();
   }
 }

@@ -74,8 +74,6 @@ export default class RoomExperience {
     // Le background sera géré par SunCycle
     this.scene.fog = new THREE.Fog(0x87ceeb, 1, 100); // Brouillard atmosphérique
 
-    const lightFolder = this.gui.addFolder("Lights");
-
     // Lumière ambiante douce (sera gérée par SunCycle)
     this.ambientLight = new THREE.AmbientLight(0xffe4b5, 0.3);
     this.scene.add(this.ambientLight);
@@ -155,6 +153,16 @@ export default class RoomExperience {
     // Mettre à jour le cycle du soleil avec deltaTime
     if (this.sunCycle && this.time.delta) {
       this.sunCycle.update(this.time.delta / 1000); // Convertir ms en secondes
+    }
+    if (this.room.smoke && this.time.delta) {
+      this.room.smoke.update(this.time.delta / 1000); // Mettre à jour la fumée
+    }
+    if (this.room.cat && this.time.delta) {
+      this.room.cat.update(this.time.delta / 1000); // Mettre à jour le chat
+      this.room.cat.updateFromSunCycle(
+        this.sunCycle.currentPhase,
+        this.sunCycle.cycleProgress
+      ); // Mettre à jour le chat avec les paramètres du cycle du soleil
     }
 
     this.controls.update();

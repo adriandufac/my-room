@@ -77,7 +77,7 @@ export default abstract class FurnitureItem {
     this.setupGUI();
   }
 
-  private async loadModel() {
+  protected async loadModel() {
     try {
       this.model = await ModelLoader.load(this.config.modelPath);
     } catch (error) {
