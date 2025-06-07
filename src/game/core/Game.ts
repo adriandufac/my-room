@@ -6,6 +6,7 @@ import { Renderer } from "../renderer/Renderer";
 import { Camera } from "../renderer/Camera";
 import { Player } from "../entities/Player";
 import { Platform } from "../entities/Platform";
+import { Enemy } from "../entities/Enemy";
 import { CollisionDetector } from "./CollisionDetector";
 import { GAME_CONFIG } from "../utils/Constants";
 
@@ -18,9 +19,16 @@ export class Game {
   private camera!: Camera;
   private player!: Player;
   private platforms: Platform[] = [];
+  private enemies: Enemy[] = [];
   private isRunning: boolean = false;
   private isPaused: boolean = false;
   private currentFPS: number = 0;
+
+  // Propriétés de gameplay
+  private playerLives: number = 3;
+  private invulnerabilityTime: number = 0;
+  private readonly INVULNERABILITY_DURATION = 2.0; // 2 secondes
+  private isPlayerInvulnerable: boolean = false;
 
   // Dimensions du niveau étendu
   private levelWidth: number = GAME_CONFIG.LEVEL.DEFAULT_WIDTH;
@@ -69,8 +77,9 @@ export class Game {
       GAME_CONFIG.PLAYER.STARTING_Y
     );
 
-    // Créer le niveau étendu
+    // Créer le niveau étendu avec ennemis
     this.createExtendedLevel();
+    this.createEnemies();
 
     // Initialiser la boucle de jeu
     this.gameLoop = new GameLoop();
@@ -82,6 +91,7 @@ export class Game {
     console.log(
       `🎮 Niveau étendu initialisé : ${this.levelWidth}x${this.levelHeight}`
     );
+    console.log(`👾 ${this.enemies.length} ennemis créés`);
   }
 
   private createExtendedLevel(): void {
@@ -140,6 +150,40 @@ export class Game {
     console.log(`✅ Niveau créé avec ${this.platforms.length} plateformes`);
   }
 
+  private createEnemies(): void {
+    this.enemies = [];
+
+    // Ennemis dans la première section (400-800px)
+    this.enemies.push(new Enemy(750, 380, 120)); // Sur la plateforme longue
+    this.enemies.push(new Enemy(650, 220, 150)); // Sur la plateforme du milieu
+
+    // Ennemis dans la section intermédiaire (800-1200px)
+    this.enemies.push(new Enemy(1050, 240, 100)); // Plateforme courte
+    this.enemies.push(new Enemy(1200, 170, 80)); // Plateforme haute
+    this.enemies.push(new Enemy(1400, 320, 120)); // Plateforme large
+
+    // Ennemis dans la section avancée (1200-1600px)
+    this.enemies.push(new Enemy(1540, 270, 60)); // Plateforme étroite
+    this.enemies.push(new Enemy(1660, 200, 60)); // Saut difficile
+    this.enemies.push(new Enemy(1780, 120, 80)); // Plateforme haute
+
+    // Ennemis au sol pour plus de difficulté
+    this.enemies.push(
+      new Enemy(500, this.levelHeight - 50 - GAME_CONFIG.ENEMIES.HEIGHT, 200)
+    );
+    this.enemies.push(
+      new Enemy(1000, this.levelHeight - 50 - GAME_CONFIG.ENEMIES.HEIGHT, 180)
+    );
+    this.enemies.push(
+      new Enemy(1600, this.levelHeight - 50 - GAME_CONFIG.ENEMIES.HEIGHT, 220)
+    );
+
+    // Ennemi de fin pour corser la finalisation
+    this.enemies.push(new Enemy(1900, 370, 140)); // Avant la zone finale
+
+    console.log(`👾 ${this.enemies.length} ennemis placés dans le niveau`);
+  }
+
   private setupGameLoop(): void {
     this.gameLoop.setUpdateCallback((deltaTime: number) => {
       this.update(deltaTime);
@@ -159,14 +203,22 @@ export class Game {
 
     const wasOnGround = this.player.isOnGround;
 
-    // Réinitialiser l'état
-    this.player.isOnGround = false;
+    // NE PAS réinitialiser isOnGround ici - laissez les collisions s'en charger
 
     // Mise à jour du joueur avec SA physique originale
     this.updatePlayerPhysics(deltaTime);
 
-    // Gérer les collisions
+    // Mise à jour des ennemis
+    this.updateEnemies(deltaTime);
+
+    // Gérer les collisions (qui gèrera isOnGround correctement)
     this.handleCollisions();
+
+    // Gérer l'invulnérabilité
+    this.updateInvulnerability(deltaTime);
+
+    // Gérer les collisions avec les ennemis
+    this.handleEnemyCollisions();
 
     // Mise à jour de la caméra
     this.camera.update(this.player, deltaTime);
@@ -183,12 +235,115 @@ export class Game {
 
   private updatePlayerPhysics(deltaTime: number): void {
     // Utiliser la méthode update() originale du Player
-    // qui applique exactement la même physique qu'avant
     this.player.update(deltaTime);
+  }
+
+  private updateEnemies(deltaTime: number): void {
+    for (const enemy of this.enemies) {
+      if (!enemy.isAlive) continue;
+
+      // Mise à jour physique de base
+      enemy.update(deltaTime);
+
+      // Vérifier les bords de plateforme
+      enemy.checkPlatformEdge(this.platforms);
+
+      // Gérer les collisions ennemi-plateforme
+      this.handleEnemyPlatformCollisions(enemy);
+    }
+  }
+
+  private updateInvulnerability(deltaTime: number): void {
+    if (this.isPlayerInvulnerable) {
+      this.invulnerabilityTime -= deltaTime;
+      if (this.invulnerabilityTime <= 0) {
+        this.isPlayerInvulnerable = false;
+        console.log("🛡️ Invulnérabilité terminée");
+      }
+    }
+  }
+
+  private handleEnemyPlatformCollisions(enemy: Enemy): void {
+    const collision = CollisionDetector.checkPlayerPlatformCollision(
+      enemy as any, // Cast temporaire pour réutiliser la fonction
+      this.platforms
+    );
+
+    if (collision.hasCollision && collision.side) {
+      enemy.resolveCollision(collision.side, collision.penetration);
+    }
+  }
+
+  private handleEnemyCollisions(): void {
+    if (this.isPlayerInvulnerable) return;
+
+    const playerBounds = this.player.getBounds();
+
+    for (const enemy of this.enemies) {
+      if (!enemy.isAlive) continue;
+
+      const enemyBounds = enemy.getBounds();
+
+      // Vérifier collision joueur-ennemi
+      if (this.aabbIntersect(playerBounds, enemyBounds)) {
+        // Vérifier si le joueur saute sur l'ennemi
+        if (
+          this.player.velocity.y > 0 &&
+          playerBounds.y + playerBounds.height - 10 < enemyBounds.y
+        ) {
+          // Joueur élimine l'ennemi en sautant dessus
+          enemy.eliminate();
+          this.player.setVelocity(
+            this.player.velocity.x,
+            -GAME_CONFIG.PLAYER.JUMP_POWER * 1.0
+          ); // Petit rebond
+          console.log("💥 Ennemi éliminé en sautant dessus!");
+        } else {
+          // Joueur prend des dégâts
+          this.playerTakesDamage();
+        }
+      }
+    }
+  }
+
+  private playerTakesDamage(): void {
+    if (this.isPlayerInvulnerable) return;
+
+    this.playerLives--;
+    this.isPlayerInvulnerable = true;
+    this.invulnerabilityTime = this.INVULNERABILITY_DURATION;
+
+    console.log(`💔 Joueur touché! Vies restantes: ${this.playerLives}`);
+
+    // Effet de recul
+    this.player.velocity.x *= -0.5; // Recul horizontal
+    this.player.velocity.y = -200; // Petit saut
+
+    if (this.playerLives <= 0) {
+      console.log("💀 Game Over!");
+      this.respawnPlayer();
+    }
+  }
+
+  private aabbIntersect(
+    rect1: { x: number; y: number; width: number; height: number },
+    rect2: { x: number; y: number; width: number; height: number }
+  ): boolean {
+    return !(
+      rect1.x + rect1.width <= rect2.x ||
+      rect2.x + rect2.width <= rect1.x ||
+      rect1.y + rect1.height <= rect2.y ||
+      rect2.y + rect2.height <= rect1.y
+    );
   }
 
   private handleInput(): void {
     this.inputManager.update();
+
+    // Toggle debug avec F1
+    if (this.inputManager.isDebugToggleJustPressed()) {
+      this.toggleDebugMode();
+    }
 
     if (this.inputManager.isPauseJustPressed()) {
       this.togglePause();
@@ -207,32 +362,79 @@ export class Game {
       this.respawnPlayer();
     }
   }
+  private toggleDebugMode(): void {
+    // Créer une copie modifiable de GAME_CONFIG.DEBUG
+    const debug = GAME_CONFIG.DEBUG as any;
+
+    // Basculer les options de debug principales
+    debug.SHOW_COLLISION_BOXES = !debug.SHOW_COLLISION_BOXES;
+    debug.SHOW_FPS = !debug.SHOW_FPS;
+    debug.SHOW_VELOCITY_VECTORS = !debug.SHOW_VELOCITY_VECTORS;
+
+    console.log(
+      `🔧 Debug ${debug.SHOW_COLLISION_BOXES ? "ACTIVÉ" : "DÉSACTIVÉ"}`
+    );
+    console.log(`   - Boîtes de collision: ${debug.SHOW_COLLISION_BOXES}`);
+    console.log(`   - FPS et infos: ${debug.SHOW_FPS}`);
+    console.log(`   - Vecteurs de vitesse: ${debug.SHOW_VELOCITY_VECTORS}`);
+  }
 
   private handlePlayerMovement(): void {
-    let isMoving = false;
+    // Récupérer l'état des touches
+    const leftPressed = this.inputManager.isLeftPressed();
+    const rightPressed = this.inputManager.isRightPressed();
+    const jumpJustPressed = this.inputManager.isJumpJustPressed();
 
-    if (this.inputManager.isLeftPressed()) {
+    // Déterminer la direction horizontale pour le saut
+    let horizontalInput = 0;
+    if (leftPressed && !rightPressed) {
+      horizontalInput = -1;
+    } else if (rightPressed && !leftPressed) {
+      horizontalInput = 1;
+    }
+
+    // Gestion du saut EN PREMIER
+    if (jumpJustPressed) {
+      console.log(`🎮 Tentative de saut avec direction: ${horizontalInput}`);
+      this.player.jump(horizontalInput);
+    }
+
+    // Gestion du mouvement horizontal
+    if (leftPressed && !rightPressed) {
       this.player.moveLeft();
-      isMoving = true;
-    }
-
-    if (this.inputManager.isRightPressed()) {
+    } else if (rightPressed && !leftPressed) {
       this.player.moveRight();
-      isMoving = true;
-    }
-
-    if (this.inputManager.isJumpPressed()) {
-      this.player.jump();
-    }
-
-    if (!isMoving) {
+    } else {
+      // Aucune touche directionnelle pressée
       this.player.stopHorizontalMovement();
     }
   }
 
   private handleCollisions(): void {
-    // Utiliser la résolution de collision séparée par axes pour éviter le forçage
+    // Utiliser la résolution de collision séparée par axes
     CollisionDetector.resolveCollisionsSeparated(this.player, this.platforms);
+
+    // Vérification supplémentaire de l'état au sol pour éviter les bugs
+    const wasOnGround = this.player.isOnGround;
+
+    // Vérifier si le joueur est vraiment au sol avec la méthode du CollisionDetector
+    this.player.isOnGround = CollisionDetector.isPlayerOnGround(
+      this.player,
+      this.platforms
+    );
+
+    // Si le joueur vient d'atterrir, réinitialiser isJumping
+    if (!wasOnGround && this.player.isOnGround) {
+      this.player.isJumping = false;
+      console.log("🦶 Atterrissage confirmé par collision");
+    }
+
+    // Debug pour voir les changements d'état
+    if (!wasOnGround && this.player.isOnGround) {
+      console.log("🦶 Joueur a atterri");
+    } else if (wasOnGround && !this.player.isOnGround) {
+      console.log("🚀 Joueur a quitté le sol");
+    }
   }
 
   private checkLevelBounds(): void {
@@ -277,8 +479,22 @@ export class Game {
     this.player.isJumping = false;
     this.levelCompleted = false;
 
+    // Réinitialiser les propriétés de gameplay
+    this.playerLives = 3;
+    this.isPlayerInvulnerable = false;
+    this.invulnerabilityTime = 0;
+
+    // Réinitialiser les ennemis
+    this.resetEnemies();
+
     this.camera.snapToPlayer(this.player);
     console.log("🔄 Joueur respawné au point de départ");
+  }
+
+  private resetEnemies(): void {
+    // Recréer tous les ennemis
+    this.createEnemies();
+    console.log("👾 Ennemis réinitialisés");
   }
 
   private render(): void {
@@ -301,10 +517,40 @@ export class Game {
     this.renderBackground();
     this.renderSpecialZones();
     this.renderPlatforms();
-    this.player.render(this.ctx);
+    this.renderEnemies();
+    this.renderPlayer();
 
     if (GAME_CONFIG.DEBUG.SHOW_CAMERA_BOUNDS) {
       this.camera.renderDebug(this.ctx);
+    }
+  }
+
+  private renderPlayer(): void {
+    // Effet de clignotement quand invulnérable
+    if (this.isPlayerInvulnerable) {
+      const blinkSpeed = 10; // Vitesse de clignotement
+      const show = Math.floor(Date.now() / (1000 / blinkSpeed)) % 2 === 0;
+      if (show) {
+        this.player.render(this.ctx);
+      }
+    } else {
+      this.player.render(this.ctx);
+    }
+  }
+
+  private renderEnemies(): void {
+    for (const enemy of this.enemies) {
+      if (
+        enemy.isAlive &&
+        this.camera.isVisible(
+          enemy.position.x,
+          enemy.position.y,
+          enemy.size.x,
+          enemy.size.y
+        )
+      ) {
+        enemy.render(this.ctx);
+      }
     }
   }
 
@@ -471,9 +717,10 @@ export class Game {
     const cameraPos = this.camera.position;
     const progressPercent =
       ((playerPos.x + this.player.size.x / 2) / this.levelWidth) * 100;
+    const aliveEnemies = this.enemies.filter((e) => e.isAlive).length;
 
     this.ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
-    this.ctx.fillRect(5, 5, 320, 140);
+    this.ctx.fillRect(5, 5, 350, 180);
 
     this.ctx.fillStyle = "white";
     this.ctx.font = "12px Arial";
@@ -511,12 +758,26 @@ export class Game {
     y += lineHeight;
     this.ctx.fillText(`Plateformes: ${this.platforms.length}`, 10, y);
     y += lineHeight;
+    this.ctx.fillText(
+      `Ennemis vivants: ${aliveEnemies}/${this.enemies.length}`,
+      10,
+      y
+    );
+    y += lineHeight;
+    this.ctx.fillText(`Vies: ${this.playerLives}`, 10, y);
+    y += lineHeight;
+    this.ctx.fillText(
+      `Invulnérable: ${this.isPlayerInvulnerable ? "Oui" : "Non"}`,
+      10,
+      y
+    );
+    y += lineHeight;
     this.ctx.fillText(`Niveau: ${this.levelWidth}x${this.levelHeight}`, 10, y);
   }
 
   private renderGameInfo(): void {
     this.ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-    this.ctx.fillRect(GAME_CONFIG.CANVAS.WIDTH - 200, 5, 195, 60);
+    this.ctx.fillRect(GAME_CONFIG.CANVAS.WIDTH - 220, 5, 215, 80);
 
     this.ctx.fillStyle = "white";
     this.ctx.font = "14px Arial";
@@ -524,32 +785,49 @@ export class Game {
     const progressPercent =
       ((this.player.position.x + this.player.size.x / 2) / this.levelWidth) *
       100;
+    const aliveEnemies = this.enemies.filter((e) => e.isAlive).length;
 
-    this.ctx.fillText("Niveau Étendu", GAME_CONFIG.CANVAS.WIDTH - 190, 25);
+    let y = 25;
+    this.ctx.fillText("Niveau avec Ennemis", GAME_CONFIG.CANVAS.WIDTH - 210, y);
+    y += 18;
     this.ctx.fillText(
       `Progression: ${progressPercent.toFixed(0)}%`,
-      GAME_CONFIG.CANVAS.WIDTH - 190,
-      45
+      GAME_CONFIG.CANVAS.WIDTH - 210,
+      y
+    );
+    y += 18;
+    this.ctx.fillText(
+      `❤️ Vies: ${this.playerLives}`,
+      GAME_CONFIG.CANVAS.WIDTH - 210,
+      y
+    );
+    y += 18;
+    this.ctx.fillText(
+      `👾 Ennemis: ${aliveEnemies}`,
+      GAME_CONFIG.CANVAS.WIDTH - 210,
+      y
     );
   }
 
   private renderInstructions(): void {
     this.ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-    this.ctx.fillRect(5, GAME_CONFIG.CANVAS.HEIGHT - 90, 450, 85);
+    this.ctx.fillRect(5, GAME_CONFIG.CANVAS.HEIGHT - 110, 500, 105);
 
     this.ctx.fillStyle = "white";
     this.ctx.font = "14px Arial";
 
-    let y = GAME_CONFIG.CANVAS.HEIGHT - 70;
+    let y = GAME_CONFIG.CANVAS.HEIGHT - 90;
     const lineHeight = 18;
 
     this.ctx.fillText("🏃 Flèches : Déplacer | Espace : Sauter", 10, y);
     y += lineHeight;
     this.ctx.fillText("🔄 R : Respawn | Échap : Pause", 10, y);
     y += lineHeight;
-    this.ctx.fillText("🎯 Objectif : Atteindre la zone dorée (arrivée)", 10, y);
+    this.ctx.fillText("💥 Sautez sur les ennemis pour les éliminer", 10, y);
     y += lineHeight;
-    this.ctx.fillText(`📏 Niveau : ${this.levelWidth}px de large`, 10, y);
+    this.ctx.fillText("⚠️ Évitez le contact latéral avec les ennemis", 10, y);
+    y += lineHeight;
+    this.ctx.fillText("🎯 Objectif : Atteindre la zone dorée (arrivée)", 10, y);
   }
 
   private renderPauseScreen(): void {
@@ -605,11 +883,20 @@ export class Game {
       GAME_CONFIG.CANVAS.HEIGHT / 2 + 20
     );
 
+    const aliveEnemies = this.enemies.filter((e) => e.isAlive).length;
+    const eliminatedEnemies = this.enemies.length - aliveEnemies;
+
     this.ctx.font = "18px Arial";
+    this.ctx.fillText(
+      `Ennemis éliminés: ${eliminatedEnemies}/${this.enemies.length}`,
+      GAME_CONFIG.CANVAS.WIDTH / 2,
+      GAME_CONFIG.CANVAS.HEIGHT / 2 + 60
+    );
+
     this.ctx.fillText(
       "Appuyez sur R pour recommencer",
       GAME_CONFIG.CANVAS.WIDTH / 2,
-      GAME_CONFIG.CANVAS.HEIGHT / 2 + 80
+      GAME_CONFIG.CANVAS.HEIGHT / 2 + 100
     );
 
     this.ctx.textAlign = "left";
@@ -621,7 +908,7 @@ export class Game {
       this.isRunning = true;
       this.gameLoop.start();
       console.log(
-        `🎮 Jeu démarré - Niveau étendu ${this.levelWidth}x${this.levelHeight}`
+        `🎮 Jeu démarré - Niveau avec ennemis ${this.levelWidth}x${this.levelHeight}`
       );
     }
   }
@@ -654,6 +941,9 @@ export class Game {
   public getPlatforms(): Platform[] {
     return this.platforms;
   }
+  public getEnemies(): Enemy[] {
+    return this.enemies;
+  }
   public getIsRunning(): boolean {
     return this.isRunning;
   }
@@ -668,5 +958,11 @@ export class Game {
   }
   public getPlayerProgress(): number {
     return (this.player.position.x + this.player.size.x / 2) / this.levelWidth;
+  }
+  public getPlayerLives(): number {
+    return this.playerLives;
+  }
+  public getAliveEnemiesCount(): number {
+    return this.enemies.filter((e) => e.isAlive).length;
   }
 }

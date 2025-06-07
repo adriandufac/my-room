@@ -7,7 +7,7 @@ export const GAME_CONFIG = {
   },
 
   PHYSICS: {
-    GRAVITY: 800, // pixels/seconde²
+    GRAVITY: 1200, // pixels/seconde²
     FRICTION: 0.85, // Coefficient de friction (0-1)
     GROUND_FRICTION: 0.8, // Friction spécifique au sol
     AIR_RESISTANCE: 0.98, // Résistance de l'air (0-1)
@@ -21,12 +21,18 @@ export const GAME_CONFIG = {
     HEIGHT: 48,
     COLOR: "#FF4444", // Rouge
     SPEED: 300, // pixels/seconde
-    JUMP_POWER: 400, // Force du saut (vers le haut)
+    JUMP_POWER: 600, // Force du saut (vers le haut)
     STARTING_X: 100,
     STARTING_Y: 100,
-    MAX_SPEED: 400, // Vitesse maximale horizontale
+    MAX_SPEED: 600, // Vitesse maximale horizontale
     ACCELERATION: 1200, // Accélération
     DECELERATION: 800, // Décélération
+
+    AIR_CONTROL_MULTIPLIER: 0.6, // Réduction du contrôle en l'air (0-1)
+    JUMP_HORIZONTAL_IMPULSE: 0.7, // Force de l'impulsion horizontale (facteur de SPEED)
+    AIR_ACCELERATION_BONUS: 0.3, // Bonus d'accélération dans la même direction
+    AIR_DECELERATION_FORCE: 0.8, // Force de décélération dans la direction opposée
+    MAX_AIR_SPEED_MULTIPLIER: 1.2, // Multiplicateur de vitesse max en l'air
   },
 
   PLATFORMS: {

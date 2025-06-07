@@ -30,7 +30,7 @@ export class InputManager {
     document.addEventListener("keydown", (event) => {
       // Empêcher le scroll avec les flèches et la barre d'espace
       if (
-        ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(
+        ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "F1"].includes(
           event.key
         )
       ) {
@@ -136,6 +136,24 @@ export class InputManager {
     return GAME_CONFIG.CONTROLS.JUMP.some((key) => this.isKeyJustPressed(key));
   }
 
+  /**
+   * Vérifie si la touche debug (F1) vient d'être pressée
+   */
+  public isDebugToggleJustPressed(): boolean {
+    return GAME_CONFIG.CONTROLS.DEBUG_TOGGLE.some((key) =>
+      this.isKeyJustPressed(key)
+    );
+  }
+
+  /**
+   * Vérifie si une touche de debug est pressée
+   */
+  public isDebugTogglePressed(): boolean {
+    return GAME_CONFIG.CONTROLS.DEBUG_TOGGLE.some((key) =>
+      this.isKeyPressed(key)
+    );
+  }
+
   // Nettoyer les event listeners
   public destroy(): void {
     document.removeEventListener("keydown", this.handleKeyDown.bind(this));
@@ -155,4 +173,3 @@ export class InputManager {
     return Array.from(this.keysReleased);
   }
 }
-//   }
