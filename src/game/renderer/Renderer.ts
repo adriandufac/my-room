@@ -1,40 +1,40 @@
+import { GAME_CONFIG } from "../utils/Constants";
+
 export class Renderer {
+  private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
-  private width: number;
-  private height: number;
 
   constructor(canvas: HTMLCanvasElement) {
+    this.canvas = canvas;
     const context = canvas.getContext("2d");
+
     if (!context) {
       throw new Error("Impossible d'obtenir le contexte 2D du canvas");
     }
 
     this.ctx = context;
-    this.width = canvas.width;
-    this.height = canvas.height;
-
-    console.log("🎨 Renderer initialisé");
+    this.setupCanvas();
   }
 
-  /**
-   * Efface tout le canvas
-   */
-  clear(): void {
-    this.ctx.clearRect(0, 0, this.width, this.height);
+  private setupCanvas(): void {
+    // Configuration du canvas pour un rendu optimal
+    this.ctx.imageSmoothingEnabled = false;
+
+    // Style par défaut
+    this.ctx.textBaseline = "top";
+    this.ctx.font = "16px Arial";
   }
 
-  /**
-   * Remplit le canvas avec une couleur de fond
-   */
-  fillBackground(color: string = "#87CEEB"): void {
-    this.ctx.fillStyle = color;
-    this.ctx.fillRect(0, 0, this.width, this.height);
+  public clear(): void {
+    // Effacer tout le canvas
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    // Optionnel : remplir avec la couleur de fond
+    this.ctx.fillStyle = GAME_CONFIG.CANVAS.BACKGROUND_COLOR;
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  /**
-   * Dessine un rectangle
-   */
-  drawRect(
+  public drawRect(
     x: number,
     y: number,
     width: number,
@@ -42,77 +42,148 @@ export class Renderer {
     color: string
   ): void {
     this.ctx.fillStyle = color;
-    this.ctx.fillRect(x, y, width, height);
+    this.ctx.fillRect(Math.round(x), Math.round(y), width, height);
   }
 
-  /**
-   * Dessine un rectangle avec bordure
-   */
-  drawRectWithBorder(
+  public drawRectOutline(
     x: number,
     y: number,
     width: number,
     height: number,
-    fillColor: string,
-    borderColor: string = "#000000",
-    borderWidth: number = 1
+    color: string,
+    lineWidth: number = 1
   ): void {
-    // Remplissage
-    this.ctx.fillStyle = fillColor;
-    this.ctx.fillRect(x, y, width, height);
-
-    // Bordure
-    this.ctx.strokeStyle = borderColor;
-    this.ctx.lineWidth = borderWidth;
-    this.ctx.strokeRect(x, y, width, height);
+    this.ctx.strokeStyle = color;
+    this.ctx.lineWidth = lineWidth;
+    this.ctx.strokeRect(Math.round(x), Math.round(y), width, height);
   }
 
-  /**
-   * Dessine du texte
-   */
-  drawText(
-    text: string,
-    x: number,
-    y: number,
-    color: string = "#000000",
-    font: string = "16px Arial",
-    align: CanvasTextAlign = "left"
-  ): void {
-    this.ctx.fillStyle = color;
-    this.ctx.font = font;
-    this.ctx.textAlign = align;
-    this.ctx.fillText(text, x, y);
-  }
-
-  /**
-   * Dessine un cercle
-   */
-  drawCircle(x: number, y: number, radius: number, color: string): void {
+  public drawCircle(x: number, y: number, radius: number, color: string): void {
     this.ctx.fillStyle = color;
     this.ctx.beginPath();
-    this.ctx.arc(x, y, radius, 0, Math.PI * 2);
+    this.ctx.arc(Math.round(x), Math.round(y), radius, 0, Math.PI * 2);
     this.ctx.fill();
   }
 
-  /**
-   * Obtient le contexte pour des opérations avancées
-   */
-  getContext(): CanvasRenderingContext2D {
+  public drawText(
+    text: string,
+    x: number,
+    y: number,
+    color: string = "black",
+    font: string = "16px Arial"
+  ): void {
+    this.ctx.fillStyle = color;
+    this.ctx.font = font;
+    this.ctx.fillText(text, Math.round(x), Math.round(y));
+  }
+
+  public drawLine(
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    color: string,
+    lineWidth: number = 1
+  ): void {
+    this.ctx.strokeStyle = color;
+    this.ctx.lineWidth = lineWidth;
+    this.ctx.beginPath();
+    this.ctx.moveTo(Math.round(x1), Math.round(y1));
+    this.ctx.lineTo(Math.round(x2), Math.round(y2));
+    this.ctx.stroke();
+  }
+
+  // Méthodes utilitaires pour les transformations
+  public save(): void {
+    this.ctx.save();
+  }
+
+  public restore(): void {
+    this.ctx.restore();
+  }
+
+  public translate(x: number, y: number): void {
+    this.ctx.translate(x, y);
+  }
+
+  public scale(x: number, y: number): void {
+    this.ctx.scale(x, y);
+  }
+
+  public rotate(angle: number): void {
+    this.ctx.rotate(angle);
+  }
+
+  // Getters pour accéder au contexte si nécessaire
+  public getContext(): CanvasRenderingContext2D {
     return this.ctx;
   }
 
-  /**
-   * Met à jour les dimensions si le canvas change
-   */
-  updateSize(width: number, height: number): void {
-    this.width = width;
-    this.height = height;
+  public getCanvas(): HTMLCanvasElement {
+    return this.canvas;
   }
 
-  /**
-   * Obtient les dimensions actuelles
-   */
-  getSize(): { width: number; height: number } {
-    return { width: this.width, height: this.height };
+  // Méthodes pour les debug visuals
+  public drawDebugGrid(gridSize: number = 32, color: string = "#ddd"): void {
+    this.ctx.strokeStyle = color;
+    this.ctx.lineWidth = 1;
+
+    // Lignes verticales
+    for (let x = 0; x < this.canvas.width; x += gridSize) {
+      this.ctx.beginPath();
+      this.ctx.moveTo(x, 0);
+      this.ctx.lineTo(x, this.canvas.height);
+      this.ctx.stroke();
+    }
+
+    // Lignes horizontales
+    for (let y = 0; y < this.canvas.height; y += gridSize) {
+      this.ctx.beginPath();
+      this.ctx.moveTo(0, y);
+      this.ctx.lineTo(this.canvas.width, y);
+      this.ctx.stroke();
+    }
+  }
+
+  public drawDebugPoint(
+    x: number,
+    y: number,
+    color: string = "red",
+    size: number = 4
+  ): void {
+    this.drawCircle(x, y, size, color);
+  }
+
+  public drawDebugVector(
+    startX: number,
+    startY: number,
+    endX: number,
+    endY: number,
+    color: string = "blue"
+  ): void {
+    this.drawLine(startX, startY, endX, endY, color, 2);
+
+    // Dessiner une flèche à la fin
+    const angle = Math.atan2(endY - startY, endX - startX);
+    const arrowLength = 8;
+    const arrowAngle = Math.PI / 6;
+
+    this.drawLine(
+      endX,
+      endY,
+      endX - arrowLength * Math.cos(angle - arrowAngle),
+      endY - arrowLength * Math.sin(angle - arrowAngle),
+      color,
+      2
+    );
+
+    this.drawLine(
+      endX,
+      endY,
+      endX - arrowLength * Math.cos(angle + arrowAngle),
+      endY - arrowLength * Math.sin(angle + arrowAngle),
+      color,
+      2
+    );
   }
 }

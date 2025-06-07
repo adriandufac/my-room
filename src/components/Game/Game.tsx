@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameCanvas from "./GameCanvas";
+import { GameCanvas } from "./GameCanvas";
 
 const Game: React.FC = () => {
   const [showTests, setShowTests] = useState(false);

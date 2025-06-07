@@ -1,94 +1,146 @@
-// src/game/utils/Constants.ts
-
+// Constantes de base du jeu
 export const GAME_CONFIG = {
-  // Configuration du canvas
   CANVAS: {
     WIDTH: 1200,
     HEIGHT: 600,
     BACKGROUND_COLOR: "#87CEEB", // Bleu ciel
   },
 
-  // Configuration du joueur
-  PLAYER: {
-    WIDTH: 32,
-    HEIGHT: 32,
-    COLOR: "#FF4444", // Rouge
-    SPEED: 300, // pixels par seconde
-    JUMP_FORCE: -500, // Force de saut (négatif car l'axe Y est inversé)
-    MAX_HEALTH: 3,
+  PHYSICS: {
+    GRAVITY: 800, // pixels/seconde²
+    FRICTION: 0.85, // Coefficient de friction (0-1)
+    GROUND_FRICTION: 0.8, // Friction spécifique au sol
+    AIR_RESISTANCE: 0.98, // Résistance de l'air (0-1)
+    MAX_FALL_SPEED: 500, // Vitesse maximale de chute
+    DELTA_TIME_MAX: 1 / 30, // Limite le deltaTime pour éviter les gros sauts
+    TERMINAL_VELOCITY: 1000, // Vitesse terminale maximale
   },
 
-  // Configuration des plateformes
-  PLATFORM: {
-    COLOR: "#44FF44", // Vert
-    DEFAULT_WIDTH: 100,
+  PLAYER: {
+    WIDTH: 32,
+    HEIGHT: 48,
+    COLOR: "#FF4444", // Rouge
+    SPEED: 300, // pixels/seconde
+    JUMP_POWER: 400, // Force du saut (vers le haut)
+    STARTING_X: 100,
+    STARTING_Y: 100,
+    MAX_SPEED: 400, // Vitesse maximale horizontale
+    ACCELERATION: 1200, // Accélération
+    DECELERATION: 800, // Décélération
+  },
+
+  PLATFORMS: {
+    COLOR: "#8B4513", // Marron
+    DEFAULT_WIDTH: 200,
     DEFAULT_HEIGHT: 20,
   },
 
-  // Configuration des ennemis
-  ENEMY: {
+  ENEMIES: {
+    COLOR: "#FF6600", // Orange-rouge
     WIDTH: 24,
     HEIGHT: 24,
-    COLOR: "#FF8844", // Orange-rouge
     SPEED: 100,
+    PATROL_DISTANCE: 150,
   },
 
-  // Configuration des projectiles
-  PROJECTILE: {
+  PROJECTILES: {
+    COLOR: "#FF8800", // Orange
     WIDTH: 8,
     HEIGHT: 8,
-    COLOR: "#FF6600", // Orange
-    SPEED: 200,
+    SPEED: 250,
+    LIFETIME: 3000, // 3 secondes en millisecondes
   },
 
-  // Configuration de la physique
-  PHYSICS: {
-    GRAVITY: 1200, // pixels par seconde²
-    TERMINAL_VELOCITY: 600, // Vitesse maximale de chute
-    AIR_RESISTANCE: 0.01, // Résistance de l'air (0-1)
-    GROUND_FRICTION: 0.8, // Friction au sol
-    WALL_FRICTION: 0.3, // Friction contre les murs
+  GAME_LOOP: {
+    TARGET_FPS: 60,
+    FIXED_TIMESTEP: 1000 / 60, // 16.67ms
   },
 
-  // Configuration de la caméra
   CAMERA: {
-    SMOOTH_FACTOR: 0.1, // Plus petit = plus lisse
-    DEAD_ZONE_X: 200, // Zone morte horizontale
-    DEAD_ZONE_Y: 100, // Zone morte verticale
+    FOLLOW_SMOOTHNESS: 0.3, // Entre 0 et 1
+    OFFSET_X: 400, // Décalage horizontal par rapport au joueur
+    OFFSET_Y: 200, // Décalage vertical par rapport au joueur
+    BOUNDS_MARGIN: 50, // Marge pour les limites de la caméra
   },
 
-  // Configuration du niveau
   LEVEL: {
     DEFAULT_WIDTH: 2400,
     DEFAULT_HEIGHT: 600,
     GRID_SIZE: 32, // Taille de la grille pour l'éditeur
+    BACKGROUND_COLOR: "#87CEEB",
   },
 
-  // Configuration du jeu
-  GAME: {
-    TARGET_FPS: 60,
-    SCORE_PER_ENEMY: 100,
-    SCORE_PER_LEVEL: 1000,
+  UI: {
+    FONT_FAMILY: "Arial, sans-serif",
+    FONT_SIZE_SMALL: 14,
+    FONT_SIZE_MEDIUM: 18,
+    FONT_SIZE_LARGE: 24,
+    FONT_SIZE_TITLE: 32,
+    COLOR_PRIMARY: "#333333",
+    COLOR_SECONDARY: "#666666",
+    COLOR_SUCCESS: "#4CAF50",
+    COLOR_ERROR: "#F44336",
+    COLOR_WARNING: "#FF9800",
   },
 
-  // Configuration de l'éditeur
-  EDITOR: {
-    GRID_COLOR: "#CCCCCC",
-    SELECTION_COLOR: "#00FFFF",
-    PREVIEW_ALPHA: 0.5,
+  DEBUG: {
+    SHOW_FPS: true,
+    SHOW_PLAYER_CENTER: false,
+    SHOW_COLLISION_BOXES: false,
+    SHOW_VELOCITY_VECTORS: false,
+    SHOW_GRID: false,
+    SHOW_CAMERA_BOUNDS: false,
   },
-};
 
-// Types d'entités du jeu
-export enum EntityType {
-  PLAYER = "player",
-  PLATFORM = "platform",
-  ENEMY = "enemy",
-  PROJECTILE = "projectile",
-  COLLECTIBLE = "collectible",
-}
+  CONTROLS: {
+    MOVE_LEFT: ["ArrowLeft", "q", "Q"], // Q pour AZERTY
+    MOVE_RIGHT: ["ArrowRight", "d", "D"],
+    JUMP: [" ", "ArrowUp", "z", "Z"], // Z pour AZERTY
+    PAUSE: ["Escape", "p", "P"],
+    DEBUG_TOGGLE: ["F1"],
+    RESET: ["r", "R"],
+  },
+} as const;
 
-// États du jeu
+// Constantes pour l'éditeur de niveaux
+export const EDITOR_CONFIG = {
+  TOOLBAR: {
+    HEIGHT: 80,
+    BUTTON_SIZE: 60,
+    SPACING: 10,
+    BACKGROUND_COLOR: "#f0f0f0",
+    BORDER_COLOR: "#ccc",
+  },
+
+  GRID: {
+    SIZE: 32,
+    COLOR: "#ddd",
+    THICKNESS: 1,
+  },
+
+  TOOLS: {
+    SELECT: "select",
+    PLATFORM: "platform",
+    ENEMY: "enemy",
+    PROJECTILE_SPAWNER: "projectile_spawner",
+    START_POINT: "start_point",
+    END_POINT: "end_point",
+    DELETE: "delete",
+  },
+
+  COLORS: {
+    SELECTED: "#00ff00",
+    HOVER: "#ffff00",
+    GRID: "#ddd",
+    BACKGROUND: "#f9f9f9",
+  },
+} as const;
+
+// Types pour une meilleure sécurité TypeScript
+export type GameConfig = typeof GAME_CONFIG;
+export type EditorConfig = typeof EDITOR_CONFIG;
+
+// Énumérations utiles
 export enum GameState {
   MENU = "menu",
   PLAYING = "playing",
@@ -98,25 +150,18 @@ export enum GameState {
   LEVEL_EDITOR = "level_editor",
 }
 
-// Touches du clavier
-export enum Keys {
-  LEFT = "ArrowLeft",
-  RIGHT = "ArrowRight",
-  UP = "ArrowUp",
-  DOWN = "ArrowDown",
-  SPACE = " ",
-  ENTER = "Enter",
-  ESCAPE = "Escape",
-  A = "a",
-  D = "d",
-  W = "w",
-  S = "s",
+export enum EntityType {
+  PLAYER = "player",
+  PLATFORM = "platform",
+  ENEMY = "enemy",
+  PROJECTILE = "projectile",
+  START_POINT = "start_point",
+  END_POINT = "end_point",
 }
 
-// Directions
 export enum Direction {
-  UP = "up",
-  DOWN = "down",
-  LEFT = "left",
-  RIGHT = "right",
+  LEFT = -1,
+  RIGHT = 1,
+  UP = -1,
+  DOWN = 1,
 }
