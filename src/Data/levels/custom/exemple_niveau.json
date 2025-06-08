@@ -1,0 +1,47 @@
+{
+  "id": "exemple_niveau_1",
+  "name": "Niveau d'exemple",
+  "width": 2400,
+  "height": 600,
+  "playerStart": {
+    "x": 100,
+    "y": 500
+  },
+  "finishLine": {
+    "x": 2200,
+    "y": 0
+  },
+  "platforms": [
+    {
+      "id": "platform_1",
+      "position": {
+        "x": 0,
+        "y": 580
+      },
+      "size": {
+        "x": 400,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "platform_2",
+      "position": {
+        "x": 600,
+        "y": 400
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    }
+  ],
+  "enemies": [],
+  "projectileSpawners": [],
+  "version": "1.0.0",
+  "created": "2024-01-01T00:00:00.000Z",
+  "modified": "2024-01-01T00:00:00.000Z"
+}

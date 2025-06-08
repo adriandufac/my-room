@@ -29,7 +29,7 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
     snapToGrid: true,
     showGrid: true,
     cameraPosition: { x: 0, y: 0 },
-    zoom: 1,
+    zoom: 0.5, // Zoom par défaut pour voir tout le niveau
   });
 
   const [levelData, setLevelData] = useState<LevelData>(
@@ -521,16 +521,16 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
           ...prev,
           cameraPosition: {
             x: Math.max(
-              -500, // Permettre de naviguer 500px à gauche du niveau
+              -200, // Permettre de naviguer 200px à gauche du niveau
               Math.min(
-                levelData.width + 500 - 1200,
+                levelData.width + 200 - 1200,
                 prev.cameraPosition.x - deltaX
               )
             ),
             y: Math.max(
-              -500, // Permettre de naviguer 500px au-dessus du niveau
+              -50, // Permettre de naviguer 50px au-dessus du niveau
               Math.min(
-                levelData.height + 500 - 600,
+                levelData.height + 50 - 600,
                 prev.cameraPosition.y - deltaY
               )
             ),
@@ -586,14 +586,14 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
     ctx.scale(editorState.zoom, editorState.zoom);
     ctx.translate(-editorState.cameraPosition.x, -editorState.cameraPosition.y);
 
-    // Dessiner le fond étendu de l'espace de travail
-    const workspaceExtension = 500;
+    // Dessiner le fond étendu de l'espace de travail (seulement à gauche et à droite)
+    const workspaceExtension = 200;
     ctx.fillStyle = "#F5F5F5"; // Gris clair pour la zone étendue
     ctx.fillRect(
       -workspaceExtension,
-      -workspaceExtension,
+      -50,
       levelData.width + workspaceExtension * 2,
-      levelData.height + workspaceExtension * 2
+      levelData.height + 100 // Seulement 50px d'extension en haut et en bas
     );
 
     // Dessiner le fond du niveau proprement dit
@@ -607,31 +607,32 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
 
     // Dessiner la grille étendue
     if (editorState.showGrid) {
-      const gridExtension = 500; // Extension de 500px dans toutes les directions
+      const gridExtensionX = 200; // Extension de 200px à gauche et à droite
+      const gridExtensionY = 50; // Extension de 50px en haut et en bas
 
-      // Grille principale (zone de niveau)
+      // Grille principale (zone étendue)
       ctx.strokeStyle = "rgba(0, 0, 0, 0.1)";
       ctx.lineWidth = 1;
 
       for (
-        let x = -gridExtension;
-        x <= levelData.width + gridExtension;
+        let x = -gridExtensionX;
+        x <= levelData.width + gridExtensionX;
         x += editorState.gridSize
       ) {
         ctx.beginPath();
-        ctx.moveTo(x, -gridExtension);
-        ctx.lineTo(x, levelData.height + gridExtension);
+        ctx.moveTo(x, -gridExtensionY);
+        ctx.lineTo(x, levelData.height + gridExtensionY);
         ctx.stroke();
       }
 
       for (
-        let y = -gridExtension;
-        y <= levelData.height + gridExtension;
+        let y = -gridExtensionY;
+        y <= levelData.height + gridExtensionY;
         y += editorState.gridSize
       ) {
         ctx.beginPath();
-        ctx.moveTo(-gridExtension, y);
-        ctx.lineTo(levelData.width + gridExtension, y);
+        ctx.moveTo(-gridExtensionX, y);
+        ctx.lineTo(levelData.width + gridExtensionX, y);
         ctx.stroke();
       }
 
@@ -970,14 +971,29 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
     renderEditor();
   }, [renderEditor]);
 
-  // Initialiser le canvas
-  useEffect(() => {
+  // Fonction pour redimensionner le canvas
+  const resizeCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    canvas.width = 1200;
-    canvas.height = 600;
+    const container = canvas.parentElement;
+    if (container) {
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
+    }
   }, []);
+
+  // Initialiser le canvas et gérer le redimensionnement
+  useEffect(() => {
+    resizeCanvas();
+    
+    const handleResize = () => {
+      resizeCanvas();
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [resizeCanvas]);
 
   return (
     <div
@@ -997,11 +1013,13 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
           display: "flex",
           gap: "10px",
           alignItems: "center",
+          flexWrap: "wrap",
+          minHeight: "60px",
         }}
       >
         <h3 style={{ margin: 0 }}>�diteur de Niveau: {levelData.name}</h3>
 
-        <div style={{ display: "flex", gap: "5px" }}>
+        <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
           {Object.values(EditorTool).map((tool) => (
             <button
               key={tool}
@@ -1029,14 +1047,23 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
           ))}
         </div>
 
-        <div style={{ marginLeft: "auto", display: "flex", gap: "10px" }}>
+        <div style={{ marginLeft: "auto", display: "flex", gap: "10px", flexWrap: "wrap" }}>
           <button
-            onClick={() =>
-              setEditorState((prev) => ({
-                ...prev,
-                cameraPosition: { x: 0, y: 0 },
-              }))
-            }
+            onClick={() => {
+              const canvas = canvasRef.current;
+              if (canvas) {
+                // Calculer le zoom pour voir tout le niveau
+                const zoomX = canvas.width / (levelData.width + 400); // +400 pour les marges
+                const zoomY = canvas.height / (levelData.height + 100); // +100 pour les marges
+                const optimalZoom = Math.min(zoomX, zoomY, 1); // Ne pas zoomer plus que 100%
+                
+                setEditorState((prev) => ({
+                  ...prev,
+                  cameraPosition: { x: 0, y: 0 },
+                  zoom: optimalZoom,
+                }));
+              }
+            }}
             style={{
               padding: "8px 12px",
               backgroundColor: "#9C27B0",
@@ -1046,7 +1073,7 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
               cursor: "pointer",
             }}
           >
-            🏠 Centrer
+            🔍 Voir tout
           </button>
 
           <button
