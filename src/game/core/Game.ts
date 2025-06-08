@@ -10,6 +10,7 @@ import { Enemy } from "../entities/Enemy";
 import { Projectile } from "../entities/Projectile";
 import { CollisionDetector } from "./CollisionDetector";
 import { GAME_CONFIG } from "../utils/Constants";
+import type { LevelData, PlatformData, EnemyData, ProjectileSpawnerData } from "../utils/Types";
 
 export class Game {
   private canvas: HTMLCanvasElement;
@@ -40,6 +41,9 @@ export class Game {
   private startZone = { x: 0, y: 0, width: 200, height: 600 };
   private finishZone = { x: 2200, y: 0, width: 200, height: 600 };
   private levelCompleted: boolean = false;
+
+  // Niveau personnalisé
+  private customLevel: LevelData | null = null;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -191,14 +195,19 @@ export class Game {
     // Initialiser les projectiles (ils seront créés dynamiquement)
     this.projectiles = [];
     
-    // Créer quelques projectiles de test pour commencer
-    this.spawnProjectile(800, 380, -1); // Dans la première section
-    this.spawnProjectile(1200, 200, 1); // Dans la section intermédiaire
-    this.spawnProjectile(1600, 320, -1); // Dans la section avancée
-    this.spawnProjectile(500, this.levelHeight - 100, 1); // Au sol
-    this.spawnProjectile(1800, 250, -1); // Près de la fin
+    // Configurer les spawners par défaut pour le niveau original
+    this.projectileSpawners = [
+      { id: 'spawner_1', position: { x: 800, y: 380 }, direction: -1, interval: 4000, color: '#FF9800', properties: { speed: 250, lifetime: 3000 } },
+      { id: 'spawner_2', position: { x: 1200, y: 200 }, direction: 1, interval: 4000, color: '#FF9800', properties: { speed: 250, lifetime: 3000 } },
+      { id: 'spawner_3', position: { x: 1600, y: 320 }, direction: -1, interval: 4000, color: '#FF9800', properties: { speed: 250, lifetime: 3000 } },
+      { id: 'spawner_4', position: { x: 500, y: this.levelHeight - 100 }, direction: 1, interval: 4000, color: '#FF9800', properties: { speed: 250, lifetime: 3000 } },
+      { id: 'spawner_5', position: { x: 1800, y: 250 }, direction: -1, interval: 4000, color: '#FF9800', properties: { speed: 250, lifetime: 3000 } }
+    ];
+    
+    // Reset du timer
+    this.projectileSpawnTimer = 0;
 
-    console.log(`🚀 ${this.projectiles.length} projectiles initiaux créés`);
+    console.log(`🎯 ${this.projectileSpawners.length} spawners de projectiles configurés`);
   }
 
   private spawnProjectile(x: number, y: number, direction: number): void {
@@ -311,25 +320,27 @@ export class Game {
 
   private projectileSpawnTimer: number = 0;
   private readonly PROJECTILE_SPAWN_INTERVAL = 4.0; // 4 secondes
+  private projectileSpawners: ProjectileSpawnerData[] = [];
 
   private handleProjectileSpawning(deltaTime: number): void {
+    // Ne spawn que si on a des spawners configurés
+    if (this.projectileSpawners.length === 0) {
+      return;
+    }
+
     this.projectileSpawnTimer += deltaTime;
     
     if (this.projectileSpawnTimer >= this.PROJECTILE_SPAWN_INTERVAL) {
       this.projectileSpawnTimer = 0;
       
-      // Spawner un nouveau projectile à une position aléatoire
-      const spawnLocations = [
-        { x: 600, y: 300, dir: 1 },
-        { x: 1000, y: 200, dir: -1 },
-        { x: 1400, y: 350, dir: 1 },
-        { x: 1800, y: 180, dir: -1 },
-        { x: 300, y: this.levelHeight - 80, dir: 1 },
-        { x: 2000, y: this.levelHeight - 80, dir: -1 }
-      ];
-      
-      const randomLocation = spawnLocations[Math.floor(Math.random() * spawnLocations.length)];
-      this.spawnProjectile(randomLocation.x, randomLocation.y, randomLocation.dir);
+      // Spawner selon les spawners configurés
+      for (const spawner of this.projectileSpawners) {
+        this.spawnProjectile(
+          spawner.position.x,
+          spawner.position.y,
+          spawner.direction
+        );
+      }
     }
   }
 
@@ -575,8 +586,14 @@ export class Game {
   }
 
   private respawnPlayer(): void {
-    this.player.position.x = GAME_CONFIG.PLAYER.STARTING_X;
-    this.player.position.y = GAME_CONFIG.PLAYER.STARTING_Y;
+    // Utiliser la position de spawn du niveau actuel
+    if (this.customLevel) {
+      this.player.position.x = this.customLevel.playerStart.x;
+      this.player.position.y = this.customLevel.playerStart.y;
+    } else {
+      this.player.position.x = GAME_CONFIG.PLAYER.STARTING_X;
+      this.player.position.y = GAME_CONFIG.PLAYER.STARTING_Y;
+    }
     this.player.velocity.x = 0;
     this.player.velocity.y = 0;
     this.player.isOnGround = false;
@@ -597,9 +614,14 @@ export class Game {
   }
 
   private resetEnemies(): void {
-    // Recréer tous les ennemis
-    this.createEnemies();
-    console.log("👾 Ennemis réinitialisés");
+    // Recréer les ennemis selon le niveau actuel
+    if (this.customLevel) {
+      this.loadEnemiesFromLevel(this.customLevel.enemies);
+      console.log("👾 Ennemis du niveau personnalisé réinitialisés");
+    } else {
+      this.createEnemies();
+      console.log("👾 Ennemis du niveau par défaut réinitialisés");
+    }
   }
 
   private resetProjectiles(): void {
@@ -612,9 +634,14 @@ export class Game {
     // Réinitialiser le timer de spawn
     this.projectileSpawnTimer = 0;
     
-    // Recréer les projectiles initiaux
-    this.createProjectileSpawners();
-    console.log("🚀 Projectiles réinitialisés");
+    // Reconfigurer les spawners selon le niveau actuel
+    if (this.customLevel) {
+      this.loadProjectileSpawnersFromLevel(this.customLevel.projectileSpawners);
+      console.log("🚀 Spawners du niveau personnalisé réinitialisés");
+    } else {
+      this.createProjectileSpawners();
+      console.log("🚀 Spawners du niveau par défaut réinitialisés");
+    }
   }
 
   private render(): void {
@@ -1115,5 +1142,139 @@ export class Game {
   }
   public getActiveProjectilesCount(): number {
     return this.projectiles.filter((p) => p.isActive).length;
+  }
+
+  // Charger un niveau personnalisé depuis LevelData
+  public loadCustomLevel(levelData: LevelData): void {
+    console.log(`🎮 Chargement du niveau personnalisé: ${levelData.name}`);
+    
+    this.customLevel = levelData;
+    
+    // Mettre à jour les dimensions du niveau
+    this.levelWidth = levelData.width;
+    this.levelHeight = levelData.height;
+    
+    // Mettre à jour les zones spéciales
+    this.startZone = { 
+      x: levelData.playerStart.x - 50, 
+      y: levelData.playerStart.y - 50, 
+      width: 100, 
+      height: 100 
+    };
+    this.finishZone = { 
+      x: levelData.finishLine.x - 50, 
+      y: levelData.finishLine.y, 
+      width: 100, 
+      height: levelData.height 
+    };
+    
+    // Repositionner le joueur au point de spawn
+    this.player.position.x = levelData.playerStart.x;
+    this.player.position.y = levelData.playerStart.y;
+    this.player.velocity.x = 0;
+    this.player.velocity.y = 0;
+    
+    // Charger les plateformes depuis le niveau
+    this.loadPlatformsFromLevel(levelData.platforms);
+    
+    // Charger les ennemis depuis le niveau
+    this.loadEnemiesFromLevel(levelData.enemies);
+    
+    // Charger les spawners de projectiles depuis le niveau
+    this.loadProjectileSpawnersFromLevel(levelData.projectileSpawners);
+    
+    // Mettre à jour la caméra
+    this.camera.updateLevelBounds(this.levelWidth, this.levelHeight);
+    this.camera.snapToPlayer(this.player);
+    
+    // Reset du statut du niveau
+    this.levelCompleted = false;
+    this.playerLives = 3;
+    this.isPlayerInvulnerable = false;
+    this.invulnerabilityTime = 0;
+    
+    console.log(`✅ Niveau "${levelData.name}" chargé avec succès!`);
+    console.log(`📐 Dimensions: ${this.levelWidth}x${this.levelHeight}`);
+    console.log(`🟩 ${this.platforms.length} plateformes`);
+    console.log(`👾 ${this.enemies.length} ennemis`);
+    console.log(`🎯 Spawners de projectiles configurés`);
+  }
+
+  private loadPlatformsFromLevel(platformsData: PlatformData[]): void {
+    this.platforms = [];
+    
+    for (const platData of platformsData) {
+      const platform = new Platform(
+        platData.position.x,
+        platData.position.y,
+        platData.size.x,
+        platData.size.y
+      );
+      this.platforms.push(platform);
+    }
+  }
+
+  private loadEnemiesFromLevel(enemiesData: EnemyData[]): void {
+    this.enemies = [];
+    
+    for (const enemyData of enemiesData) {
+      const enemy = new Enemy(
+        enemyData.position.x,
+        enemyData.position.y,
+        enemyData.properties.patrolDistance
+      );
+      this.enemies.push(enemy);
+    }
+  }
+
+  private loadProjectileSpawnersFromLevel(spawnersData: ProjectileSpawnerData[]): void {
+    // Reset des projectiles existants
+    this.projectiles = [];
+    
+    // Sauvegarder les spawners pour le système périodique
+    this.projectileSpawners = [...spawnersData];
+    
+    // Reset du timer
+    this.projectileSpawnTimer = 0;
+    
+    console.log(`🎯 ${spawnersData.length} spawners de projectiles configurés`);
+  }
+
+  // Restaurer le niveau par défaut
+  public loadDefaultLevel(): void {
+    console.log(`🎮 Retour au niveau par défaut`);
+    
+    this.customLevel = null;
+    
+    // Restaurer les dimensions par défaut
+    this.levelWidth = GAME_CONFIG.LEVEL.DEFAULT_WIDTH;
+    this.levelHeight = GAME_CONFIG.LEVEL.DEFAULT_HEIGHT;
+    
+    // Restaurer les zones par défaut
+    this.startZone = { x: 0, y: 0, width: 200, height: 600 };
+    this.finishZone = { x: 2200, y: 0, width: 200, height: 600 };
+    
+    // Repositionner le joueur
+    this.player.position.x = GAME_CONFIG.PLAYER.STARTING_X;
+    this.player.position.y = GAME_CONFIG.PLAYER.STARTING_Y;
+    this.player.velocity.x = 0;
+    this.player.velocity.y = 0;
+    
+    // Recharger le niveau par défaut
+    this.createExtendedLevel();
+    this.createEnemies();
+    this.createProjectileSpawners();
+    
+    // Mettre à jour la caméra
+    this.camera.updateLevelBounds(this.levelWidth, this.levelHeight);
+    this.camera.snapToPlayer(this.player);
+    
+    // Reset du statut
+    this.levelCompleted = false;
+    this.playerLives = 3;
+    this.isPlayerInvulnerable = false;
+    this.invulnerabilityTime = 0;
+    
+    console.log(`✅ Niveau par défaut restauré`);
   }
 }

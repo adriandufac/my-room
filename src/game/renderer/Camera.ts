@@ -148,6 +148,14 @@ export class Camera {
   }
 
   /**
+   * Met à jour les dimensions du niveau pour la caméra
+   */
+  public updateLevelBounds(levelWidth: number, levelHeight: number): void {
+    this.levelWidth = levelWidth;
+    this.levelHeight = levelHeight;
+  }
+
+  /**
    * Centre immédiatement la caméra sur le joueur (sans lissage)
    */
   public snapToPlayer(player: Player): void {

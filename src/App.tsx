@@ -13,6 +13,7 @@ function App() {
   const [currentMode, setCurrentMode] = useState<'game' | 'editor' | 'manager'>('game');
   const [testLevel, setTestLevel] = useState<LevelData | null>(null);
   const [editingLevel, setEditingLevel] = useState<LevelData | null>(null);
+  const [isTestingFromEditor, setIsTestingFromEditor] = useState(false);
 
   const handleSaveLevel = async (levelData: LevelData) => {
     try {
@@ -31,10 +32,9 @@ function App() {
   const handleTestLevel = (levelData: LevelData) => {
     console.log('🎮 Test du niveau:', levelData.name);
     setTestLevel(levelData);
+    setEditingLevel(levelData); // Sauvegarder le niveau en cours d'édition
+    setIsTestingFromEditor(true);
     setCurrentMode('game');
-    
-    // TODO: Charger le niveau dans le jeu
-    alert(`Test du niveau "${levelData.name}" - Fonctionnalité à implémenter`);
   };
 
   const handleEditLevel = (levelData: LevelData) => {
@@ -44,8 +44,13 @@ function App() {
 
   const handleLoadLevel = (levelData: LevelData) => {
     setTestLevel(levelData);
+    setIsTestingFromEditor(false);
     setCurrentMode('game');
-    alert(`Chargement du niveau "${levelData.name}" dans le jeu`);
+  };
+
+  const handleReturnToEditor = () => {
+    setIsTestingFromEditor(false);
+    setCurrentMode('editor');
   };
 
   return (
@@ -60,7 +65,11 @@ function App() {
         justifyContent: 'center'
       }}>
         <button
-          onClick={() => setCurrentMode('game')}
+          onClick={() => {
+            setCurrentMode('game');
+            setTestLevel(null);
+            setIsTestingFromEditor(false);
+          }}
           style={{
             padding: '8px 16px',
             backgroundColor: currentMode === 'game' ? '#4CAF50' : '#666',
@@ -76,6 +85,7 @@ function App() {
           onClick={() => {
             setCurrentMode('editor');
             setEditingLevel(null); // Nouveau niveau
+            setIsTestingFromEditor(false);
           }}
           style={{
             padding: '8px 16px',
@@ -89,7 +99,10 @@ function App() {
           🛠️ Éditeur de Niveau
         </button>
         <button
-          onClick={() => setCurrentMode('manager')}
+          onClick={() => {
+            setCurrentMode('manager');
+            setIsTestingFromEditor(false);
+          }}
           style={{
             padding: '8px 16px',
             backgroundColor: currentMode === 'manager' ? '#4CAF50' : '#666',
@@ -103,9 +116,41 @@ function App() {
         </button>
       </div>
 
+      {/* Bouton retour à l'éditeur si on teste depuis l'éditeur */}
+      {currentMode === 'game' && isTestingFromEditor && (
+        <div style={{
+          position: 'absolute',
+          top: '80px',
+          left: '20px',
+          zIndex: 1000
+        }}>
+          <button
+            onClick={handleReturnToEditor}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#FF9800',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+            }}
+          >
+            ← Retour à l'éditeur
+          </button>
+        </div>
+      )}
+
       {/* Contenu principal */}
       {currentMode === 'game' && (
-        <GameCanvas width={1200} height={600} showDebug={true} />
+        <GameCanvas 
+          width={1200} 
+          height={600} 
+          showDebug={true} 
+          levelToLoad={testLevel}
+        />
       )}
       
       {currentMode === 'editor' && (
