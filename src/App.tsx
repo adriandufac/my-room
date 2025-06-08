@@ -5,12 +5,13 @@ import RoomScene from "./components/RoomScene";
 import { GameCanvas } from "./components/Game/GameCanvas";
 import { LevelEditor } from "./components/LevelEditor/LevelEditor";
 import { LevelList } from "./components/LevelEditor/LevelList";
+import { SpriteTest } from "./components/SpriteTest";
 import type { LevelData } from "./game/utils/Types";
 import { LevelService } from "./game/levels/LevelService";
 import { useState } from "react";
 
 function App() {
-  const [currentMode, setCurrentMode] = useState<'game' | 'editor' | 'manager'>('game');
+  const [currentMode, setCurrentMode] = useState<'game' | 'editor' | 'manager' | 'sprites'>('game');
   const [testLevel, setTestLevel] = useState<LevelData | null>(null);
   const [editingLevel, setEditingLevel] = useState<LevelData | null>(null);
   const [isTestingFromEditor, setIsTestingFromEditor] = useState(false);
@@ -114,6 +115,22 @@ function App() {
         >
           [FILE] Gestionnaire de Niveaux
         </button>
+        <button
+          onClick={() => {
+            setCurrentMode('sprites');
+            setIsTestingFromEditor(false);
+          }}
+          style={{
+            padding: '8px 16px',
+            backgroundColor: currentMode === 'sprites' ? '#4CAF50' : '#666',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          🎮 Test Sprites
+        </button>
       </div>
 
       {/* Bouton retour à l'éditeur si on teste depuis l'éditeur */}
@@ -167,6 +184,10 @@ function App() {
           onEditLevel={handleEditLevel}
           currentLevelId={testLevel?.id}
         />
+      )}
+
+      {currentMode === 'sprites' && (
+        <SpriteTest />
       )}
     </div>
   );

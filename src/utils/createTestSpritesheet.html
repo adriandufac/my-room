@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Générateur de Spritesheet de Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f5f5f5; }
+        .container { background: white; padding: 20px; border-radius: 8px; max-width: 800px; margin: 0 auto; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; margin: 10px; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        canvas { border: 2px solid #333; margin: 10px; }
+        .download-link { display: inline-block; background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; margin: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Générateur de Spritesheet de Test</h1>
+        <p>Crée un spritesheet simple avec des formes colorées pour tester le système d'animation.</p>
+        
+        <div>
+            <label>Largeur par frame: <input type="number" id="frameWidth" value="32" min="8"></label>
+            <label>Hauteur par frame: <input type="number" id="frameHeight" value="48" min="8"></label>
+            <label>Nombre de frames: <input type="number" id="frameCount" value="8" min="1"></label>
+        </div>
+        
+        <button onclick="generateAllSpritesheets()">🎮 Générer les 4 spritesheets (idle, run, jump, fall)</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function generateAllSpritesheets() {
+            const frameWidth = parseInt(document.getElementById('frameWidth').value);
+            const frameHeight = parseInt(document.getElementById('frameHeight').value);
+            const frameCount = parseInt(document.getElementById('frameCount').value);
+            
+            const states = [
+                {
+                    name: 'idle',
+                    filename: 'player_idle_spritesheet.png',
+                    bgColor: '#E8F4FD', // Bleu clair
+                    charColor: '#6B9BD1', // Bleu moyen
+                    description: 'Animation idle (respiration lente)'
+                },
+                {
+                    name: 'run',
+                    filename: 'player_run_spritesheet.png',
+                    bgColor: '#FFF2E8', // Beige clair
+                    charColor: '#D1956B', // Orange/beige
+                    description: 'Animation de course (mouvement rapide)'
+                },
+                {
+                    name: 'jump',
+                    filename: 'player_jump_spritesheet.png',
+                    bgColor: '#F0F8E8', // Vert clair
+                    charColor: '#8BC98B', // Vert moyen
+                    description: 'Animation de saut (montée)'
+                },
+                {
+                    name: 'fall',
+                    filename: 'player_fall_spritesheet.png',
+                    bgColor: '#FDF0F8', // Rose clair
+                    charColor: '#D19BC9', // Rose moyen
+                    description: 'Animation de chute (descente)'
+                }
+            ];
+
+            // Clear previous results
+            const result = document.getElementById('result');
+            result.innerHTML = '';
+
+            const title = document.createElement('h2');
+            title.textContent = '🎮 Pack de 4 Spritesheets générés:';
+            result.appendChild(title);
+
+            states.forEach(state => {
+                const canvas = generateSpritesheetForState(state, frameWidth, frameHeight, frameCount);
+                
+                // Create section for this spritesheet
+                const section = document.createElement('div');
+                section.style.marginBottom = '30px';
+                section.style.border = '1px solid #ddd';
+                section.style.borderRadius = '8px';
+                section.style.padding = '15px';
+                section.style.background = state.bgColor;
+
+                const subtitle = document.createElement('h4');
+                subtitle.textContent = `${state.name.toUpperCase()} - ${state.description}`;
+                subtitle.style.color = state.charColor;
+                subtitle.style.margin = '0 0 10px 0';
+                section.appendChild(subtitle);
+
+                section.appendChild(canvas);
+
+                // Download link
+                canvas.toBlob(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = state.filename;
+                    link.className = 'download-link';
+                    link.textContent = `💾 Télécharger ${state.filename}`;
+                    link.style.margin = '10px 0';
+                    section.appendChild(link);
+                });
+
+                result.appendChild(section);
+            });
+
+            // Show final configuration
+            const configSection = document.createElement('div');
+            configSection.style.marginTop = '20px';
+            configSection.style.background = '#f8f9fa';
+            configSection.style.padding = '15px';
+            configSection.style.borderRadius = '8px';
+
+            const configTitle = document.createElement('h4');
+            configTitle.textContent = 'Configuration TypeScript finale:';
+            configSection.appendChild(configTitle);
+
+            const config = document.createElement('pre');
+            config.style.background = '#ffffff';
+            config.style.padding = '10px';
+            config.style.borderRadius = '4px';
+            config.style.border = '1px solid #ddd';
+            config.style.fontSize = '12px';
+            config.textContent = `// Dans SpriteConfigs.ts
+export const SPRITE_CONFIGS = {
+  player_idle: {
+    imagePath: "/textures/sprites/player_idle_spritesheet.png",
+    frameWidth: ${frameWidth},
+    frameHeight: ${frameHeight},
+    animations: {
+      idle: { frameCount: ${frameCount}, startFrame: 0, duration: 2000, loop: true }
+    }
+  },
+  player_run: {
+    imagePath: "/textures/sprites/player_run_spritesheet.png", 
+    frameWidth: ${frameWidth},
+    frameHeight: ${frameHeight},
+    animations: {
+      run: { frameCount: ${frameCount}, startFrame: 0, duration: 800, loop: true }
+    }
+  },
+  player_jump: {
+    imagePath: "/textures/sprites/player_jump_spritesheet.png",
+    frameWidth: ${frameWidth}, 
+    frameHeight: ${frameHeight},
+    animations: {
+      jump: { frameCount: ${frameCount}, startFrame: 0, duration: 600, loop: true }
+    }
+  },
+  player_fall: {
+    imagePath: "/textures/sprites/player_fall_spritesheet.png",
+    frameWidth: ${frameWidth},
+    frameHeight: ${frameHeight}, 
+    animations: {
+      fall: { frameCount: ${frameCount}, startFrame: 0, duration: 600, loop: true }
+    }
+  }
+};`;
+            configSection.appendChild(config);
+            result.appendChild(configSection);
+        }
+
+        function generateSpritesheetForState(state, frameWidth, frameHeight, frameCount) {
+            const canvas = document.createElement('canvas');
+            canvas.width = frameWidth * frameCount;
+            canvas.height = frameHeight;
+            canvas.style.border = '2px solid ' + state.charColor;
+            canvas.style.borderRadius = '4px';
+            const ctx = canvas.getContext('2d');
+            
+            for (let i = 0; i < frameCount; i++) {
+                const x = i * frameWidth;
+                
+                // Background
+                ctx.fillStyle = state.bgColor;
+                ctx.fillRect(x, 0, frameWidth, frameHeight);
+                
+                // Character shape (adapted for each state)
+                ctx.fillStyle = state.charColor;
+                
+                // Different animations per state
+                let headY = frameHeight/4;
+                let bodyY = frameHeight/4;
+                let armOffset = 0;
+                let legOffset = 0;
+                
+                switch(state.name) {
+                    case 'idle':
+                        // Breathing animation
+                        headY += Math.sin(i * 0.3) * 1;
+                        bodyY += Math.sin(i * 0.3) * 0.5;
+                        break;
+                    case 'run':
+                        // Running animation
+                        armOffset = Math.sin(i * 1.0) * 6;
+                        legOffset = Math.sin(i * 1.2) * 4;
+                        break;
+                    case 'jump':
+                        // Jump sequence
+                        headY -= (i / frameCount) * 8;
+                        bodyY -= (i / frameCount) * 8;
+                        armOffset = -3;
+                        legOffset = -2;
+                        break;
+                    case 'fall':
+                        // Fall sequence
+                        headY += (i / frameCount) * 6;
+                        bodyY += (i / frameCount) * 6;
+                        armOffset = 4;
+                        legOffset = 3;
+                        break;
+                }
+                
+                // Head
+                ctx.beginPath();
+                ctx.arc(x + frameWidth/2, headY, frameWidth/8, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Body
+                ctx.fillRect(x + frameWidth/2 - 2, bodyY, 4, frameHeight/2);
+                
+                // Arms
+                ctx.fillRect(x + frameWidth/2 - 8, frameHeight/3 + armOffset, 6, 3);
+                ctx.fillRect(x + frameWidth/2 + 2, frameHeight/3 - armOffset, 6, 3);
+                
+                // Legs
+                ctx.fillRect(x + frameWidth/2 - 6, frameHeight/2 + frameHeight/4 + legOffset, 3, frameHeight/4);
+                ctx.fillRect(x + frameWidth/2 + 3, frameHeight/2 + frameHeight/4 - legOffset, 3, frameHeight/4);
+                
+                // Frame number
+                ctx.fillStyle = '#333333';
+                ctx.font = 'bold 8px Arial';
+                ctx.fillText(i + 1, x + 2, 10);
+                
+                // State indicator
+                ctx.fillStyle = '#555555';
+                ctx.font = 'bold 6px Arial';
+                ctx.fillText(state.name, x + 2, frameHeight - 2);
+            }
+            
+            return canvas;
+        }
+    </script>
+</body>
+</html>

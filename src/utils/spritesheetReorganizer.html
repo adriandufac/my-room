@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Réorganisateur de Spritesheet</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background-color: #f5f5f5;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: calc(100vh - 20px);
+            display: flex;
+            flex-direction: column;
+        }
+        .main-content {
+            display: flex;
+            flex: 1;
+            gap: 20px;
+            overflow: hidden;
+        }
+        .left-panel {
+            flex: 1;
+            overflow-y: auto;
+        }
+        .right-panel {
+            flex: 1;
+            overflow-y: auto;
+            border-left: 2px solid #eee;
+            padding-left: 20px;
+        }
+        .upload-area {
+            border: 2px dashed #007bff;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .upload-area:hover {
+            background-color: #f8f9fa;
+        }
+        .upload-area.dragover {
+            background-color: #e3f2fd;
+            border-color: #1976d2;
+        }
+        .preview {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .preview img {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .control-group label {
+            font-weight: bold;
+            color: #333;
+            font-size: 12px;
+        }
+        .control-group input {
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            font-size: 14px;
+        }
+        .live-preview {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .live-preview h4 {
+            margin: 0 0 10px 0;
+            color: #007bff;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .download-link {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .download-link:hover {
+            background-color: #218838;
+        }
+        .info {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .grid-preview {
+            display: grid;
+            gap: 2px;
+            margin: 10px 0;
+            justify-content: center;
+            max-height: 300px;
+            overflow: auto;
+        }
+        .sprite-cell {
+            border: 2px solid #007bff;
+            position: relative;
+        }
+        .sprite-number {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            background: rgba(0, 123, 255, 0.8);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 2px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Réorganisateur de Spritesheet</h1>
+        
+        <div class="upload-area" id="uploadArea">
+            <p>📁 Glissez-déposez votre spritesheet ici</p>
+            <input type="file" id="fileInput" accept="image/*" style="display: none;">
+        </div>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Colonnes :</label>
+                        <input type="number" id="columns" value="3" min="1">
+                    </div>
+                    <div class="control-group">
+                        <label>Lignes :</label>
+                        <input type="number" id="rows" value="3" min="1">
+                    </div>
+                    <div class="control-group">
+                        <label>Sprites totaux :</label>
+                        <input type="number" id="totalSprites" value="8" min="1">
+                    </div>
+                    <div class="control-group">
+                        <label>Marge gauche :</label>
+                        <input type="number" id="marginLeft" value="0" min="0">
+                    </div>
+                    <div class="control-group">
+                        <label>Marge haut :</label>
+                        <input type="number" id="marginTop" value="0" min="0">
+                    </div>
+                    <div class="control-group">
+                        <label>Espacement X :</label>
+                        <input type="number" id="spacingX" value="0" min="0">
+                    </div>
+                    <div class="control-group">
+                        <label>Espacement Y :</label>
+                        <input type="number" id="spacingY" value="0" min="0">
+                    </div>
+                    <div class="control-group">
+                        <label>Taille finale (largeur) :</label>
+                        <input type="number" id="finalWidth" value="32" min="1">
+                    </div>
+                    <div class="control-group">
+                        <label>Taille finale (hauteur) :</label>
+                        <input type="number" id="finalHeight" value="48" min="1">
+                    </div>
+                </div>
+
+                <div class="live-preview">
+                    <h4>🔍 Aperçu du découpage</h4>
+                    <div id="gridPreview" class="grid-preview"></div>
+                </div>
+
+                <button id="reorganizeBtn" disabled>✨ Créer la spritesheet horizontale</button>
+            </div>
+
+            <div class="right-panel">
+                <div id="preview" style="display: none;">
+                    <h3>📷 Image originale</h3>
+                    <img id="originalImage" alt="Image originale" style="max-width: 100%; max-height: 200px;">
+                </div>
+
+                <div id="result" style="display: none;">
+                    <h3>🎯 Résultat final</h3>
+                    <canvas id="resultCanvas" style="max-width: 100%; border: 1px solid #ddd;"></canvas>
+                    <br><br>
+                    <a id="downloadLink" class="download-link" style="display: none;">💾 Télécharger</a>
+                    
+                    <div style="margin-top: 15px; font-size: 12px; color: #666;">
+                        <strong>Configuration pour le code :</strong>
+                        <pre id="configOutput" style="background: #f8f9fa; padding: 10px; border-radius: 4px; font-size: 11px;"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const originalImage = document.getElementById('originalImage');
+        const preview = document.getElementById('preview');
+        const reorganizeBtn = document.getElementById('reorganizeBtn');
+        const resultCanvas = document.getElementById('resultCanvas');
+        const result = document.getElementById('result');
+        const downloadLink = document.getElementById('downloadLink');
+        const gridPreview = document.getElementById('gridPreview');
+
+        let currentImage = null;
+
+        // Upload handling
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFile(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', (e) => {
+            handleFile(e.target.files[0]);
+        });
+
+        function handleFile(file) {
+            if (!file || !file.type.startsWith('image/')) {
+                alert('Veuillez sélectionner un fichier image valide.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                currentImage = new Image();
+                currentImage.onload = () => {
+                    originalImage.src = e.target.result;
+                    preview.style.display = 'block';
+                    reorganizeBtn.disabled = false;
+                    showGridPreview();
+                };
+                currentImage.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function showGridPreview() {
+            const columns = parseInt(document.getElementById('columns').value);
+            const rows = parseInt(document.getElementById('rows').value);
+            const totalSprites = parseInt(document.getElementById('totalSprites').value);
+            const marginLeft = parseInt(document.getElementById('marginLeft').value);
+            const marginTop = parseInt(document.getElementById('marginTop').value);
+            const spacingX = parseInt(document.getElementById('spacingX').value);
+            const spacingY = parseInt(document.getElementById('spacingY').value);
+
+            gridPreview.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+            gridPreview.innerHTML = '';
+
+            const spriteWidth = (currentImage.width - marginLeft * 2 - spacingX * (columns - 1)) / columns;
+            const spriteHeight = (currentImage.height - marginTop * 2 - spacingY * (rows - 1)) / rows;
+
+            for (let i = 0; i < totalSprites; i++) {
+                const row = Math.floor(i / columns);
+                const col = i % columns;
+                
+                const sourceX = marginLeft + col * (spriteWidth + spacingX);
+                const sourceY = marginTop + row * (spriteHeight + spacingY);
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = spriteWidth;
+                canvas.height = spriteHeight;
+                canvas.className = 'sprite-cell';
+                
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(
+                    currentImage,
+                    sourceX, sourceY, spriteWidth, spriteHeight,
+                    0, 0, spriteWidth, spriteHeight
+                );
+
+                const container = document.createElement('div');
+                container.style.position = 'relative';
+                container.appendChild(canvas);
+                
+                const number = document.createElement('div');
+                number.className = 'sprite-number';
+                number.textContent = i + 1;
+                container.appendChild(number);
+                
+                gridPreview.appendChild(container);
+            }
+        }
+
+        // Update preview when controls change
+        ['columns', 'rows', 'totalSprites', 'marginLeft', 'marginTop', 'spacingX', 'spacingY'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => {
+                if (currentImage) showGridPreview();
+            });
+        });
+
+        reorganizeBtn.addEventListener('click', reorganizeSprites);
+
+        function reorganizeSprites() {
+            if (!currentImage) return;
+
+            const columns = parseInt(document.getElementById('columns').value);
+            const rows = parseInt(document.getElementById('rows').value);
+            const totalSprites = parseInt(document.getElementById('totalSprites').value);
+            const finalWidth = parseInt(document.getElementById('finalWidth').value);
+            const finalHeight = parseInt(document.getElementById('finalHeight').value);
+            const marginLeft = parseInt(document.getElementById('marginLeft').value);
+            const marginTop = parseInt(document.getElementById('marginTop').value);
+            const spacingX = parseInt(document.getElementById('spacingX').value);
+            const spacingY = parseInt(document.getElementById('spacingY').value);
+
+            const originalSpriteWidth = (currentImage.width - marginLeft * 2 - spacingX * (columns - 1)) / columns;
+            const originalSpriteHeight = (currentImage.height - marginTop * 2 - spacingY * (rows - 1)) / rows;
+
+            // Create result canvas
+            resultCanvas.width = finalWidth * totalSprites;
+            resultCanvas.height = finalHeight;
+            
+            const ctx = resultCanvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false; // Preserve pixel art
+
+            // Extract and arrange sprites horizontally
+            for (let i = 0; i < totalSprites; i++) {
+                const row = Math.floor(i / columns);
+                const col = i % columns;
+                
+                // Source position in original image with margins and spacing
+                const sourceX = marginLeft + col * (originalSpriteWidth + spacingX);
+                const sourceY = marginTop + row * (originalSpriteHeight + spacingY);
+                
+                // Destination position in result
+                const destX = i * finalWidth;
+                const destY = 0;
+                
+                ctx.drawImage(
+                    currentImage,
+                    sourceX, sourceY, originalSpriteWidth, originalSpriteHeight,
+                    destX, destY, finalWidth, finalHeight
+                );
+            }
+
+            // Show result
+            result.style.display = 'block';
+            
+            // Create download link
+            resultCanvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                downloadLink.href = url;
+                downloadLink.download = 'player_run_spritesheet_horizontal.png';
+                downloadLink.style.display = 'inline-block';
+            });
+
+            // Show configuration for code
+            const configOutput = document.getElementById('configOutput');
+            configOutput.textContent = `frameWidth: ${finalWidth},
+frameHeight: ${finalHeight},
+animations: {
+  idle: { startFrame: 0, frameCount: 1 },
+  run: { startFrame: 1, frameCount: ${Math.min(6, totalSprites-1)} },
+  jump: { startFrame: ${Math.min(7, totalSprites-1)}, frameCount: 1 }
+}`;
+
+            console.log('Nouvelle configuration:');
+            console.log(`frameWidth: ${finalWidth}`);
+            console.log(`frameHeight: ${finalHeight}`);
+            console.log(`frameCount: ${totalSprites}`);
+            console.log(`Layout: ${totalSprites} sprites en ligne horizontale`);
+        }
+    </script>
+</body>
+</html>

@@ -306,3 +306,132 @@ Tests de séparation des composants
 
 Durée totale estimée : 3 semaines
 Cette approche sépare complètement l'éditeur de développement du jeu final. L'éditeur sert uniquement à créer et exporter des niveaux JSON, que le jeu charge ensuite pour les joueurs.
+
+Etape 9 : Intégration des Spritesheets pour le joueurs
+
+Étape 9.1 : Système de gestion des spritesheets
+Objectifs :
+
+Créer une classe SpriteSheet pour gérer les images
+Implémenter le découpage automatique des frames
+Ajouter le système d'animation frame par frame
+
+Fichiers à créer/modifier :
+src/game/renderer/
+├── SpriteSheet.ts # Classe pour gérer les spritesheets
+├── Animation.ts # Système d'animation
+└── Sprite.ts # Classe sprite individual
+
+src/assets/
+└── sprites/
+├── player/
+│ ├── player_idle.png # Animation idle (4-6 frames)
+│ ├── player_run.png # Animation course (6-8 frames)
+│ ├── player_jump.png # Animation saut (3-4 frames)
+│ └── player_fall.png # Animation chute (2-3 frames)
+└── enemies/
+└── enemy_walk.png # Pour extension future
+Tests à effectuer :
+
+✅ Chargement correct des images PNG
+✅ Découpage automatique des frames selon les dimensions
+✅ Affichage d'une frame statique du joueur
+✅ Pas d'erreurs de chargement dans la console
+✅ Images optimisées (taille raisonnable)
+
+Étape 9.2 : Animation du joueur
+Objectifs :
+
+Intégrer les animations dans la classe Player
+Implémenter les transitions entre états (idle, run, jump, fall)
+Synchroniser les animations avec le gameplay
+
+Modifications principales :
+typescript// Dans Player.ts
+class Player {
+private currentAnimation: Animation;
+private animations: Map<string, Animation>;
+private animationState: 'idle' | 'running' | 'jumping' | 'falling';
+
+    // Méthodes d'animation
+    private updateAnimation(deltaTime: number): void;
+    private changeAnimationState(newState: string): void;
+
+}
+Tests à effectuer :
+
+✅ Animation idle quand le joueur ne bouge pas
+✅ Animation run pendant le déplacement horizontal
+✅ Animation jump au début du saut
+✅ Animation fall pendant la chute
+✅ Transitions fluides entre les animations
+✅ Synchronisation correcte avec les mouvements
+✅ Animation ne se relance pas inutilement
+✅ Performance stable avec les animations
+
+Étape 9.3 : Orientation et effets visuels
+Objectifs :
+
+Ajouter l'effet de flip horizontal selon la direction
+Implémenter des effets visuels simples (particules de saut)
+Optimiser le rendu des sprites
+
+Améliorations :
+typescript// Nouvelles propriétés
+class Player {
+private facingDirection: 'left' | 'right';
+private lastDirection: 'left' | 'right';
+
+    // Effets visuels
+    private jumpParticles: Particle[];
+    private landingEffect: boolean;
+
+}
+Tests à effectuer :
+
+✅ Le joueur se retourne selon la direction de déplacement
+✅ L'orientation reste cohérente après les sauts
+✅ Particules apparaissent lors du saut (optionnel)
+✅ Effet visuel lors de l'atterrissage (optionnel)
+✅ Rendu optimisé (pas de redraw inutile)
+✅ Pas de scintillement ou d'artefacts visuels
+
+Étape 9.4 : Extension aux autres entités
+Objectifs :
+
+Appliquer le système d'animation aux ennemis
+Ajouter des sprites pour les plateformes (optionnel)
+Créer un système d'animation réutilisable
+
+Tests à effectuer :
+
+✅ Les ennemis ont des animations de marche
+✅ Cohérence visuelle entre toutes les entités
+✅ Système d'animation facilement extensible
+✅ Performance maintenue avec plusieurs entités animées
+✅ Chargement optimisé des ressources
+
+Configuration technique recommandée :
+Format des spritesheets :
+
+PNG avec transparence
+Frames de taille uniforme (ex: 32x32 ou 64x64 pixels)
+Disposition horizontale pour faciliter le découpage
+Espacement entre frames si nécessaire
+
+Exemple de structure d'animation :
+typescript// Configuration type pour une animation
+{
+frameWidth: 32,
+frameHeight: 32,
+frameCount: 6,
+frameDuration: 100, // ms par frame
+loop: true,
+imagePath: '/assets/sprites/player/player_run.png'
+}
+Optimisations :
+
+Préchargement des images au démarrage
+Cache des contextes de rendu
+Réutilisation des objets Animation
+Mise à jour conditionnelle des frames
