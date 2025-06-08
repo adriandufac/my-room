@@ -48,10 +48,10 @@ const Game: React.FC = () => {
                 marginTop: "10px",
               }}
             >
-              <div>✅ La boucle de jeu tourne à 60 FPS</div>
-              <div>✅ Le compteur de FPS s'affiche</div>
-              <div>✅ La boucle peut être mise en pause/reprise</div>
-              <div>✅ Pas de fuite mémoire après 5 minutes</div>
+              <div>[SUCCESS] La boucle de jeu tourne à 60 FPS</div>
+              <div>[SUCCESS] Le compteur de FPS s'affiche</div>
+              <div>[SUCCESS] La boucle peut être mise en pause/reprise</div>
+              <div>[SUCCESS] Pas de fuite mémoire après 5 minutes</div>
             </div>
             <div
               style={{

@@ -19,18 +19,18 @@ function App() {
     try {
       const success = await LevelService.saveLevel(levelData);
       if (success) {
-        alert(`✅ Niveau "${levelData.name}" sauvegardé avec succès!`);
+        alert(`[SUCCESS] Niveau "${levelData.name}" sauvegardé avec succès!`);
       } else {
-        alert(`❌ Erreur lors de la sauvegarde du niveau "${levelData.name}"`);
+        alert(`[ERROR] Erreur lors de la sauvegarde du niveau "${levelData.name}"`);
       }
     } catch (error) {
       console.error('Erreur de sauvegarde:', error);
-      alert(`❌ Erreur lors de la sauvegarde du niveau "${levelData.name}"`);
+      alert(`[ERROR] Erreur lors de la sauvegarde du niveau "${levelData.name}"`);
     }
   };
 
   const handleTestLevel = (levelData: LevelData) => {
-    console.log('🎮 Test du niveau:', levelData.name);
+    console.log('[GAME] Test du niveau:', levelData.name);
     setTestLevel(levelData);
     setEditingLevel(levelData); // Sauvegarder le niveau en cours d'édition
     setIsTestingFromEditor(true);
@@ -79,7 +79,7 @@ function App() {
             cursor: 'pointer'
           }}
         >
-          🎮 Jeu
+          [GAME] Jeu
         </button>
         <button
           onClick={() => {
@@ -96,7 +96,7 @@ function App() {
             cursor: 'pointer'
           }}
         >
-          🛠️ Éditeur de Niveau
+          Éditeur de Niveau
         </button>
         <button
           onClick={() => {
@@ -112,7 +112,7 @@ function App() {
             cursor: 'pointer'
           }}
         >
-          📁 Gestionnaire de Niveaux
+          [FILE] Gestionnaire de Niveaux
         </button>
       </div>
 

@@ -317,7 +317,7 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
       if (
         checkCollision(positionToCheck, objectSize, editorState.currentTool)
       ) {
-        console.log("❌ Impossible de placer l'objet : superposition détectée");
+        console.log("[ERROR] Impossible de placer l'objet : superposition détectée");
         setIsPlacing(false);
         setPlacingObjectData(null);
         return;
@@ -450,7 +450,7 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
             setSelectedObjectId(foundObject.id);
             setIsDragging(true);
             console.log(
-              `🎯 Objet sélectionné: ${foundObject.type} (${foundObject.id})`
+              `[LEVEL] Objet sélectionné: ${foundObject.type} (${foundObject.id})`
             );
           } else {
             setSelectedObjectId(null);
@@ -1036,13 +1036,13 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
                 cursor: "pointer",
               }}
             >
-              {tool === EditorTool.PLATFORM && "=� Plateforme"}
-              {tool === EditorTool.ENEMY && "=~ Ennemi"}
-              {tool === EditorTool.PROJECTILE_SPAWNER && "=� Projectile"}
-              {tool === EditorTool.SPAWN_POINT && "<� Spawn"}
-              {tool === EditorTool.FINISH_LINE && "<� Arriv�e"}
-              {tool === EditorTool.ERASE && "=� Effacer"}
-              {tool === EditorTool.SELECT && "=F S�lection"}
+              {tool === EditorTool.PLATFORM && "Plateforme"}
+              {tool === EditorTool.ENEMY && "Ennemi"}
+              {tool === EditorTool.PROJECTILE_SPAWNER && "Projectile"}
+              {tool === EditorTool.SPAWN_POINT && "Spawn"}
+              {tool === EditorTool.FINISH_LINE && "Arrivée"}
+              {tool === EditorTool.ERASE && "Effacer"}
+              {tool === EditorTool.SELECT && "Sélection"}
             </button>
           ))}
         </div>
@@ -1073,7 +1073,7 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
               cursor: "pointer",
             }}
           >
-            🔍 Voir tout
+            Voir tout
           </button>
 
           <button
@@ -1104,7 +1104,7 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
                 cursor: "pointer",
               }}
             >
-              🎮 Tester
+              Tester
             </button>
           )}
 
@@ -1120,7 +1120,7 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
                 cursor: "pointer",
               }}
             >
-              💾 Sauvegarder
+              Sauvegarder
             </button>
           )}
         </div>
@@ -1164,8 +1164,8 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
           mouseWorldPos.x <= levelData.width &&
           mouseWorldPos.y >= 0 &&
           mouseWorldPos.y <= levelData.height
-            ? "🎯 Niveau"
-            : "🌐 Hors niveau"}{" "}
+            ? "Niveau"
+            : "Hors niveau"}{" "}
           | Objets: {levelData.platforms.length} plateformes,{" "}
           {levelData.enemies.length} ennemis,{" "}
           {levelData.projectileSpawners.length} spawners

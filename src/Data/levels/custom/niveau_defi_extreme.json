@@ -1,0 +1,436 @@
+{
+  "id": "challenge_level",
+  "name": "Défi Extrême",
+  "width": 2400,
+  "height": 600,
+  "playerStart": {
+    "x": 50,
+    "y": 500
+  },
+  "finishLine": {
+    "x": 2300,
+    "y": 0
+  },
+  "platforms": [
+    {
+      "id": "start",
+      "position": {
+        "x": 0,
+        "y": 580
+      },
+      "size": {
+        "x": 200,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "end",
+      "position": {
+        "x": 2200,
+        "y": 580
+      },
+      "size": {
+        "x": 200,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "air1",
+      "position": {
+        "x": 250,
+        "y": 500
+      },
+      "size": {
+        "x": 60,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "air2",
+      "position": {
+        "x": 400,
+        "y": 420
+      },
+      "size": {
+        "x": 60,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "air3",
+      "position": {
+        "x": 550,
+        "y": 340
+      },
+      "size": {
+        "x": 60,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "air4",
+      "position": {
+        "x": 700,
+        "y": 260
+      },
+      "size": {
+        "x": 60,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "air5",
+      "position": {
+        "x": 850,
+        "y": 180
+      },
+      "size": {
+        "x": 60,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "air6",
+      "position": {
+        "x": 1000,
+        "y": 260
+      },
+      "size": {
+        "x": 60,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "air7",
+      "position": {
+        "x": 1150,
+        "y": 340
+      },
+      "size": {
+        "x": 60,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "air8",
+      "position": {
+        "x": 1300,
+        "y": 420
+      },
+      "size": {
+        "x": 60,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "air9",
+      "position": {
+        "x": 1450,
+        "y": 340
+      },
+      "size": {
+        "x": 60,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "air10",
+      "position": {
+        "x": 1600,
+        "y": 260
+      },
+      "size": {
+        "x": 60,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "air11",
+      "position": {
+        "x": 1750,
+        "y": 180
+      },
+      "size": {
+        "x": 60,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "air12",
+      "position": {
+        "x": 1900,
+        "y": 260
+      },
+      "size": {
+        "x": 60,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "air13",
+      "position": {
+        "x": 2050,
+        "y": 340
+      },
+      "size": {
+        "x": 60,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "wall1",
+      "position": {
+        "x": 0,
+        "y": 480
+      },
+      "size": {
+        "x": 20,
+        "y": 100
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "wall2",
+      "position": {
+        "x": 2380,
+        "y": 480
+      },
+      "size": {
+        "x": 20,
+        "y": 100
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    }
+  ],
+  "enemies": [
+    {
+      "id": "guard1",
+      "position": {
+        "x": 420,
+        "y": 390
+      },
+      "size": {
+        "x": 30,
+        "y": 30
+      },
+      "type": "basic",
+      "color": "#FF5722",
+      "properties": {
+        "patrolDistance": 40,
+        "speed": 80,
+        "direction": 1
+      }
+    },
+    {
+      "id": "guard2",
+      "position": {
+        "x": 720,
+        "y": 230
+      },
+      "size": {
+        "x": 30,
+        "y": 30
+      },
+      "type": "basic",
+      "color": "#FF5722",
+      "properties": {
+        "patrolDistance": 40,
+        "speed": 80,
+        "direction": -1
+      }
+    },
+    {
+      "id": "guard3",
+      "position": {
+        "x": 870,
+        "y": 150
+      },
+      "size": {
+        "x": 30,
+        "y": 30
+      },
+      "type": "basic",
+      "color": "#FF5722",
+      "properties": {
+        "patrolDistance": 40,
+        "speed": 80,
+        "direction": 1
+      }
+    },
+    {
+      "id": "guard4",
+      "position": {
+        "x": 1170,
+        "y": 310
+      },
+      "size": {
+        "x": 30,
+        "y": 30
+      },
+      "type": "basic",
+      "color": "#FF5722",
+      "properties": {
+        "patrolDistance": 40,
+        "speed": 80,
+        "direction": -1
+      }
+    },
+    {
+      "id": "guard5",
+      "position": {
+        "x": 1470,
+        "y": 310
+      },
+      "size": {
+        "x": 30,
+        "y": 30
+      },
+      "type": "basic",
+      "color": "#FF5722",
+      "properties": {
+        "patrolDistance": 40,
+        "speed": 80,
+        "direction": 1
+      }
+    },
+    {
+      "id": "guard6",
+      "position": {
+        "x": 1770,
+        "y": 150
+      },
+      "size": {
+        "x": 30,
+        "y": 30
+      },
+      "type": "basic",
+      "color": "#FF5722",
+      "properties": {
+        "patrolDistance": 40,
+        "speed": 80,
+        "direction": -1
+      }
+    }
+  ],
+  "projectileSpawners": [
+    {
+      "id": "danger1",
+      "position": {
+        "x": 300,
+        "y": 550
+      },
+      "direction": 1,
+      "interval": 2000,
+      "color": "#FF9800",
+      "properties": {
+        "speed": 200,
+        "lifetime": 5000
+      }
+    },
+    {
+      "id": "danger2",
+      "position": {
+        "x": 600,
+        "y": 200
+      },
+      "direction": -1,
+      "interval": 1800,
+      "color": "#FF9800",
+      "properties": {
+        "speed": 220,
+        "lifetime": 4000
+      }
+    },
+    {
+      "id": "danger3",
+      "position": {
+        "x": 1000,
+        "y": 100
+      },
+      "direction": 1,
+      "interval": 2200,
+      "color": "#FF9800",
+      "properties": {
+        "speed": 250,
+        "lifetime": 3500
+      }
+    },
+    {
+      "id": "danger4",
+      "position": {
+        "x": 1400,
+        "y": 200
+      },
+      "direction": -1,
+      "interval": 1600,
+      "color": "#FF9800",
+      "properties": {
+        "speed": 280,
+        "lifetime": 4500
+      }
+    },
+    {
+      "id": "danger5",
+      "position": {
+        "x": 1800,
+        "y": 50
+      },
+      "direction": 1,
+      "interval": 2500,
+      "color": "#FF9800",
+      "properties": {
+        "speed": 300,
+        "lifetime": 3000
+      }
+    },
+    {
+      "id": "final_trap",
+      "position": {
+        "x": 2100,
+        "y": 500
+      },
+      "direction": -1,
+      "interval": 1000,
+      "color": "#FF9800",
+      "properties": {
+        "speed": 350,
+        "lifetime": 2000
+      }
+    }
+  ],
+  "version": "1.0.0",
+  "created": "2024-01-01T12:00:00.000Z",
+  "modified": "2024-01-01T12:00:00.000Z"
+}

@@ -88,3 +88,12 @@ Models follow naming convention: `scene.gltf` + `scene.bin` + `/textures/` folde
 - Both systems are fully functional and can run independently
 - Level editor components exist but appear to be unused
 - Music player supports lofi background tracks with vinyl effects
+
+## Code Style Guidelines
+
+**CRITICAL: NO EMOJIS IN CODE**
+- NEVER use emojis in console.log, console.error, comments, or any code
+- Emojis cause severe Unicode encoding issues that break the build
+- Use text prefixes instead: [GAME], [ERROR], [SUCCESS], [LEVEL], [WARNING], [SAVE], [DELETE], [IMPORT], [FILE], [COPY], [DEBUG]
+- This rule applies to ALL files in the project
+- If you see any emojis in existing code, replace them immediately with text prefixes

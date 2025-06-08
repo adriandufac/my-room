@@ -24,7 +24,7 @@ export class FileSystemLevelService {
       
       // En mode développement, utiliser fetch pour sauvegarder via une API
       if (import.meta.env.DEV) {
-        console.log(`💾 Sauvegarde du niveau: ${fileName}`);
+        console.log(`[SAVE] Sauvegarde du niveau: ${fileName}`);
         
         // Sauvegarder en localStorage pour l'interface
         const existingLevels = this.getAllLevelsFromStorage();
@@ -40,10 +40,10 @@ export class FileSystemLevelService {
         return true;
       }
       
-      console.log(`✅ Niveau "${levelData.name}" sauvegardé sous: ${fileName}`);
+      console.log(`[SUCCESS] Niveau "${levelData.name}" sauvegardé sous: ${fileName}`);
       return true;
     } catch (error) {
-      console.error('❌ Erreur lors de la sauvegarde:', error);
+      console.error('[ERROR] Erreur lors de la sauvegarde:', error);
       return false;
     }
   }
@@ -53,23 +53,19 @@ export class FileSystemLevelService {
     try {
       const allLevels: Record<string, LevelData> = {};
       
-      // Charger depuis localStorage (niveaux créés dans l'éditeur)
-      const localLevels = this.getAllLevelsFromStorage();
-      Object.assign(allLevels, localLevels);
-      
-      // Essayer de charger les niveaux depuis le dossier custom
+      // Charger UNIQUEMENT les niveaux depuis le dossier custom (pas localStorage)
       try {
         const customLevels = await this.loadCustomLevels();
         Object.assign(allLevels, customLevels);
+        console.log(`[FILE] ${Object.keys(customLevels).length} niveaux chargés depuis Data/levels/custom/`);
       } catch (error) {
-        console.log('📁 Aucun niveau personnalisé trouvé dans src/Data/levels/custom/');
+        console.log('[FILE] Aucun niveau personnalisé trouvé dans src/Data/levels/custom/');
       }
       
       return allLevels;
     } catch (error) {
-      console.error('❌ Erreur lors du chargement des niveaux:', error);
-      // Fallback sur localStorage
-      return this.getAllLevelsFromStorage();
+      console.error('[ERROR] Erreur lors du chargement des niveaux:', error);
+      return {};
     }
   }
 
@@ -79,8 +75,12 @@ export class FileSystemLevelService {
     
     // Liste des fichiers à essayer de charger
     const possibleFiles = [
+      'niveau_tutoriel.json',
+      'niveau_intermediaire.json', 
+      'niveau_defi_extreme.json',
+      'test_1.json',
       'exemple_niveau.json',
-      // On peut ajouter d'autres fichiers ici manuellement
+      // Ajoutez ici d'autres fichiers JSON
     ];
     
     for (const fileName of possibleFiles) {
@@ -90,12 +90,12 @@ export class FileSystemLevelService {
           const levelData: LevelData = await response.json();
           if (this.validateLevel(levelData)) {
             customLevels[fileName] = levelData;
-            console.log(`📁 Niveau chargé: ${fileName}`);
+            console.log(`[FILE] Niveau chargé: ${fileName}`);
           }
         }
       } catch (error) {
         // Fichier non trouvé, ignorer silencieusement
-        console.log(`📁 ${fileName} non trouvé`);
+        console.log(`[FILE] ${fileName} non trouvé`);
       }
     }
     
@@ -108,7 +108,7 @@ export class FileSystemLevelService {
       const stored = localStorage.getItem('custom_levels');
       return stored ? JSON.parse(stored) : {};
     } catch (error) {
-      console.error('❌ Erreur localStorage:', error);
+      console.error('[ERROR] Erreur localStorage:', error);
       return {};
     }
   }
@@ -119,7 +119,7 @@ export class FileSystemLevelService {
       const levels = await this.getAllLevels();
       return levels[fileName] || null;
     } catch (error) {
-      console.error('❌ Erreur lors du chargement du niveau:', error);
+      console.error('[ERROR] Erreur lors du chargement du niveau:', error);
       return null;
     }
   }
@@ -132,7 +132,7 @@ export class FileSystemLevelService {
         const levels = this.getAllLevelsFromStorage();
         delete levels[fileName];
         localStorage.setItem('custom_levels', JSON.stringify(levels));
-        console.log(`🗑️ Niveau supprimé de localStorage: ${fileName}`);
+        console.log(`[DELETE] Niveau supprimé de localStorage: ${fileName}`);
         return true;
       }
       
@@ -145,10 +145,10 @@ export class FileSystemLevelService {
         throw new Error('Impossible de supprimer le niveau');
       }
       
-      console.log(`🗑️ Niveau supprimé: ${fileName}`);
+      console.log(`[DELETE] Niveau supprimé: ${fileName}`);
       return true;
     } catch (error) {
-      console.error('❌ Erreur lors de la suppression:', error);
+      console.error('[ERROR] Erreur lors de la suppression:', error);
       return false;
     }
   }
@@ -168,9 +168,9 @@ export class FileSystemLevelService {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       
-      console.log(`📁 Niveau exporté: ${levelData.name}`);
+      console.log(`[FILE] Niveau exporté: ${levelData.name}`);
     } catch (error) {
-      console.error('❌ Erreur lors de l\'export:', error);
+      console.error('[ERROR] Erreur lors de l\'export:', error);
     }
   }
 
@@ -190,10 +190,10 @@ export class FileSystemLevelService {
       levelData.created = new Date().toISOString();
       levelData.modified = new Date().toISOString();
       
-      console.log(`📥 Niveau importé: ${levelData.name}`);
+      console.log(`[IMPORT] Niveau importé: ${levelData.name}`);
       return levelData;
     } catch (error) {
-      console.error('❌ Erreur lors de l\'import:', error);
+      console.error('[ERROR] Erreur lors de l\'import:', error);
       return null;
     }
   }
@@ -236,7 +236,7 @@ export class FileSystemLevelService {
   private static generateFileInstructions(levelData: LevelData, fileName: string): void {
     const content = JSON.stringify(levelData, null, 2);
     
-    console.group(`📁 Instructions pour sauvegarder dans le projet:`);
+    console.group(`[FILE] Instructions pour sauvegarder dans le projet:`);
     console.log(`1. Créer le fichier: src/Data/levels/custom/${fileName}`);
     console.log(`2. Copier ce contenu dans le fichier:`);
     console.log(content);
@@ -244,7 +244,7 @@ export class FileSystemLevelService {
     console.groupEnd();
     
     // Montrer également dans une alerte
-    const instructions = `📁 Niveau sauvegardé!\n\nPour l'ajouter au projet:\n1. Créer: src/Data/levels/custom/${fileName}\n2. Coller le contenu du fichier téléchargé\n3. Recharger l'application`;
+    const instructions = `[FILE] Niveau sauvegardé!\n\nPour l'ajouter au projet:\n1. Créer: src/Data/levels/custom/${fileName}\n2. Coller le contenu du fichier téléchargé\n3. Recharger l'application`;
     alert(instructions);
   }
 
@@ -254,7 +254,7 @@ export class FileSystemLevelService {
     const fileName = `${cleanName}_${Date.now()}.json`;
     const content = JSON.stringify(levelData, null, 2);
     
-    console.log(`📋 Copier ce contenu dans src/Data/levels/custom/${fileName}:`);
+    console.log(`[COPY] Copier ce contenu dans src/Data/levels/custom/${fileName}:`);
     console.log(content);
     
     return content;

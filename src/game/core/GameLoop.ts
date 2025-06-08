@@ -28,7 +28,7 @@ export class GameLoop {
     this.fpsUpdateTime = this.lastTime;
     this.frameCount = 0;
 
-    console.log("🎮 Boucle de jeu démarrée");
+    console.log("[GAME] Boucle de jeu démarrée");
     this.gameLoop();
   }
 
@@ -45,7 +45,7 @@ export class GameLoop {
       this.animationFrameId = null;
     }
 
-    console.log("⏸️ Boucle de jeu arrêtée");
+    console.log("[GAME] Boucle de jeu arrêtée");
   }
 
   /**

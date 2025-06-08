@@ -39,7 +39,7 @@ export class LevelService {
 
   // Méthodes de compatibilité pour l'interface synchrone existante
   static getAllLevelsSync(): Record<string, LevelData> {
-    console.warn('⚠️ getAllLevelsSync est déprécié, utilisez getAllLevels() avec await');
+    console.warn('[WARNING] getAllLevelsSync est déprécié, utilisez getAllLevels() avec await');
     // Fallback localStorage pour compatibilité
     try {
       const stored = localStorage.getItem('custom_levels');
@@ -50,21 +50,21 @@ export class LevelService {
   }
 
   static saveLeveSync(levelData: LevelData): boolean {
-    console.warn('⚠️ saveLevelSync est déprécié, utilisez saveLevel() avec await');
+    console.warn('[WARNING] saveLevelSync est déprécié, utilisez saveLevel() avec await');
     // Démarrer la sauvegarde async mais retourner immédiatement
     this.saveLevel(levelData);
     return true;
   }
 
   static deleteLevelSync(fileName: string): boolean {
-    console.warn('⚠️ deleteLevelSync est déprécié, utilisez deleteLevel() avec await');
+    console.warn('[WARNING] deleteLevelSync est déprécié, utilisez deleteLevel() avec await');
     // Démarrer la suppression async mais retourner immédiatement
     this.deleteLevel(fileName);
     return true;
   }
 
   static getLevelStatsSync(): { total: number; totalSize: string } {
-    console.warn('⚠️ getLevelStatsSync est déprécié, utilisez getLevelStats() avec await');
+    console.warn('[WARNING] getLevelStatsSync est déprécié, utilisez getLevelStats() avec await');
     const levels = this.getAllLevelsSync();
     const total = Object.keys(levels).length;
     const jsonString = JSON.stringify(levels);

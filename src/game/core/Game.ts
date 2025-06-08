@@ -96,9 +96,9 @@ export class Game {
     this.camera.snapToPlayer(this.player);
 
     console.log(
-      `🎮 Niveau étendu initialisé : ${this.levelWidth}x${this.levelHeight}`
+      `[GAME] Niveau étendu initialisé : ${this.levelWidth}x${this.levelHeight}`
     );
-    console.log(`👾 ${this.enemies.length} ennemis créés`);
+    console.log(`[GAME] ${this.enemies.length} ennemis créés`);
   }
 
   private createExtendedLevel(): void {
@@ -154,7 +154,7 @@ export class Game {
     this.platforms.push(new Platform(1250, 420, 120, 15));
     this.platforms.push(new Platform(1700, 410, 150, 15));
 
-    console.log(`✅ Niveau créé avec ${this.platforms.length} plateformes`);
+    console.log(`[SUCCESS] Niveau créé avec ${this.platforms.length} plateformes`);
   }
 
   private createEnemies(): void {
@@ -188,7 +188,7 @@ export class Game {
     // Ennemi de fin pour corser la finalisation
     this.enemies.push(new Enemy(1900, 370, 140)); // Avant la zone finale
 
-    console.log(`👾 ${this.enemies.length} ennemis placés dans le niveau`);
+    console.log(`[GAME] ${this.enemies.length} ennemis placés dans le niveau`);
   }
 
   private createProjectileSpawners(): void {
@@ -207,7 +207,7 @@ export class Game {
     // Reset du timer
     this.projectileSpawnTimer = 0;
 
-    console.log(`🎯 ${this.projectileSpawners.length} spawners de projectiles configurés`);
+    console.log(`[LEVEL] ${this.projectileSpawners.length} spawners de projectiles configurés`);
   }
 
   private spawnProjectile(x: number, y: number, direction: number): void {
@@ -266,7 +266,7 @@ export class Game {
 
     // Détection d'atterrissage
     if (!wasOnGround && this.player.isOnGround) {
-      console.log("🦶 Atterrissage détecté");
+      console.log("[GAME] Atterrissage détecté");
     }
   }
 
@@ -349,7 +349,7 @@ export class Game {
       this.invulnerabilityTime -= deltaTime;
       if (this.invulnerabilityTime <= 0) {
         this.isPlayerInvulnerable = false;
-        console.log("🛡️ Invulnérabilité terminée");
+        console.log("[GAME] Invulnérabilité terminée");
       }
     }
   }
@@ -388,7 +388,7 @@ export class Game {
             this.player.velocity.x,
             -GAME_CONFIG.PLAYER.JUMP_POWER * 1.0
           ); // Petit rebond
-          console.log("💥 Ennemi éliminé en sautant dessus!");
+          console.log("[GAME] Ennemi éliminé en sautant dessus!");
         } else {
           // Joueur prend des dégâts
           this.playerTakesDamage();
@@ -404,14 +404,14 @@ export class Game {
     this.isPlayerInvulnerable = true;
     this.invulnerabilityTime = this.INVULNERABILITY_DURATION;
 
-    console.log(`💔 Joueur touché! Vies restantes: ${this.playerLives}`);
+    console.log(`[GAME] Joueur touché! Vies restantes: ${this.playerLives}`);
 
     // Effet de recul
     this.player.velocity.x *= -0.5; // Recul horizontal
     this.player.velocity.y = -200; // Petit saut
 
     if (this.playerLives <= 0) {
-      console.log("💀 Game Over!");
+      console.log("[GAME] Game Over!");
       this.respawnPlayer();
     }
   }
@@ -430,7 +430,7 @@ export class Game {
       if (this.aabbIntersect(playerBounds, projectileBounds)) {
         // Le projectile touche le joueur
         if (projectile.dealDamage()) {
-          console.log("🚀💔 Joueur touché par un projectile!");
+          console.log("[GAME] Joueur touché par un projectile!");
           this.playerTakesDamage();
           
           // Détruire le projectile après impact
@@ -487,7 +487,7 @@ export class Game {
     debug.SHOW_VELOCITY_VECTORS = !debug.SHOW_VELOCITY_VECTORS;
 
     console.log(
-      `🔧 Debug ${debug.SHOW_COLLISION_BOXES ? "ACTIVÉ" : "DÉSACTIVÉ"}`
+      `[DEBUG] Debug ${debug.SHOW_COLLISION_BOXES ? "ACTIVÉ" : "DÉSACTIVÉ"}`
     );
     console.log(`   - Boîtes de collision: ${debug.SHOW_COLLISION_BOXES}`);
     console.log(`   - FPS et infos: ${debug.SHOW_FPS}`);
@@ -510,7 +510,7 @@ export class Game {
 
     // Gestion du saut EN PREMIER
     if (jumpJustPressed) {
-      console.log(`🎮 Tentative de saut avec direction: ${horizontalInput}`);
+      console.log(`[GAME] Tentative de saut avec direction: ${horizontalInput}`);
       this.player.jump(horizontalInput);
     }
 
@@ -541,14 +541,14 @@ export class Game {
     // Si le joueur vient d'atterrir, réinitialiser isJumping
     if (!wasOnGround && this.player.isOnGround) {
       this.player.isJumping = false;
-      console.log("🦶 Atterrissage confirmé par collision");
+      console.log("[GAME] Atterrissage confirmé par collision");
     }
 
     // Debug pour voir les changements d'état
     if (!wasOnGround && this.player.isOnGround) {
-      console.log("🦶 Joueur a atterri");
+      console.log("[GAME] Joueur a atterri");
     } else if (wasOnGround && !this.player.isOnGround) {
-      console.log("🚀 Joueur a quitté le sol");
+      console.log("[GAME] Joueur a quitté le sol");
     }
   }
 
@@ -564,7 +564,7 @@ export class Game {
 
     // Chute dans le vide
     if (this.player.position.y > this.levelHeight + 100) {
-      console.log("💀 Joueur tombé dans le vide");
+      console.log("[GAME] Joueur tombé dans le vide");
       this.respawnPlayer();
     }
   }
@@ -581,7 +581,7 @@ export class Game {
       !this.levelCompleted
     ) {
       this.levelCompleted = true;
-      console.log("🎉 NIVEAU TERMINÉ ! Félicitations !");
+      console.log("[SUCCESS] NIVEAU TERMINÉ ! Félicitations !");
     }
   }
 
@@ -610,17 +610,17 @@ export class Game {
     this.resetProjectiles();
 
     this.camera.snapToPlayer(this.player);
-    console.log("🔄 Joueur respawné au point de départ");
+    console.log("[GAME] Joueur respawné au point de départ");
   }
 
   private resetEnemies(): void {
     // Recréer les ennemis selon le niveau actuel
     if (this.customLevel) {
       this.loadEnemiesFromLevel(this.customLevel.enemies);
-      console.log("👾 Ennemis du niveau personnalisé réinitialisés");
+      console.log("[GAME] Ennemis du niveau personnalisé réinitialisés");
     } else {
       this.createEnemies();
-      console.log("👾 Ennemis du niveau par défaut réinitialisés");
+      console.log("[GAME] Ennemis du niveau par défaut réinitialisés");
     }
   }
 
@@ -637,10 +637,10 @@ export class Game {
     // Reconfigurer les spawners selon le niveau actuel
     if (this.customLevel) {
       this.loadProjectileSpawnersFromLevel(this.customLevel.projectileSpawners);
-      console.log("🚀 Spawners du niveau personnalisé réinitialisés");
+      console.log("[GAME] Spawners du niveau personnalisé réinitialisés");
     } else {
       this.createProjectileSpawners();
-      console.log("🚀 Spawners du niveau par défaut réinitialisés");
+      console.log("[GAME] Spawners du niveau par défaut réinitialisés");
     }
   }
 
@@ -969,13 +969,13 @@ export class Game {
     );
     y += 18;
     this.ctx.fillText(
-      `❤️ Vies: ${this.playerLives}`,
+      `Vies: ${this.playerLives}`,
       GAME_CONFIG.CANVAS.WIDTH - 210,
       y
     );
     y += 18;
     this.ctx.fillText(
-      `👾 Ennemis: ${aliveEnemies} | 🚀 Projectiles: ${activeProjectiles}`,
+      `[GAME] Ennemis: ${aliveEnemies} | Projectiles: ${activeProjectiles}`,
       GAME_CONFIG.CANVAS.WIDTH - 210,
       y
     );
@@ -991,15 +991,15 @@ export class Game {
     let y = GAME_CONFIG.CANVAS.HEIGHT - 90;
     const lineHeight = 18;
 
-    this.ctx.fillText("🏃 Flèches : Déplacer | Espace : Sauter", 10, y);
+    this.ctx.fillText("Flèches : Déplacer | Espace : Sauter", 10, y);
     y += lineHeight;
-    this.ctx.fillText("🔄 R : Respawn | Échap : Pause", 10, y);
+    this.ctx.fillText("R : Respawn | Échap : Pause", 10, y);
     y += lineHeight;
-    this.ctx.fillText("💥 Sautez sur les ennemis pour les éliminer", 10, y);
+    this.ctx.fillText("Sautez sur les ennemis pour les éliminer", 10, y);
     y += lineHeight;
-    this.ctx.fillText("⚠️ Évitez ennemis et projectiles orange", 10, y);
+    this.ctx.fillText("[WARNING] Évitez ennemis et projectiles orange", 10, y);
     y += lineHeight;
-    this.ctx.fillText("🎯 Objectif : Atteindre la zone dorée (arrivée)", 10, y);
+    this.ctx.fillText("[LEVEL] Objectif : Atteindre la zone dorée (arrivée)", 10, y);
   }
 
   private renderPauseScreen(): void {
@@ -1043,7 +1043,7 @@ export class Game {
     this.ctx.font = "bold 64px Arial";
     this.ctx.textAlign = "center";
     this.ctx.fillText(
-      "🎉 VICTOIRE! 🎉",
+      "VICTOIRE!",
       GAME_CONFIG.CANVAS.WIDTH / 2,
       GAME_CONFIG.CANVAS.HEIGHT / 2 - 50
     );
@@ -1080,7 +1080,7 @@ export class Game {
       this.isRunning = true;
       this.gameLoop.start();
       console.log(
-        `🎮 Jeu démarré - Niveau avec ennemis et projectiles ${this.levelWidth}x${this.levelHeight}`
+        `[LAUNCH] Jeu démarré - Niveau avec ennemis et projectiles ${this.levelWidth}x${this.levelHeight}`
       );
     }
   }
@@ -1089,13 +1089,13 @@ export class Game {
     if (this.isRunning) {
       this.isRunning = false;
       this.gameLoop.stop();
-      console.log("⏹️ Jeu arrêté");
+      console.log("[GAME] Jeu arrêté");
     }
   }
 
   public togglePause(): void {
     this.isPaused = !this.isPaused;
-    console.log(this.isPaused ? "⏸️ Jeu en pause" : "▶️ Jeu repris");
+    console.log(this.isPaused ? "[GAME] Jeu en pause" : "[GAME] Jeu repris");
   }
 
   public destroy(): void {
@@ -1146,7 +1146,7 @@ export class Game {
 
   // Charger un niveau personnalisé depuis LevelData
   public loadCustomLevel(levelData: LevelData): void {
-    console.log(`🎮 Chargement du niveau personnalisé: ${levelData.name}`);
+    console.log(`[GAME] Chargement du niveau personnalisé: ${levelData.name}`);
     
     this.customLevel = levelData;
     
@@ -1193,11 +1193,11 @@ export class Game {
     this.isPlayerInvulnerable = false;
     this.invulnerabilityTime = 0;
     
-    console.log(`✅ Niveau "${levelData.name}" chargé avec succès!`);
-    console.log(`📐 Dimensions: ${this.levelWidth}x${this.levelHeight}`);
-    console.log(`🟩 ${this.platforms.length} plateformes`);
-    console.log(`👾 ${this.enemies.length} ennemis`);
-    console.log(`🎯 Spawners de projectiles configurés`);
+    console.log(`[SUCCESS] Niveau "${levelData.name}" chargé avec succès!`);
+    console.log(`[LEVEL] Dimensions: ${this.levelWidth}x${this.levelHeight}`);
+    console.log(`[LEVEL] ${this.platforms.length} plateformes`);
+    console.log(`[LEVEL] ${this.enemies.length} ennemis`);
+    console.log(`[LEVEL] Spawners de projectiles configurés`);
   }
 
   private loadPlatformsFromLevel(platformsData: PlatformData[]): void {
@@ -1237,12 +1237,12 @@ export class Game {
     // Reset du timer
     this.projectileSpawnTimer = 0;
     
-    console.log(`🎯 ${spawnersData.length} spawners de projectiles configurés`);
+    console.log(`[LEVEL] ${spawnersData.length} spawners de projectiles configurés`);
   }
 
   // Restaurer le niveau par défaut
   public loadDefaultLevel(): void {
-    console.log(`🎮 Retour au niveau par défaut`);
+    console.log(`[GAME] Retour au niveau par défaut`);
     
     this.customLevel = null;
     
@@ -1275,6 +1275,6 @@ export class Game {
     this.isPlayerInvulnerable = false;
     this.invulnerabilityTime = 0;
     
-    console.log(`✅ Niveau par défaut restauré`);
+    console.log(`[SUCCESS] Niveau par défaut restauré`);
   }
 }

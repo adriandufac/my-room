@@ -129,7 +129,7 @@ export const LevelList: React.FC<LevelListProps> = ({
                 cursor: 'pointer'
               }}
             >
-              📥 Importer
+              [IMPORT] Importer
             </button>
             <button
               onClick={loadLevels}
@@ -142,7 +142,7 @@ export const LevelList: React.FC<LevelListProps> = ({
                 cursor: 'pointer'
               }}
             >
-              🔄 Actualiser
+              Actualiser
             </button>
           </div>
         </div>
@@ -203,13 +203,13 @@ export const LevelList: React.FC<LevelListProps> = ({
                       {levelData.name}
                     </h4>
                     <div style={{ fontSize: '12px', color: '#666' }}>
-                      <div>📐 {levelData.width}×{levelData.height}px</div>
+                      <div>[LEVEL] {levelData.width}×{levelData.height}px</div>
                       <div>
-                        🟩 {levelData.platforms.length} | 
-                        👾 {levelData.enemies.length} | 
-                        🎯 {levelData.projectileSpawners.length}
+                        [LEVEL] {levelData.platforms.length} | 
+                        [LEVEL] {levelData.enemies.length} | 
+                        [LEVEL] {levelData.projectileSpawners.length}
                       </div>
-                      <div>📅 {new Date(levelData.modified).toLocaleDateString()}</div>
+                      <div>Modifié: {new Date(levelData.modified).toLocaleDateString()}</div>
                     </div>
                   </div>
                   
@@ -269,7 +269,7 @@ export const LevelList: React.FC<LevelListProps> = ({
                         fontSize: '11px'
                       }}
                     >
-                      📁 Export
+                      [FILE] Export
                     </button>
                     
                     <button
@@ -287,7 +287,7 @@ export const LevelList: React.FC<LevelListProps> = ({
                         fontSize: '11px'
                       }}
                     >
-                      🗑️
+                      [DELETE]
                     </button>
                   </div>
                 </div>

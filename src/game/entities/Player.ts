@@ -61,7 +61,7 @@ export class Player {
     if (this.isOnGround && this.isJumping) {
       this.isJumping = false;
       this.jumpDirection = 0;
-      console.log("🦶 Atterrissage - réinitialisation du saut");
+      console.log("[GAME] Atterrissage - réinitialisation du saut");
     }
   }
 
@@ -109,24 +109,24 @@ export class Player {
   public jump(inputDirection: number = 0): void {
     // Debug : afficher l'état complet
     console.log(
-      `🔍 État du saut - isOnGround: ${this.isOnGround}, isJumping: ${
+      `[DEBUG] État du saut - isOnGround: ${this.isOnGround}, isJumping: ${
         this.isJumping
       }, velocity.y: ${this.velocity.y.toFixed(2)}`
     );
 
     // Vérification plus permissive pour éviter les blocages
     if (!this.isOnGround) {
-      console.log(`❌ Saut refusé - Pas au sol`);
+      console.log(`[ERROR] Saut refusé - Pas au sol`);
       return;
     }
 
     if (this.isJumping && this.velocity.y < -50) {
       // Seulement si on monte encore
-      console.log(`❌ Saut refusé - Déjà en train de sauter`);
+      console.log(`[ERROR] Saut refusé - Déjà en train de sauter`);
       return;
     }
 
-    console.log(`🦘 Saut autorisé avec direction: ${inputDirection}`);
+    console.log(`[GAME] Saut autorisé avec direction: ${inputDirection}`);
 
     // Saut vertical
     this.velocity.y = -GAME_CONFIG.PLAYER.JUMP_POWER;
@@ -138,13 +138,13 @@ export class Player {
       this.velocity.x = inputDirection * horizontalImpulse;
       this.jumpDirection = inputDirection;
       console.log(
-        `🎯 Saut directionnel: ${inputDirection}, vitesse: ${this.velocity.x}`
+        `[GAME] Saut directionnel: ${inputDirection}, vitesse: ${this.velocity.x}`
       );
     } else {
       // Saut neutre - garde la vitesse actuelle mais réduite
       this.velocity.x *= 0.7;
       this.jumpDirection = 0;
-      console.log(`⬆️ Saut neutre, vitesse conservée: ${this.velocity.x}`);
+      console.log(`[GAME] Saut neutre, vitesse conservée: ${this.velocity.x}`);
     }
 
     // Marquer comme en saut
@@ -321,12 +321,12 @@ export class Player {
   // Méthodes pour ajuster le contrôle aérien facilement
   public setAirControlAcceleration(value: number): void {
     this.airControlAcceleration = value;
-    console.log(`🎮 Contrôle aérien - Accélération: ${value}`);
+    console.log(`[GAME] Contrôle aérien - Accélération: ${value}`);
   }
 
   public setAirControlDeceleration(value: number): void {
     this.airControlDeceleration = value;
-    console.log(`🎮 Contrôle aérien - Décélération: ${value}`);
+    console.log(`[GAME] Contrôle aérien - Décélération: ${value}`);
   }
 
   public getAirControlValues(): { acceleration: number; deceleration: number } {

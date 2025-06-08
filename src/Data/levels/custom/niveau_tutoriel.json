@@ -1,0 +1,175 @@
+{
+  "id": "tutorial_level",
+  "name": "Niveau Tutoriel",
+  "width": 2400,
+  "height": 600,
+  "playerStart": {
+    "x": 50,
+    "y": 500
+  },
+  "finishLine": {
+    "x": 2100,
+    "y": 0
+  },
+  "platforms": [
+    {
+      "id": "ground",
+      "position": {
+        "x": 0,
+        "y": 580
+      },
+      "size": {
+        "x": 400,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "ground2",
+      "position": {
+        "x": 600,
+        "y": 580
+      },
+      "size": {
+        "x": 1800,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "tuto1",
+      "position": {
+        "x": 250,
+        "y": 480
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "tuto2",
+      "position": {
+        "x": 450,
+        "y": 420
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "tuto3",
+      "position": {
+        "x": 650,
+        "y": 360
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "jump1",
+      "position": {
+        "x": 900,
+        "y": 480
+      },
+      "size": {
+        "x": 100,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "jump2",
+      "position": {
+        "x": 1100,
+        "y": 380
+      },
+      "size": {
+        "x": 100,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "jump3",
+      "position": {
+        "x": 1300,
+        "y": 480
+      },
+      "size": {
+        "x": 100,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "final",
+      "position": {
+        "x": 1800,
+        "y": 400
+      },
+      "size": {
+        "x": 200,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    }
+  ],
+  "enemies": [
+    {
+      "id": "enemy1",
+      "position": {
+        "x": 950,
+        "y": 450
+      },
+      "size": {
+        "x": 30,
+        "y": 30
+      },
+      "type": "basic",
+      "color": "#FF5722",
+      "properties": {
+        "patrolDistance": 80,
+        "speed": 50,
+        "direction": 1
+      }
+    },
+    {
+      "id": "enemy2",
+      "position": {
+        "x": 1150,
+        "y": 350
+      },
+      "size": {
+        "x": 30,
+        "y": 30
+      },
+      "type": "basic",
+      "color": "#FF5722",
+      "properties": {
+        "patrolDistance": 80,
+        "speed": 50,
+        "direction": 1
+      }
+    }
+  ],
+  "projectileSpawners": [],
+  "version": "1.0.0",
+  "created": "2024-01-01T12:00:00.000Z",
+  "modified": "2024-01-01T12:00:00.000Z"
+}

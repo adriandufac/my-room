@@ -33,7 +33,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
       // Charger le niveau personnalisé si fourni
       if (levelToLoad) {
-        console.log(`🎮 Chargement du niveau: ${levelToLoad.name}`);
+        console.log(`[GAME] Chargement du niveau: ${levelToLoad.name}`);
         game.loadCustomLevel(levelToLoad);
       }
 
@@ -76,7 +76,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
           textAlign: "center",
           marginBottom: "10px"
         }}>
-          🎮 Test: {levelToLoad.name}
+          [GAME] Test: {levelToLoad.name}
         </div>
       )}
       
