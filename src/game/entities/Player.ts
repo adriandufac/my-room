@@ -2,6 +2,7 @@
 
 import { Vector2D } from "../physics/Vector2D";
 import { GAME_CONFIG } from "../utils/Constants";
+import { SpriteManager } from "../graphics/SpriteManager";
 
 export class Player {
   public position: Vector2D;
@@ -10,6 +11,11 @@ export class Player {
   public color: string;
   public isOnGround: boolean;
   public isJumping: boolean;
+
+  // Système de sprites
+  private spriteManager: SpriteManager;
+  private currentAnimationState: string = 'idle';
+  private facingDirection: 'left' | 'right' = 'right';
 
   // Nouvelles propriétés pour le contrôle aérien - valeurs directes
   private jumpDirection: number = 0; // Direction du saut initial (-1, 0, 1)
@@ -26,6 +32,10 @@ export class Player {
     this.color = GAME_CONFIG.PLAYER.COLOR;
     this.isOnGround = false;
     this.isJumping = false;
+
+    // Initialiser le système de sprites
+    this.spriteManager = new SpriteManager('player');
+    this.spriteManager.setState('idle');
   }
 
   public update(deltaTime: number): void {
@@ -63,9 +73,18 @@ export class Player {
       this.jumpDirection = 0;
       console.log("[GAME] Atterrissage - réinitialisation du saut");
     }
+
+    // Mettre à jour l'état d'animation
+    this.updateAnimationState();
+
+    // Mettre à jour le système de sprites
+    this.spriteManager.update(deltaTime);
   }
 
   public moveLeft(): void {
+    // Mettre à jour la direction
+    this.facingDirection = 'left';
+    
     if (this.isOnGround) {
       // Mouvement normal au sol - contrôle total
       this.velocity.x = -GAME_CONFIG.PLAYER.SPEED;
@@ -76,6 +95,9 @@ export class Player {
   }
 
   public moveRight(): void {
+    // Mettre à jour la direction
+    this.facingDirection = 'right';
+    
     if (this.isOnGround) {
       // Mouvement normal au sol - contrôle total
       this.velocity.x = GAME_CONFIG.PLAYER.SPEED;
@@ -169,21 +191,46 @@ export class Player {
   }
 
   public render(ctx: CanvasRenderingContext2D): void {
-    // Couleur différente selon l'état
-    let playerColor = this.color;
-    if (this.isJumping) {
-      playerColor = "#FF6666"; // Rouge clair en saut
-    } else if (!this.isOnGround) {
-      playerColor = "#FF8888"; // Rouge encore plus clair si en l'air sans avoir sauté
-    }
+    // Rendu avec sprites
+    if (this.spriteManager.isCurrentStateLoaded()) {
+      // Rendu du sprite avec flip horizontal si nécessaire
+      if (this.facingDirection === 'left') {
+        ctx.save();
+        ctx.scale(-1, 1);
+        this.spriteManager.render(
+          ctx,
+          -(this.position.x + this.size.x), // Inverser X pour le flip
+          this.position.y,
+          this.size.x,
+          this.size.y
+        );
+        ctx.restore();
+      } else {
+        this.spriteManager.render(
+          ctx,
+          this.position.x,
+          this.position.y,
+          this.size.x,
+          this.size.y
+        );
+      }
+    } else {
+      // Fallback : rendu rectangulaire si sprites pas chargés
+      let playerColor = this.color;
+      if (this.isJumping) {
+        playerColor = "#FF6666";
+      } else if (!this.isOnGround) {
+        playerColor = "#FF8888";
+      }
 
-    ctx.fillStyle = playerColor;
-    ctx.fillRect(
-      Math.round(this.position.x),
-      Math.round(this.position.y),
-      this.size.x,
-      this.size.y
-    );
+      ctx.fillStyle = playerColor;
+      ctx.fillRect(
+        Math.round(this.position.x),
+        Math.round(this.position.y),
+        this.size.x,
+        this.size.y
+      );
+    }
 
     // Indicateur d'état au sol
     if (this.isOnGround) {
@@ -343,8 +390,44 @@ export class Player {
       1
     )}) - OnGround: ${this.isOnGround} - Jumping: ${
       this.isJumping
-    } - JumpDir: ${this.jumpDirection} - AirControl: ${
-      this.airControlAcceleration
-    }/${this.airControlDeceleration}`;
+    } - JumpDir: ${this.jumpDirection} - AnimState: ${this.currentAnimationState} - Facing: ${this.facingDirection}`;
+  }
+
+  /**
+   * Met à jour l'état d'animation selon les conditions du gameplay
+   */
+  private updateAnimationState(): void {
+    let newState = 'idle';
+
+    // Logique de priorité des états
+    if (!this.isOnGround) {
+      if (this.velocity.y < 0) {
+        // Montée = jump
+        newState = 'jump';
+      } else {
+        // Descente = fall
+        newState = 'fall';
+      }
+    } else if (Math.abs(this.velocity.x) > 10) {
+      // Au sol et en mouvement = run
+      newState = 'run';
+    } else {
+      // Au sol et immobile = idle
+      newState = 'idle';
+    }
+
+    // Changer d'état seulement si nécessaire
+    if (newState !== this.currentAnimationState) {
+      this.currentAnimationState = newState;
+      this.spriteManager.setState(newState);
+      console.log(`[PLAYER] Animation state changed to: ${newState}`);
+    }
+  }
+
+  /**
+   * Nettoie les ressources du joueur
+   */
+  public dispose(): void {
+    this.spriteManager.dispose();
   }
 }
