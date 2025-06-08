@@ -7,6 +7,7 @@ import { Camera } from "../renderer/Camera";
 import { Player } from "../entities/Player";
 import { Platform } from "../entities/Platform";
 import { Enemy } from "../entities/Enemy";
+import { Projectile } from "../entities/Projectile";
 import { CollisionDetector } from "./CollisionDetector";
 import { GAME_CONFIG } from "../utils/Constants";
 
@@ -20,6 +21,7 @@ export class Game {
   private player!: Player;
   private platforms: Platform[] = [];
   private enemies: Enemy[] = [];
+  private projectiles: Projectile[] = [];
   private isRunning: boolean = false;
   private isPaused: boolean = false;
   private currentFPS: number = 0;
@@ -77,9 +79,10 @@ export class Game {
       GAME_CONFIG.PLAYER.STARTING_Y
     );
 
-    // Créer le niveau étendu avec ennemis
+    // Créer le niveau étendu avec ennemis et projectiles
     this.createExtendedLevel();
     this.createEnemies();
+    this.createProjectileSpawners();
 
     // Initialiser la boucle de jeu
     this.gameLoop = new GameLoop();
@@ -184,6 +187,25 @@ export class Game {
     console.log(`👾 ${this.enemies.length} ennemis placés dans le niveau`);
   }
 
+  private createProjectileSpawners(): void {
+    // Initialiser les projectiles (ils seront créés dynamiquement)
+    this.projectiles = [];
+    
+    // Créer quelques projectiles de test pour commencer
+    this.spawnProjectile(800, 380, -1); // Dans la première section
+    this.spawnProjectile(1200, 200, 1); // Dans la section intermédiaire
+    this.spawnProjectile(1600, 320, -1); // Dans la section avancée
+    this.spawnProjectile(500, this.levelHeight - 100, 1); // Au sol
+    this.spawnProjectile(1800, 250, -1); // Près de la fin
+
+    console.log(`🚀 ${this.projectiles.length} projectiles initiaux créés`);
+  }
+
+  private spawnProjectile(x: number, y: number, direction: number): void {
+    const projectile = new Projectile(x, y, direction);
+    this.projectiles.push(projectile);
+  }
+
   private setupGameLoop(): void {
     this.gameLoop.setUpdateCallback((deltaTime: number) => {
       this.update(deltaTime);
@@ -211,6 +233,9 @@ export class Game {
     // Mise à jour des ennemis
     this.updateEnemies(deltaTime);
 
+    // Mise à jour des projectiles
+    this.updateProjectiles(deltaTime);
+
     // Gérer les collisions (qui gèrera isOnGround correctement)
     this.handleCollisions();
 
@@ -219,6 +244,9 @@ export class Game {
 
     // Gérer les collisions avec les ennemis
     this.handleEnemyCollisions();
+
+    // Gérer les collisions avec les projectiles
+    this.handleProjectileCollisions();
 
     // Mise à jour de la caméra
     this.camera.update(this.player, deltaTime);
@@ -250,6 +278,58 @@ export class Game {
 
       // Gérer les collisions ennemi-plateforme
       this.handleEnemyPlatformCollisions(enemy);
+    }
+  }
+
+  private updateProjectiles(deltaTime: number): void {
+    // Mettre à jour tous les projectiles actifs
+    for (let i = this.projectiles.length - 1; i >= 0; i--) {
+      const projectile = this.projectiles[i];
+      
+      if (!projectile.isActive) {
+        // Supprimer les projectiles inactifs
+        this.projectiles.splice(i, 1);
+        continue;
+      }
+
+      // Mise à jour physique du projectile
+      projectile.update(deltaTime);
+
+      // Vérifier si le projectile est hors des limites
+      if (projectile.isOutOfBounds(this.levelWidth, this.levelHeight)) {
+        projectile.destroy();
+        continue;
+      }
+
+      // Vérifier les collisions avec les plateformes
+      projectile.checkPlatformCollision(this.platforms);
+    }
+
+    // Spawner périodiquement de nouveaux projectiles
+    this.handleProjectileSpawning(deltaTime);
+  }
+
+  private projectileSpawnTimer: number = 0;
+  private readonly PROJECTILE_SPAWN_INTERVAL = 4.0; // 4 secondes
+
+  private handleProjectileSpawning(deltaTime: number): void {
+    this.projectileSpawnTimer += deltaTime;
+    
+    if (this.projectileSpawnTimer >= this.PROJECTILE_SPAWN_INTERVAL) {
+      this.projectileSpawnTimer = 0;
+      
+      // Spawner un nouveau projectile à une position aléatoire
+      const spawnLocations = [
+        { x: 600, y: 300, dir: 1 },
+        { x: 1000, y: 200, dir: -1 },
+        { x: 1400, y: 350, dir: 1 },
+        { x: 1800, y: 180, dir: -1 },
+        { x: 300, y: this.levelHeight - 80, dir: 1 },
+        { x: 2000, y: this.levelHeight - 80, dir: -1 }
+      ];
+      
+      const randomLocation = spawnLocations[Math.floor(Math.random() * spawnLocations.length)];
+      this.spawnProjectile(randomLocation.x, randomLocation.y, randomLocation.dir);
     }
   }
 
@@ -322,6 +402,30 @@ export class Game {
     if (this.playerLives <= 0) {
       console.log("💀 Game Over!");
       this.respawnPlayer();
+    }
+  }
+
+  private handleProjectileCollisions(): void {
+    if (this.isPlayerInvulnerable) return;
+
+    const playerBounds = this.player.getBounds();
+
+    for (const projectile of this.projectiles) {
+      if (!projectile.isActive || !projectile.canDealDamage) continue;
+
+      const projectileBounds = projectile.getBounds();
+
+      // Vérifier collision joueur-projectile
+      if (this.aabbIntersect(playerBounds, projectileBounds)) {
+        // Le projectile touche le joueur
+        if (projectile.dealDamage()) {
+          console.log("🚀💔 Joueur touché par un projectile!");
+          this.playerTakesDamage();
+          
+          // Détruire le projectile après impact
+          projectile.destroy();
+        }
+      }
     }
   }
 
@@ -484,8 +588,9 @@ export class Game {
     this.isPlayerInvulnerable = false;
     this.invulnerabilityTime = 0;
 
-    // Réinitialiser les ennemis
+    // Réinitialiser les ennemis et projectiles
     this.resetEnemies();
+    this.resetProjectiles();
 
     this.camera.snapToPlayer(this.player);
     console.log("🔄 Joueur respawné au point de départ");
@@ -495,6 +600,21 @@ export class Game {
     // Recréer tous les ennemis
     this.createEnemies();
     console.log("👾 Ennemis réinitialisés");
+  }
+
+  private resetProjectiles(): void {
+    // Détruire tous les projectiles existants
+    for (const projectile of this.projectiles) {
+      projectile.destroy();
+    }
+    this.projectiles = [];
+    
+    // Réinitialiser le timer de spawn
+    this.projectileSpawnTimer = 0;
+    
+    // Recréer les projectiles initiaux
+    this.createProjectileSpawners();
+    console.log("🚀 Projectiles réinitialisés");
   }
 
   private render(): void {
@@ -517,6 +637,7 @@ export class Game {
     this.renderBackground();
     this.renderSpecialZones();
     this.renderPlatforms();
+    this.renderProjectiles();
     this.renderEnemies();
     this.renderPlayer();
 
@@ -535,6 +656,22 @@ export class Game {
       }
     } else {
       this.player.render(this.ctx);
+    }
+  }
+
+  private renderProjectiles(): void {
+    for (const projectile of this.projectiles) {
+      if (
+        projectile.isActive &&
+        this.camera.isVisible(
+          projectile.position.x,
+          projectile.position.y,
+          projectile.size.x,
+          projectile.size.y
+        )
+      ) {
+        projectile.render(this.ctx);
+      }
     }
   }
 
@@ -718,9 +855,10 @@ export class Game {
     const progressPercent =
       ((playerPos.x + this.player.size.x / 2) / this.levelWidth) * 100;
     const aliveEnemies = this.enemies.filter((e) => e.isAlive).length;
+    const activeProjectiles = this.projectiles.filter((p) => p.isActive).length;
 
     this.ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
-    this.ctx.fillRect(5, 5, 350, 180);
+    this.ctx.fillRect(5, 5, 350, 200);
 
     this.ctx.fillStyle = "white";
     this.ctx.font = "12px Arial";
@@ -772,6 +910,12 @@ export class Game {
       y
     );
     y += lineHeight;
+    this.ctx.fillText(
+      `Projectiles actifs: ${activeProjectiles}`,
+      10,
+      y
+    );
+    y += lineHeight;
     this.ctx.fillText(`Niveau: ${this.levelWidth}x${this.levelHeight}`, 10, y);
   }
 
@@ -786,9 +930,10 @@ export class Game {
       ((this.player.position.x + this.player.size.x / 2) / this.levelWidth) *
       100;
     const aliveEnemies = this.enemies.filter((e) => e.isAlive).length;
+    const activeProjectiles = this.projectiles.filter((p) => p.isActive).length;
 
     let y = 25;
-    this.ctx.fillText("Niveau avec Ennemis", GAME_CONFIG.CANVAS.WIDTH - 210, y);
+    this.ctx.fillText("Niveau avec Dangers", GAME_CONFIG.CANVAS.WIDTH - 210, y);
     y += 18;
     this.ctx.fillText(
       `Progression: ${progressPercent.toFixed(0)}%`,
@@ -803,7 +948,7 @@ export class Game {
     );
     y += 18;
     this.ctx.fillText(
-      `👾 Ennemis: ${aliveEnemies}`,
+      `👾 Ennemis: ${aliveEnemies} | 🚀 Projectiles: ${activeProjectiles}`,
       GAME_CONFIG.CANVAS.WIDTH - 210,
       y
     );
@@ -825,7 +970,7 @@ export class Game {
     y += lineHeight;
     this.ctx.fillText("💥 Sautez sur les ennemis pour les éliminer", 10, y);
     y += lineHeight;
-    this.ctx.fillText("⚠️ Évitez le contact latéral avec les ennemis", 10, y);
+    this.ctx.fillText("⚠️ Évitez ennemis et projectiles orange", 10, y);
     y += lineHeight;
     this.ctx.fillText("🎯 Objectif : Atteindre la zone dorée (arrivée)", 10, y);
   }
@@ -908,7 +1053,7 @@ export class Game {
       this.isRunning = true;
       this.gameLoop.start();
       console.log(
-        `🎮 Jeu démarré - Niveau avec ennemis ${this.levelWidth}x${this.levelHeight}`
+        `🎮 Jeu démarré - Niveau avec ennemis et projectiles ${this.levelWidth}x${this.levelHeight}`
       );
     }
   }
@@ -944,6 +1089,9 @@ export class Game {
   public getEnemies(): Enemy[] {
     return this.enemies;
   }
+  public getProjectiles(): Projectile[] {
+    return this.projectiles;
+  }
   public getIsRunning(): boolean {
     return this.isRunning;
   }
@@ -964,5 +1112,8 @@ export class Game {
   }
   public getAliveEnemiesCount(): number {
     return this.enemies.filter((e) => e.isAlive).length;
+  }
+  public getActiveProjectilesCount(): number {
+    return this.projectiles.filter((p) => p.isActive).length;
   }
 }

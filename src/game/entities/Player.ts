@@ -157,8 +157,14 @@ export class Player {
       // Au sol : arrêt immédiat comme avant
       this.velocity.x = 0;
     } else {
-      // En l'air : très légère décélération
-      this.velocity.x *= 0.998;
+      // En l'air : différencier saut vs chute
+      if (this.isJumping) {
+        // Saut volontaire : garder l'inertie
+        this.velocity.x *= 0.998;
+      } else {
+        // Chute depuis plateforme : décélération plus forte
+        this.velocity.x *= 0.95;
+      }
     }
   }
 
