@@ -64,9 +64,10 @@ export const GAME_CONFIG = {
 
   CAMERA: {
     FOLLOW_SMOOTHNESS: 0.3, // Entre 0 et 1
-    OFFSET_X: 400, // Décalage horizontal par rapport au joueur
-    OFFSET_Y: 200, // Décalage vertical par rapport au joueur
+    OFFSET_X: 600, // Décalage horizontal par rapport au joueur (centré)
+    OFFSET_Y: 300, // Décalage vertical par rapport au joueur (centré)
     BOUNDS_MARGIN: 50, // Marge pour les limites de la caméra
+    ZOOM: 1.8, // Facteur de zoom (1.0 = normal, >1.0 = zoomé)
   },
 
   LEVEL: {

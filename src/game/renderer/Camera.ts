@@ -15,6 +15,7 @@ export class Camera {
   private offsetX: number;
   private offsetY: number;
   private boundsMargin: number;
+  private zoom: number;
 
   constructor(
     viewportWidth: number,
@@ -32,6 +33,7 @@ export class Camera {
     this.offsetX = GAME_CONFIG.CAMERA.OFFSET_X;
     this.offsetY = GAME_CONFIG.CAMERA.OFFSET_Y;
     this.boundsMargin = GAME_CONFIG.CAMERA.BOUNDS_MARGIN;
+    this.zoom = GAME_CONFIG.CAMERA.ZOOM;
   }
 
   /**
@@ -52,13 +54,18 @@ export class Camera {
    * Calcule la position cible de la caméra basée sur la position du joueur
    */
   private calculateTargetPosition(player: Player): void {
-    // Centrer la caméra sur le joueur avec un décalage
+    // Centrer la caméra sur le joueur
     const playerCenterX = player.position.x + player.size.x / 2;
     const playerCenterY = player.position.y + player.size.y / 2;
 
-    // Position cible avec décalage
-    this.target.x = playerCenterX - this.offsetX;
-    this.target.y = playerCenterY - this.offsetY;
+    // Calculer la taille effective du viewport avec le zoom
+    const effectiveViewportWidth = this.viewportWidth / this.zoom;
+    const effectiveViewportHeight = this.viewportHeight / this.zoom;
+
+    // Position cible pour centrer le joueur dans la vue zoomée
+    this.target.x = playerCenterX - effectiveViewportWidth / 2;
+    this.target.y = playerCenterY - effectiveViewportHeight / 2;
+
 
     // Ajustement vertical dynamique basé sur la vélocité du joueur
     // Si le joueur tombe vite, anticiper légèrement vers le bas
@@ -86,17 +93,39 @@ export class Camera {
    * Contraint la caméra aux limites du niveau
    */
   private constrainToBounds(): void {
-    // Limites horizontales
-    const minX = -this.boundsMargin;
-    const maxX = this.levelWidth - this.viewportWidth + this.boundsMargin;
+    // Ajuster les limites en fonction du zoom
+    const effectiveViewportWidth = this.viewportWidth / this.zoom;
+    const effectiveViewportHeight = this.viewportHeight / this.zoom;
+    
+    // Si le viewport effectif est plus grand que le niveau, centrer le niveau
+    let minX, maxX, minY, maxY;
+    
+    if (effectiveViewportWidth >= this.levelWidth) {
+      // Centrer horizontalement si le viewport est plus large que le niveau
+      const offset = (effectiveViewportWidth - this.levelWidth) / 2;
+      minX = maxX = -offset;
+    } else {
+      // Contraintes normales si le niveau est plus large
+      minX = 0;
+      maxX = this.levelWidth - effectiveViewportWidth;
+    }
+    
+    if (effectiveViewportHeight >= this.levelHeight) {
+      // Centrer verticalement si le viewport est plus haut que le niveau
+      const offset = (effectiveViewportHeight - this.levelHeight) / 2;
+      minY = maxY = -offset;
+    } else {
+      // Contraintes normales si le niveau est plus haut
+      minY = 0;
+      maxY = this.levelHeight - effectiveViewportHeight;
+    }
 
+    const oldX = this.position.x;
     this.position.x = Math.max(minX, Math.min(maxX, this.position.x));
 
-    // Limites verticales
-    const minY = -this.boundsMargin;
-    const maxY = this.levelHeight - this.viewportHeight + this.boundsMargin;
-
+    const oldY = this.position.y;
     this.position.y = Math.max(minY, Math.min(maxY, this.position.y));
+
   }
 
   /**
@@ -137,7 +166,11 @@ export class Camera {
    */
   public applyTransform(ctx: CanvasRenderingContext2D): void {
     ctx.save();
+    
+    // Approche simple : scale puis translate
+    ctx.scale(this.zoom, this.zoom);
     ctx.translate(-this.position.x, -this.position.y);
+    
   }
 
   /**

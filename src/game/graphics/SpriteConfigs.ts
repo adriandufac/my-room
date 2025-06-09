@@ -122,6 +122,24 @@ export const SPRITE_CONFIGS: Record<string, SpriteConfig> = {
       },
     },
   },
+
+  // Configuration pour le background
+  background: {
+    imagePath: "/textures/sprites/background.png",
+    frameWidth: 600,
+    frameHeight: 600,
+    animations: {
+      default: {
+        name: "default",
+        frameCount: 1,
+        frameWidth: 600,
+        frameHeight: 600,
+        startFrame: 0,
+        duration: 1000,
+        loop: true,
+      },
+    },
+  },
 };
 
 // Fonction utilitaire pour obtenir une configuration

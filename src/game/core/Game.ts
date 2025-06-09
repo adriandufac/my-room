@@ -14,6 +14,8 @@ import { CollisionDetector } from "./CollisionDetector";
 import { GAME_CONFIG } from "../utils/Constants";
 import type { LevelData, PlatformData, EnemyData, ProjectileSpawnerData } from "../utils/Types";
 import { PlatformType } from "../utils/Types";
+import { SpriteLoader } from "../graphics/SpriteLoader";
+import { getSpriteConfig } from "../graphics/SpriteConfigs";
 
 export class Game {
   private canvas: HTMLCanvasElement;
@@ -47,6 +49,9 @@ export class Game {
 
   // Niveau personnalisé
   private customLevel: LevelData | null = null;
+
+  // Background sprite
+  private backgroundImage: HTMLImageElement | null = null;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -97,6 +102,9 @@ export class Game {
 
     // Centrer la caméra sur le joueur
     this.camera.snapToPlayer(this.player);
+
+    // Charger le background
+    this.loadBackground();
 
     console.log(
       `[GAME] Niveau étendu initialisé : ${this.levelWidth}x${this.levelHeight}`
@@ -758,16 +766,55 @@ export class Game {
   }
 
   private renderBackground(): void {
-    const gradient = this.ctx.createLinearGradient(0, 0, 0, this.levelHeight);
-    gradient.addColorStop(0, "#87CEEB");
-    gradient.addColorStop(0.7, "#98D8E8");
-    gradient.addColorStop(1, "#B0E0E6");
+    if (this.backgroundImage) {
+      // Utiliser createPattern pour une répétition parfaite
+      const pattern = this.ctx.createPattern(this.backgroundImage, 'repeat');
+      if (pattern) {
+        this.ctx.fillStyle = pattern;
+        this.ctx.fillRect(0, 0, this.levelWidth, this.levelHeight);
+      } else {
+        // Fallback si le pattern échoue
+        this.drawBackgroundTiles();
+      }
+    } else {
+      // Fallback au gradient si l'image n'est pas chargée
+      const gradient = this.ctx.createLinearGradient(0, 0, 0, this.levelHeight);
+      gradient.addColorStop(0, "#87CEEB");
+      gradient.addColorStop(0.7, "#98D8E8");
+      gradient.addColorStop(1, "#B0E0E6");
 
-    this.ctx.fillStyle = gradient;
-    this.ctx.fillRect(0, 0, this.levelWidth, this.levelHeight);
+      this.ctx.fillStyle = gradient;
+      this.ctx.fillRect(0, 0, this.levelWidth, this.levelHeight);
+    }
 
     if (GAME_CONFIG.DEBUG.SHOW_GRID) {
       this.renderDebugGrid();
+    }
+  }
+
+  private drawBackgroundTiles(): void {
+    // Méthode de fallback avec chevauchement d'1px pour éliminer les glitches
+    this.ctx.imageSmoothingEnabled = false;
+    
+    const tilesX = Math.ceil(this.levelWidth / 600);
+    const tilesY = Math.ceil(this.levelHeight / 600);
+
+    for (let x = 0; x < tilesX; x++) {
+      for (let y = 0; y < tilesY; y++) {
+        const posX = x * 600;
+        const posY = y * 600;
+        
+        // Ajouter 1px de chevauchement sauf pour la première tile
+        const overlap = x > 0 ? 1 : 0;
+        
+        this.ctx.drawImage(
+          this.backgroundImage!,
+          posX - overlap,
+          posY,
+          600 + overlap,
+          600
+        );
+      }
     }
   }
 
@@ -1111,6 +1158,16 @@ export class Game {
     );
 
     this.ctx.textAlign = "left";
+  }
+
+  private async loadBackground(): Promise<void> {
+    try {
+      const spriteLoader = SpriteLoader.getInstance();
+      this.backgroundImage = await spriteLoader.loadImage("/textures/sprites/background.png");
+      console.log("[GAME] Background chargé");
+    } catch (error) {
+      console.error("[ERROR] Erreur lors du chargement du background:", error);
+    }
   }
 
   // Méthodes publiques

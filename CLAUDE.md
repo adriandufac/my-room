@@ -6,14 +6,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 # Development
-npm run dev          # Start development server with hot reload
-npm run build        # Build for production (TypeScript compilation + Vite build)
+npm run dev          # NEVER USE - Start development server with hot reload
+npm run build        # NEVER USE - Build for production (TypeScript compilation + Vite build)
 npm run lint         # Run ESLint
 npm run preview      # Preview production build
 
 # TypeScript compilation happens during build
 tsc -b               # Manual TypeScript build (part of npm run build)
 ```
+
+**IMPORTANT: NEVER run `npm run dev` or `npm run build` on this project. These commands should not be executed.**
 
 ## Project Architecture
 
