@@ -91,9 +91,9 @@ export const GAME_CONFIG = {
   },
 
   DEBUG: {
-    SHOW_FPS: true,
+    SHOW_FPS: false,
     SHOW_PLAYER_CENTER: false,
-    SHOW_COLLISION_BOXES: true,
+    SHOW_COLLISION_BOXES: false,
     SHOW_VELOCITY_VECTORS: false,
     SHOW_GRID: false,
     SHOW_CAMERA_BOUNDS: false,

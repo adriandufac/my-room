@@ -1,0 +1,288 @@
+{
+  "id": "nouveau_niveau_1749499927127.json",
+  "name": "Nouveau Niveau",
+  "width": 2400,
+  "height": 600,
+  "playerStart": {
+    "x": 100,
+    "y": 500
+  },
+  "finishLine": {
+    "x": 2200,
+    "y": 0
+  },
+  "platforms": [
+    {
+      "id": "obj_1749499766564_2evbjrypv",
+      "position": {
+        "x": 20,
+        "y": 520
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "obj_1749499767654_wujzb4sjq",
+      "position": {
+        "x": 140,
+        "y": 520
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "obj_1749499769825_04uohinki",
+      "position": {
+        "x": 480,
+        "y": 520
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "obj_1749499805748_ld6dgrns1",
+      "position": {
+        "x": 600,
+        "y": 520
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "obj_1749499809047_7jkh8vdqi",
+      "position": {
+        "x": 720,
+        "y": 520
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "obj_1749499820725_ii6n7d1vr",
+      "position": {
+        "x": 920,
+        "y": 380
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "falling",
+      "color": "#FF6B4A"
+    },
+    {
+      "id": "obj_1749499824392_od9r1c1hc",
+      "position": {
+        "x": 1100,
+        "y": 460
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "obj_1749499835820_4cn8fnz3n",
+      "position": {
+        "x": 1440,
+        "y": 400
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "upping",
+      "color": "#4A90E2"
+    },
+    {
+      "id": "obj_1749499840397_jkfivkenf",
+      "position": {
+        "x": 1680,
+        "y": 480
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "obj_1749499841387_gikqvuefx",
+      "position": {
+        "x": 1800,
+        "y": 480
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "obj_1749499922854_54rcolfi1",
+      "position": {
+        "x": 1260,
+        "y": 500
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "falling",
+      "color": "#FF6B4A"
+    }
+  ],
+  "enemies": [
+    {
+      "id": "obj_1749499774864_stlpivvwc",
+      "position": {
+        "x": 560,
+        "y": 490
+      },
+      "size": {
+        "x": 30,
+        "y": 30
+      },
+      "type": "basic",
+      "color": "#FF5722",
+      "properties": {
+        "patrolDistance": 100,
+        "speed": 50,
+        "direction": 1
+      }
+    },
+    {
+      "id": "obj_1749499811556_nmq9qs02h",
+      "position": {
+        "x": 780,
+        "y": 490
+      },
+      "size": {
+        "x": 30,
+        "y": 30
+      },
+      "type": "basic",
+      "color": "#FF5722",
+      "properties": {
+        "patrolDistance": 100,
+        "speed": 50,
+        "direction": 1
+      }
+    },
+    {
+      "id": "obj_1749499830106_ehozz0gsg",
+      "position": {
+        "x": 1320,
+        "y": 470
+      },
+      "size": {
+        "x": 30,
+        "y": 30
+      },
+      "type": "basic",
+      "color": "#FF5722",
+      "properties": {
+        "patrolDistance": 100,
+        "speed": 50,
+        "direction": 1
+      }
+    },
+    {
+      "id": "obj_1749499846242_mwk2juumn",
+      "position": {
+        "x": 1700,
+        "y": 450
+      },
+      "size": {
+        "x": 30,
+        "y": 30
+      },
+      "type": "basic",
+      "color": "#FF5722",
+      "properties": {
+        "patrolDistance": 100,
+        "speed": 50,
+        "direction": 1
+      }
+    },
+    {
+      "id": "obj_1749499847416_1ssxwaol6",
+      "position": {
+        "x": 1860,
+        "y": 450
+      },
+      "size": {
+        "x": 30,
+        "y": 30
+      },
+      "type": "basic",
+      "color": "#FF5722",
+      "properties": {
+        "patrolDistance": 100,
+        "speed": 50,
+        "direction": 1
+      }
+    }
+  ],
+  "projectileSpawners": [
+    {
+      "id": "obj_1749499851727_b3mzxt3dn",
+      "position": {
+        "x": 1040,
+        "y": 100
+      },
+      "direction": -1,
+      "angle": -0.7504915783575616,
+      "interval": 3000,
+      "color": "#FF9800",
+      "properties": {
+        "speed": 250,
+        "autoFire": true,
+        "maxProjectiles": 3
+      }
+    },
+    {
+      "id": "obj_1749499870992_jyt2v3s38",
+      "position": {
+        "x": 2120,
+        "y": 400
+      },
+      "direction": -1,
+      "angle": 0,
+      "interval": 2500,
+      "color": "#FF9800",
+      "properties": {
+        "speed": 250,
+        "autoFire": true,
+        "maxProjectiles": 3
+      }
+    }
+  ],
+  "version": "1.0.0",
+  "created": "2025-06-09T20:09:22.662Z",
+  "modified": "2025-06-09T20:12:07.127Z"
+}

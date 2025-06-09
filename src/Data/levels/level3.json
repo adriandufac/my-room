@@ -1,0 +1,149 @@
+{
+  "id": "nouveau_niveau_1749499073271.json",
+  "name": "Nouveau Niveau",
+  "width": 2400,
+  "height": 600,
+  "playerStart": {
+    "x": 100,
+    "y": 500
+  },
+  "finishLine": {
+    "x": 2200,
+    "y": 0
+  },
+  "platforms": [
+    {
+      "id": "obj_1749498990094_2euka6hl8",
+      "position": {
+        "x": 80,
+        "y": 520
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "obj_1749498993818_r9if92yw5",
+      "position": {
+        "x": 400,
+        "y": 440
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "falling",
+      "color": "#FF6B4A"
+    },
+    {
+      "id": "obj_1749498995329_zhhxznubz",
+      "position": {
+        "x": 720,
+        "y": 380
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "falling",
+      "color": "#FF6B4A"
+    },
+    {
+      "id": "obj_1749498997929_rpnhw3fnp",
+      "position": {
+        "x": 1040,
+        "y": 320
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "falling",
+      "color": "#FF6B4A"
+    },
+    {
+      "id": "obj_1749499004713_rs5n6ojit",
+      "position": {
+        "x": 1340,
+        "y": 360
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "falling",
+      "color": "#FF6B4A"
+    },
+    {
+      "id": "obj_1749499006036_x9fy57goo",
+      "position": {
+        "x": 1640,
+        "y": 420
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "falling",
+      "color": "#FF6B4A"
+    },
+    {
+      "id": "obj_1749499010852_zqzzgpuww",
+      "position": {
+        "x": 2020,
+        "y": 460
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "falling",
+      "color": "#FF6B4A"
+    }
+  ],
+  "enemies": [
+    {
+      "id": "obj_1749499000609_4zm2ysjzr",
+      "position": {
+        "x": 1120,
+        "y": 290
+      },
+      "size": {
+        "x": 30,
+        "y": 30
+      },
+      "type": "basic",
+      "color": "#FF5722",
+      "properties": {
+        "patrolDistance": 100,
+        "speed": 50,
+        "direction": 1
+      }
+    },
+    {
+      "id": "obj_1749499008413_18xux0uqe",
+      "position": {
+        "x": 1720,
+        "y": 390
+      },
+      "size": {
+        "x": 30,
+        "y": 30
+      },
+      "type": "basic",
+      "color": "#FF5722",
+      "properties": {
+        "patrolDistance": 100,
+        "speed": 50,
+        "direction": 1
+      }
+    }
+  ],
+  "projectileSpawners": [],
+  "version": "1.0.0",
+  "created": "2025-06-09T19:56:27.497Z",
+  "modified": "2025-06-09T19:57:53.271Z"
+}

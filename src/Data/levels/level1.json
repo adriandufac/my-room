@@ -1,0 +1,203 @@
+{
+  "id": "nouveau_niveau_1749498314725.json",
+  "name": "Nouveau Niveau",
+  "width": 2400,
+  "height": 600,
+  "playerStart": {
+    "x": 100,
+    "y": 500
+  },
+  "finishLine": {
+    "x": 2200,
+    "y": 0
+  },
+  "platforms": [
+    {
+      "id": "obj_1749498229300_nqeakc8fb",
+      "position": {
+        "x": 20,
+        "y": 520
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "obj_1749498231064_8jp3d04h5",
+      "position": {
+        "x": 140,
+        "y": 520
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "obj_1749498232277_em3u0jx8b",
+      "position": {
+        "x": 260,
+        "y": 520
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "obj_1749498235621_jras72mlq",
+      "position": {
+        "x": 660,
+        "y": 520
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "obj_1749498239045_wdn2wnmgt",
+      "position": {
+        "x": 1180,
+        "y": 420
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "obj_1749498241314_zf42pvinu",
+      "position": {
+        "x": 1340,
+        "y": 480
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "obj_1749498242741_xie3enrjr",
+      "position": {
+        "x": 1460,
+        "y": 480
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "obj_1749498245167_kkuz8quih",
+      "position": {
+        "x": 1340,
+        "y": 500
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "obj_1749498246295_r2gvyffct",
+      "position": {
+        "x": 1460,
+        "y": 500
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "obj_1749498250982_omi04zva6",
+      "position": {
+        "x": 1820,
+        "y": 500
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "obj_1749498254615_otqmlpcm6",
+      "position": {
+        "x": 1820,
+        "y": 480
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "obj_1749498258125_qxjgqq7ia",
+      "position": {
+        "x": 2060,
+        "y": 500
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "obj_1749498258873_c4joyxgj4",
+      "position": {
+        "x": 2180,
+        "y": 500
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "obj_1749498296158_ybsp9175f",
+      "position": {
+        "x": 1040,
+        "y": 480
+      },
+      "size": {
+        "x": 120,
+        "y": 20
+      },
+      "type": "solid",
+      "color": "#4CAF50"
+    }
+  ],
+  "enemies": [],
+  "projectileSpawners": [],
+  "version": "1.0.0",
+  "created": "2025-06-09T19:43:32.479Z",
+  "modified": "2025-06-09T19:45:14.725Z"
+}

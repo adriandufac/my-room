@@ -17,6 +17,13 @@ import { PlatformType } from "../utils/Types";
 import { SpriteLoader } from "../graphics/SpriteLoader";
 import { getSpriteConfig } from "../graphics/SpriteConfigs";
 
+// Import statique des niveaux
+import level1 from "../../Data/levels/level1.json";
+import level2 from "../../Data/levels/level2.json";
+import level3 from "../../Data/levels/level3.json";
+import level4 from "../../Data/levels/level4.json";
+import level5 from "../../Data/levels/level5.json";
+
 export class Game {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
@@ -47,8 +54,18 @@ export class Game {
   private finishZone = { x: 2200, y: 0, width: 200, height: 600 };
   private levelCompleted: boolean = false;
 
+  // Système de transition entre niveaux
+  private isTransitioning: boolean = false;
+  private transitionStartTime: number = 0;
+  private readonly TRANSITION_DURATION: number = 1500; // 1.5 secondes
+  private transitionPhase: 'freeze' | 'pixelate' | 'complete' = 'freeze';
+
   // Niveau personnalisé
   private customLevel: LevelData | null = null;
+  
+  // Système de progression des niveaux
+  private currentLevelIndex: number = 0;
+  private levels: LevelData[] = [level1, level2, level3, level4, level5];
 
   // Background sprite
   private backgroundImage: HTMLImageElement | null = null;
@@ -85,26 +102,18 @@ export class Game {
       this.levelHeight
     );
 
-    // Créer le joueur
-    this.player = new Player(
-      GAME_CONFIG.PLAYER.STARTING_X,
-      GAME_CONFIG.PLAYER.STARTING_Y
-    );
-
-    // Créer le niveau étendu avec ennemis et projectiles
-    this.createExtendedLevel();
-    this.createEnemies();
-    this.createProjectileSpawners();
+    // Créer le joueur (position temporaire)
+    this.player = new Player(100, 500);
 
     // Initialiser la boucle de jeu
     this.gameLoop = new GameLoop();
     this.setupGameLoop();
 
-    // Centrer la caméra sur le joueur
-    this.camera.snapToPlayer(this.player);
-
     // Charger le background
     this.loadBackground();
+
+    // Charger le premier niveau immédiatement
+    this.initializeFirstLevel();
 
     console.log(
       `[GAME] Niveau étendu initialisé : ${this.levelWidth}x${this.levelHeight}`
@@ -238,6 +247,12 @@ export class Game {
   }
 
   private update(deltaTime: number): void {
+    // Si on est en transition, on freeze le gameplay
+    if (this.isTransitioning) {
+      this.updateTransition(deltaTime);
+      return;
+    }
+
     // Traiter les inputs
     this.handleInput();
 
@@ -301,6 +316,9 @@ export class Game {
 
       // Gérer les collisions ennemi-plateforme
       this.handleEnemyPlatformCollisions(enemy);
+
+      // Vérifier si l'ennemi est sorti du niveau
+      this.checkEnemyBounds(enemy);
     }
   }
 
@@ -625,10 +643,14 @@ export class Game {
       playerX <= this.finishZone.x + this.finishZone.width &&
       playerY >= this.finishZone.y &&
       playerY <= this.finishZone.y + this.finishZone.height &&
-      !this.levelCompleted
+      !this.levelCompleted &&
+      !this.isTransitioning
     ) {
       this.levelCompleted = true;
-      console.log("[SUCCESS] NIVEAU TERMINÉ ! Félicitations !");
+      console.log(`[SUCCESS] NIVEAU ${this.currentLevelIndex + 1} TERMINÉ !`);
+      
+      // Démarrer la transition
+      this.startTransition();
     }
   }
 
@@ -652,12 +674,67 @@ export class Game {
     this.isPlayerInvulnerable = false;
     this.invulnerabilityTime = 0;
 
-    // Réinitialiser les ennemis et projectiles
+    // Réinitialiser les ennemis, projectiles et plateformes
     this.resetEnemies();
     this.resetProjectiles();
+    this.resetPlatforms();
 
     this.camera.snapToPlayer(this.player);
     console.log("[GAME] Joueur respawné au point de départ");
+  }
+
+  private startTransition(): void {
+    this.isTransitioning = true;
+    this.transitionStartTime = Date.now();
+    this.transitionPhase = 'freeze';
+    
+    // Arrêter le joueur
+    this.player.velocity.x = 0;
+    this.player.velocity.y = 0;
+    
+    console.log("[TRANSITION] Démarrage de la transition");
+  }
+
+  private updateTransition(deltaTime: number): void {
+    const elapsed = Date.now() - this.transitionStartTime;
+    const progress = elapsed / this.TRANSITION_DURATION;
+
+    if (progress >= 1) {
+      // Transition terminée
+      this.isTransitioning = false;
+      this.transitionPhase = 'complete';
+      console.log("[TRANSITION] Transition terminée");
+      return;
+    }
+
+    // Phase 1: Freeze (0 à 0.2)
+    if (progress < 0.2) {
+      this.transitionPhase = 'freeze';
+    }
+    // Phase 2: Pixelate (0.2 à 1.0)
+    else {
+      this.transitionPhase = 'pixelate';
+      
+      // À mi-transition, charger le niveau suivant
+      if (progress >= 0.5 && this.levelCompleted) {
+        this.nextLevel();
+        this.levelCompleted = false;
+      }
+    }
+  }
+
+  private checkEnemyBounds(enemy: any): void {
+    // Si l'ennemi tombe dans le vide (bas)
+    if (enemy.position.y > this.levelHeight + 100) {
+      console.log(`[GAME] Ennemi ${enemy.id} tombé dans le vide`);
+      enemy.eliminate();
+    }
+    
+    // Si l'ennemi sort par le haut
+    if (enemy.position.y + enemy.size.y < -100) {
+      console.log(`[GAME] Ennemi ${enemy.id} sorti par le haut`);
+      enemy.eliminate();
+    }
   }
 
   private resetEnemies(): void {
@@ -691,6 +768,52 @@ export class Game {
     }
   }
 
+  private initializeFirstLevel(): void {
+    console.log("[GAME] Initialisation du premier niveau...");
+    this.loadCurrentLevel();
+    
+    // Centrer la caméra sur le joueur après le chargement
+    this.camera.snapToPlayer(this.player);
+  }
+
+  private loadCurrentLevel(): void {
+    try {
+      if (this.currentLevelIndex < this.levels.length) {
+        const levelData = this.levels[this.currentLevelIndex];
+        console.log(`[GAME] Chargement du niveau ${this.currentLevelIndex + 1}: ${levelData.name || 'Sans nom'}`);
+        
+        this.loadCustomLevel(levelData);
+        console.log(`[GAME] Niveau ${this.currentLevelIndex + 1} chargé avec succès`);
+      } else {
+        console.log("[GAME] Tous les niveaux terminés ! Félicitations !");
+        // Retour au premier niveau
+        this.currentLevelIndex = 0;
+        this.loadCurrentLevel();
+      }
+    } catch (error) {
+      console.error(`[ERROR] Erreur lors du chargement du niveau ${this.currentLevelIndex + 1}:`, error);
+      alert(`Erreur lors du chargement du niveau ${this.currentLevelIndex + 1}`);
+    }
+  }
+
+  private nextLevel(): void {
+    this.currentLevelIndex++;
+    this.levelCompleted = false;
+    console.log(`[GAME] Passage au niveau ${this.currentLevelIndex + 1}`);
+    this.loadCurrentLevel();
+  }
+
+  private resetPlatforms(): void {
+    // Recréer les plateformes selon le niveau actuel
+    if (this.customLevel) {
+      this.loadPlatformsFromLevel(this.customLevel.platforms);
+      console.log("[GAME] Plateformes du niveau personnalisé réinitialisées");
+    } else {
+      this.createExtendedLevel();
+      console.log("[GAME] Plateformes du niveau par défaut réinitialisées");
+    }
+  }
+
   private render(): void {
     this.renderer.clear();
 
@@ -705,6 +828,11 @@ export class Game {
 
     // Dessiner l'UI
     this.renderUI();
+
+    // Dessiner l'effet de transition par-dessus tout
+    if (this.isTransitioning) {
+      this.renderTransition();
+    }
   }
 
   private renderWorld(): void {
@@ -947,18 +1075,18 @@ export class Game {
   private renderUI(): void {
     if (GAME_CONFIG.DEBUG.SHOW_FPS) {
       this.renderDebugInfo();
+      this.renderGameInfo();
+      this.renderInstructions();
     }
-
-    this.renderGameInfo();
-    this.renderInstructions();
 
     if (this.isPaused) {
       this.renderPauseScreen();
     }
 
-    if (this.levelCompleted) {
-      this.renderVictoryOverlay();
-    }
+    // L'écran de victoire est maintenant géré par les transitions
+    // if (this.levelCompleted) {
+    //   this.renderVictoryOverlay();
+    // }
   }
 
   private renderDebugInfo(): void {
@@ -1029,7 +1157,7 @@ export class Game {
       y
     );
     y += lineHeight;
-    this.ctx.fillText(`Niveau: ${this.levelWidth}x${this.levelHeight}`, 10, y);
+    this.ctx.fillText(`Niveau: ${this.currentLevelIndex + 1}/${this.levels.length} (${this.levelWidth}x${this.levelHeight})`, 10, y);
   }
 
   private renderGameInfo(): void {
@@ -1160,6 +1288,60 @@ export class Game {
     this.ctx.textAlign = "left";
   }
 
+  private renderTransition(): void {
+    const elapsed = Date.now() - this.transitionStartTime;
+    const progress = elapsed / this.TRANSITION_DURATION;
+
+    if (this.transitionPhase === 'freeze') {
+      // Phase freeze : écran légèrement assombri
+      this.ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+      this.ctx.fillRect(0, 0, GAME_CONFIG.CANVAS.WIDTH, GAME_CONFIG.CANVAS.HEIGHT);
+      
+      // Texte "NIVEAU TERMINÉ"
+      this.ctx.fillStyle = "#000";
+      this.ctx.font = "bold 32px Arial";
+      this.ctx.textAlign = "center";
+      this.ctx.fillText(
+        `NIVEAU ${this.currentLevelIndex + 1} TERMINÉ!`,
+        GAME_CONFIG.CANVAS.WIDTH / 2,
+        GAME_CONFIG.CANVAS.HEIGHT / 2
+      );
+      this.ctx.textAlign = "left";
+    } 
+    else if (this.transitionPhase === 'pixelate') {
+      // Phase pixelate : effet de pixelisation progressive
+      const pixelProgress = (progress - 0.2) / 0.8; // Normaliser de 0.2-1.0 vers 0-1
+      const maxPixelSize = 32;
+      const pixelSize = Math.floor(maxPixelSize * pixelProgress);
+      
+      if (pixelSize > 0) {
+        // Créer un effet de pixelisation en dessinant des carrés
+        this.ctx.fillStyle = `rgba(0, 0, 0, ${pixelProgress * 0.8})`;
+        
+        for (let x = 0; x < GAME_CONFIG.CANVAS.WIDTH; x += pixelSize * 2) {
+          for (let y = 0; y < GAME_CONFIG.CANVAS.HEIGHT; y += pixelSize * 2) {
+            if (Math.random() < pixelProgress) {
+              this.ctx.fillRect(x, y, pixelSize, pixelSize);
+            }
+          }
+        }
+      }
+      
+      // Texte du prochain niveau au milieu de la transition
+      if (pixelProgress > 0.5) {
+        this.ctx.fillStyle = "#FFF";
+        this.ctx.font = "bold 28px Arial";
+        this.ctx.textAlign = "center";
+        this.ctx.fillText(
+          `NIVEAU ${this.currentLevelIndex + 1}`,
+          GAME_CONFIG.CANVAS.WIDTH / 2,
+          GAME_CONFIG.CANVAS.HEIGHT / 2
+        );
+        this.ctx.textAlign = "left";
+      }
+    }
+  }
+
   private async loadBackground(): Promise<void> {
     try {
       const spriteLoader = SpriteLoader.getInstance();
@@ -1264,11 +1446,15 @@ export class Game {
       height: levelData.height 
     };
     
-    // Repositionner le joueur au point de spawn
-    this.player.position.x = levelData.playerStart.x;
-    this.player.position.y = levelData.playerStart.y;
+    // Repositionner le joueur au point de spawn (arrondir pour éviter les sub-pixels)
+    this.player.position.x = Math.round(levelData.playerStart.x);
+    this.player.position.y = Math.round(levelData.playerStart.y);
     this.player.velocity.x = 0;
     this.player.velocity.y = 0;
+    
+    // Forcer l'état au sol pour éviter que le joueur tombe dans une plateforme
+    this.player.isOnGround = false;
+    this.player.isJumping = false;
     
     // Charger les plateformes depuis le niveau
     this.loadPlatformsFromLevel(levelData.platforms);
@@ -1278,6 +1464,9 @@ export class Game {
     
     // Charger les spawners de projectiles depuis le niveau
     this.loadProjectileSpawnersFromLevel(levelData.projectileSpawners);
+    
+    // Forcer une vérification des collisions pour bien positionner le joueur
+    CollisionDetector.resolveCollisionsSeparated(this.player, this.platforms);
     
     // Mettre à jour la caméra
     this.camera.updateLevelBounds(this.levelWidth, this.levelHeight);

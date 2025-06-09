@@ -280,14 +280,14 @@ export class CollisionDetector {
         if (minOverlapY <= minOverlapX && minOverlapY > 0.1) {
           // Déterminer le côté de collision
           if (overlapTop < overlapBottom) {
-            // Atterrissage sur la plateforme
-            player.position.y = platformBounds.y - player.size.y;
+            // Atterrissage sur la plateforme - utiliser Math.floor pour éviter les gaps
+            player.position.y = Math.floor(platformBounds.y - player.size.y);
             player.velocity.y = 0;
             player.isOnGround = true;
             player.isJumping = false;
           } else {
             // Coup de tête contre la plateforme
-            player.position.y = platformBounds.y + platformBounds.height;
+            player.position.y = Math.ceil(platformBounds.y + platformBounds.height);
             player.velocity.y = 0;
           }
           break; // Traiter une seule collision à la fois

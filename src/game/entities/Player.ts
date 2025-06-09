@@ -63,9 +63,13 @@ export class Player {
       this.velocity.y = GAME_CONFIG.PHYSICS.MAX_FALL_SPEED;
     }
 
-    // Mettre à jour la position
+    // Mettre à jour la position et l'arrondir pour éviter les sub-pixels
     this.position.x += this.velocity.x * deltaTime;
     this.position.y += this.velocity.y * deltaTime;
+    
+    // Arrondir la position pour éviter les décalages sub-pixel
+    this.position.x = Math.round(this.position.x);
+    this.position.y = Math.round(this.position.y);
 
     // Appliquer la friction selon l'état
     if (this.isOnGround) {
@@ -224,8 +228,8 @@ export class Player {
         ctx.scale(-1, 1);
         this.spriteManager.render(
           ctx,
-          -(this.position.x + this.size.x), // Inverser X pour le flip
-          this.position.y,
+          -(Math.round(this.position.x) + this.size.x), // Inverser X pour le flip
+          Math.round(this.position.y),
           this.size.x,
           this.size.y
         );
@@ -233,8 +237,8 @@ export class Player {
       } else {
         this.spriteManager.render(
           ctx,
-          this.position.x,
-          this.position.y,
+          Math.round(this.position.x),
+          Math.round(this.position.y),
           this.size.x,
           this.size.y
         );
@@ -257,8 +261,8 @@ export class Player {
       );
     }
 
-    // Indicateur d'état au sol
-    if (this.isOnGround) {
+    // Indicateur d'état au sol (debug seulement)
+    if (this.isOnGround && GAME_CONFIG.DEBUG.SHOW_PLAYER_CENTER) {
       ctx.fillStyle = "green";
       ctx.fillRect(
         this.position.x + 2,
@@ -268,8 +272,8 @@ export class Player {
       );
     }
 
-    // Indicateur de direction de saut
-    if (this.isJumping && this.jumpDirection !== 0) {
+    // Indicateur de direction de saut (debug seulement)
+    if (this.isJumping && this.jumpDirection !== 0 && GAME_CONFIG.DEBUG.SHOW_VELOCITY_VECTORS) {
       ctx.fillStyle = "white";
       const arrowX =
         this.position.x + (this.jumpDirection > 0 ? this.size.x - 8 : 4);
