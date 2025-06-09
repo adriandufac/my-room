@@ -43,8 +43,8 @@ export const GAME_CONFIG = {
 
   ENEMIES: {
     COLOR: "#FF6600", // Orange-rouge
-    WIDTH: 24,
-    HEIGHT: 24,
+    WIDTH: 38, // 191px / 5 = ~38px (taille raisonnable)
+    HEIGHT: 39, // 197px / 5 = ~39px 
     SPEED: 100,
     PATROL_DISTANCE: 150,
   },
@@ -92,7 +92,7 @@ export const GAME_CONFIG = {
   DEBUG: {
     SHOW_FPS: true,
     SHOW_PLAYER_CENTER: false,
-    SHOW_COLLISION_BOXES: false,
+    SHOW_COLLISION_BOXES: true,
     SHOW_VELOCITY_VECTORS: false,
     SHOW_GRID: false,
     SHOW_CAMERA_BOUNDS: false,

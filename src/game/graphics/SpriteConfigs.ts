@@ -69,28 +69,19 @@ export const SPRITE_CONFIGS: Record<string, SpriteConfig> = {
     },
   },
 
-  // Configuration pour les ennemis (à adapter selon vos sprites)
+  // Configuration pour les ennemis
   enemy: {
-    imagePath: "/textures/sprites/enemy_spritesheet.png",
-    frameWidth: 24,
-    frameHeight: 24,
+    imagePath: "/textures/sprites/ennemie.png",
+    frameWidth: 191, // 383px / 2 frames = 191.5px par frame (arrondi à 191)
+    frameHeight: 197,
     animations: {
-      idle: {
-        name: "idle",
-        frameCount: 1,
-        frameWidth: 24,
-        frameHeight: 24,
-        startFrame: 0,
-        duration: 1000,
-        loop: true,
-      },
       walk: {
         name: "walk",
-        frameCount: 4,
-        frameWidth: 24,
-        frameHeight: 24,
+        frameCount: 2,
+        frameWidth: 191,
+        frameHeight: 197,
         startFrame: 0,
-        duration: 800,
+        duration: 800, // 800ms pour 2 frames = 400ms par frame
         loop: true,
       },
     },
@@ -118,6 +109,24 @@ export const SPRITE_CONFIGS: Record<string, SpriteConfig> = {
         frameHeight: 8,
         startFrame: 0,
         duration: 400,
+        loop: true,
+      },
+    },
+  },
+
+  // Configuration pour les plateformes
+  platform: {
+    imagePath: "/textures/sprites/platform.png",
+    frameWidth: 200,
+    frameHeight: 20,
+    animations: {
+      default: {
+        name: "default",
+        frameCount: 1,
+        frameWidth: 200,
+        frameHeight: 20,
+        startFrame: 0,
+        duration: 1000,
         loop: true,
       },
     },

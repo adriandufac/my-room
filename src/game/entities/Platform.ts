@@ -8,6 +8,9 @@ export class Platform {
   public size: Vector2D;
   public color: string;
   public id: string;
+  private spriteImage: HTMLImageElement | null = null;
+  private spriteLoaded: boolean = false;
+  private useSprite: boolean = true;
 
   constructor(
     x: number,
@@ -21,6 +24,18 @@ export class Platform {
     this.id = `platform_${Date.now()}_${Math.random()
       .toString(36)
       .substr(2, 9)}`;
+
+    // Load sprite image directly
+    this.spriteImage = new Image();
+    this.spriteImage.onload = () => {
+      this.spriteLoaded = true;
+      console.log("[PLATFORM] Sprite image loaded successfully");
+    };
+    this.spriteImage.onerror = () => {
+      console.warn("[PLATFORM] Failed to load sprite, using fallback rendering");
+      this.useSprite = false;
+    };
+    this.spriteImage.src = "/textures/sprites/platform.png";
   }
 
   public update(deltaTime: number): void {
@@ -29,24 +44,35 @@ export class Platform {
   }
 
   public render(ctx: CanvasRenderingContext2D): void {
-    // Rendu de base de la plateforme
-    ctx.fillStyle = this.color;
-    ctx.fillRect(
-      Math.round(this.position.x),
-      Math.round(this.position.y),
-      this.size.x,
-      this.size.y
-    );
+    if (this.useSprite && this.spriteLoaded && this.spriteImage) {
+      // Render sprite stretched to fit platform size
+      ctx.drawImage(
+        this.spriteImage,
+        Math.round(this.position.x),
+        Math.round(this.position.y),
+        this.size.x,
+        this.size.y
+      );
+    } else {
+      // Fallback: render as colored rectangle
+      ctx.fillStyle = this.color;
+      ctx.fillRect(
+        Math.round(this.position.x),
+        Math.round(this.position.y),
+        this.size.x,
+        this.size.y
+      );
 
-    // Bordure pour plus de visibilité
-    ctx.strokeStyle = "#654321"; // Marron plus foncé
-    ctx.lineWidth = 2;
-    ctx.strokeRect(
-      Math.round(this.position.x),
-      Math.round(this.position.y),
-      this.size.x,
-      this.size.y
-    );
+      // Bordure pour plus de visibilité
+      ctx.strokeStyle = "#654321"; // Marron plus foncé
+      ctx.lineWidth = 2;
+      ctx.strokeRect(
+        Math.round(this.position.x),
+        Math.round(this.position.y),
+        this.size.x,
+        this.size.y
+      );
+    }
 
     // Debug : afficher la boîte de collision
     if (GAME_CONFIG.DEBUG.SHOW_COLLISION_BOXES) {
@@ -92,5 +118,16 @@ export class Platform {
       y >= this.position.y &&
       y <= this.position.y + this.size.y
     );
+  }
+
+  public dispose(): void {
+    if (this.spriteImage) {
+      this.spriteImage.src = "";
+      this.spriteImage = null;
+    }
+  }
+
+  public isUsingSprite(): boolean {
+    return this.useSprite && this.spriteLoaded && this.spriteImage !== null;
   }
 }

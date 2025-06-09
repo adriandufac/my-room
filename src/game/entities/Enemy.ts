@@ -2,6 +2,8 @@
 
 import { Vector2D } from "../physics/Vector2D";
 import { GAME_CONFIG } from "../utils/Constants";
+import { SpriteRenderer } from "../graphics/SpriteRenderer";
+import { getSpriteConfig } from "../graphics/SpriteConfigs";
 
 export class Enemy {
   public position: Vector2D;
@@ -19,6 +21,10 @@ export class Enemy {
   // Propriétés de gameplay
   public isAlive: boolean = true;
   public canBeEliminated: boolean = true;
+
+  // Sprite rendering
+  private spriteRenderer: SpriteRenderer | null = null;
+  private useSprite: boolean = true;
 
   constructor(
     x: number,
@@ -39,13 +45,37 @@ export class Enemy {
     this.patrolStartX = x - patrolDistance / 2;
     this.patrolEndX = x + patrolDistance / 2;
 
+    // Initialize sprite renderer
+    const spriteConfig = getSpriteConfig("enemy");
+    if (spriteConfig) {
+      console.log("[ENEMY] Found sprite config:", spriteConfig);
+      this.spriteRenderer = new SpriteRenderer(spriteConfig);
+      this.spriteRenderer.setAnimation("walk");
+      console.log("[ENEMY] Sprite renderer initialized, animation set to 'walk'");
+      
+      // Add a temporary image to check dimensions
+      const tempImg = new Image();
+      tempImg.onload = () => {
+        console.log(`[ENEMY] ennemie.png natural size: ${tempImg.naturalWidth}x${tempImg.naturalHeight}`);
+      };
+      tempImg.src = "/textures/sprites/ennemie.png";
+    } else {
+      console.warn("[ENEMY] No sprite config found, using fallback rendering");
+      this.useSprite = false;
+    }
+
     console.log(
-      `🤖 Ennemi créé à (${x}, ${y}) - Patrouille: ${this.patrolStartX} à ${this.patrolEndX}`
+      `[ENEMY] Created at (${x}, ${y}) - Patrol: ${this.patrolStartX} to ${this.patrolEndX}`
     );
   }
 
   public update(deltaTime: number): void {
     if (!this.isAlive) return;
+
+    // Update sprite animation
+    if (this.spriteRenderer) {
+      this.spriteRenderer.update(deltaTime);
+    }
 
     // Appliquer la gravité
     this.velocity.y += GAME_CONFIG.PHYSICS.GRAVITY * deltaTime;
@@ -114,56 +144,55 @@ export class Enemy {
   public render(ctx: CanvasRenderingContext2D): void {
     if (!this.isAlive) return;
 
-    // Corps principal de l'ennemi
-    ctx.fillStyle = this.color;
-    ctx.fillRect(
-      Math.round(this.position.x),
-      Math.round(this.position.y),
-      this.size.x,
-      this.size.y
-    );
+    console.log(`[ENEMY] Render - useSprite: ${this.useSprite}, spriteRenderer: ${!!this.spriteRenderer}, loaded: ${this.spriteRenderer?.isLoaded()}, animation: ${this.spriteRenderer?.getCurrentAnimation()}`);
 
-    // Bordure plus foncée
-    ctx.strokeStyle = "#CC4400";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(
-      Math.round(this.position.x),
-      Math.round(this.position.y),
-      this.size.x,
-      this.size.y
-    );
-
-    // Yeux simples pour indiquer la direction
-    ctx.fillStyle = "white";
-    const eyeSize = 4;
-    const eyeY = this.position.y + 6;
-
-    if (this.direction > 0) {
-      // Regarde vers la droite
-      ctx.fillRect(this.position.x + this.size.x - 10, eyeY, eyeSize, eyeSize);
+    if (this.useSprite && this.spriteRenderer && this.spriteRenderer.isLoaded() && this.spriteRenderer.getCurrentAnimation()) {
+      // Handle sprite flipping based on direction
+      if (this.direction < 0) {
+        // Flip horizontally for left movement
+        ctx.save();
+        ctx.scale(-1, 1);
+        this.spriteRenderer.render(
+          ctx,
+          -(this.position.x + this.size.x), // Adjusted X for flip
+          this.position.y,
+          this.size.x,
+          this.size.y
+        );
+        ctx.restore();
+      } else {
+        // Normal rendering for right movement
+        this.spriteRenderer.render(
+          ctx,
+          this.position.x,
+          this.position.y,
+          this.size.x,
+          this.size.y
+        );
+      }
+    } else {
+      // Fallback: render as colored rectangle
+      console.log(`[ENEMY] Rendering fallback rectangle`);
+      ctx.fillStyle = this.color;
       ctx.fillRect(
-        this.position.x + this.size.x - 10,
-        eyeY + 8,
-        eyeSize,
-        eyeSize
+        Math.round(this.position.x),
+        Math.round(this.position.y),
+        this.size.x,
+        this.size.y
       );
-    } else {
-      // Regarde vers la gauche
-      ctx.fillRect(this.position.x + 4, eyeY, eyeSize, eyeSize);
-      ctx.fillRect(this.position.x + 4, eyeY + 8, eyeSize, eyeSize);
+
+      // Bordure plus foncée
+      ctx.strokeStyle = "#CC4400";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(
+        Math.round(this.position.x),
+        Math.round(this.position.y),
+        this.size.x,
+        this.size.y
+      );
     }
 
-    // Pupilles noires
-    ctx.fillStyle = "black";
-    if (this.direction > 0) {
-      ctx.fillRect(this.position.x + this.size.x - 8, eyeY + 1, 2, 2);
-      ctx.fillRect(this.position.x + this.size.x - 8, eyeY + 9, 2, 2);
-    } else {
-      ctx.fillRect(this.position.x + 6, eyeY + 1, 2, 2);
-      ctx.fillRect(this.position.x + 6, eyeY + 9, 2, 2);
-    }
-
-    // Debug : afficher la zone de patrouille
+    // Debug : afficher la zone de patrouille et hitbox
     if (GAME_CONFIG.DEBUG.SHOW_COLLISION_BOXES) {
       ctx.strokeStyle = "orange";
       ctx.lineWidth = 1;
@@ -282,5 +311,16 @@ export class Enemy {
     )}, ${Math.round(this.position.y)}) - Dir: ${
       this.direction > 0 ? "RIGHT" : "LEFT"
     } - Alive: ${this.isAlive}`;
+  }
+
+  public dispose(): void {
+    if (this.spriteRenderer) {
+      this.spriteRenderer.dispose();
+      this.spriteRenderer = null;
+    }
+  }
+
+  public isUsingSprite(): boolean {
+    return this.useSprite && this.spriteRenderer !== null && this.spriteRenderer.isLoaded();
   }
 }
