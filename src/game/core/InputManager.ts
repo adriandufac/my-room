@@ -6,9 +6,22 @@ export class InputManager {
   private keysReleased: Set<string> = new Set(); // Touches relâchées cette frame
   private previousKeys: Set<string> = new Set(); // État des touches la frame précédente
   private canvas: HTMLCanvasElement;
+  
+  // Références aux event listeners pour pouvoir les supprimer
+  private boundKeyDown: (event: KeyboardEvent) => void;
+  private boundKeyUp: (event: KeyboardEvent) => void;
+  private boundPreventDefault: (event: KeyboardEvent) => void;
+  private boundCanvasClick: () => void;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
+    
+    // Créer les références aux event listeners
+    this.boundKeyDown = this.handleKeyDown.bind(this);
+    this.boundKeyUp = this.handleKeyUp.bind(this);
+    this.boundPreventDefault = this.handlePreventDefault.bind(this);
+    this.boundCanvasClick = this.handleCanvasClick.bind(this);
+    
     this.setupEventListeners();
 
     // S'assurer que le canvas peut recevoir le focus
@@ -18,25 +31,29 @@ export class InputManager {
 
   private setupEventListeners(): void {
     // Écouter les événements sur le document pour capturer toutes les touches
-    document.addEventListener("keydown", this.handleKeyDown.bind(this));
-    document.addEventListener("keyup", this.handleKeyUp.bind(this));
+    document.addEventListener("keydown", this.boundKeyDown);
+    document.addEventListener("keyup", this.boundKeyUp);
 
     // Écouter le clic sur le canvas pour lui donner le focus
-    this.canvas.addEventListener("click", () => {
-      this.canvas.focus();
-    });
+    this.canvas.addEventListener("click", this.boundCanvasClick);
 
     // Prévenir le comportement par défaut pour certaines touches
-    document.addEventListener("keydown", (event) => {
-      // Empêcher le scroll avec les flèches et la barre d'espace
-      if (
-        ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "F1"].includes(
-          event.key
-        )
-      ) {
-        event.preventDefault();
-      }
-    });
+    document.addEventListener("keydown", this.boundPreventDefault);
+  }
+
+  private handleCanvasClick(): void {
+    this.canvas.focus();
+  }
+
+  private handlePreventDefault(event: KeyboardEvent): void {
+    // Empêcher le scroll avec les flèches et la barre d'espace
+    if (
+      ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "F1"].includes(
+        event.key
+      )
+    ) {
+      event.preventDefault();
+    }
   }
 
   private handleKeyDown(event: KeyboardEvent): void {
@@ -156,8 +173,19 @@ export class InputManager {
 
   // Nettoyer les event listeners
   public destroy(): void {
-    document.removeEventListener("keydown", this.handleKeyDown.bind(this));
-    document.removeEventListener("keyup", this.handleKeyUp.bind(this));
+    console.log('[INPUT] Cleaning up event listeners');
+    document.removeEventListener("keydown", this.boundKeyDown);
+    document.removeEventListener("keyup", this.boundKeyUp);
+    document.removeEventListener("keydown", this.boundPreventDefault);
+    this.canvas.removeEventListener("click", this.boundCanvasClick);
+    
+    // Nettoyer les sets
+    this.keys.clear();
+    this.keysPressed.clear();
+    this.keysReleased.clear();
+    this.previousKeys.clear();
+    
+    console.log('[INPUT] InputManager destroyed');
   }
 
   // Debug : obtenir toutes les touches pressées

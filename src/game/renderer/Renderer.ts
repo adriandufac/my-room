@@ -123,6 +123,15 @@ export class Renderer {
     return this.canvas;
   }
 
+  // Méthode pour mettre à jour la taille du canvas
+  public updateCanvasSize(width: number, height: number): void {
+    this.canvas.width = width;
+    this.canvas.height = height;
+    
+    // Reconfigurer le canvas après le redimensionnement
+    this.setupCanvas();
+  }
+
   // Méthodes pour les debug visuals
   public drawDebugGrid(gridSize: number = 32, color: string = "#ddd"): void {
     this.ctx.strokeStyle = color;

@@ -1798,4 +1798,60 @@ export class Game {
 
     console.log(`[SUCCESS] Niveau par défaut restauré`);
   }
+
+  // Méthodes de nettoyage
+  public stop(): void {
+    console.log('[GAME] Arrêt du jeu...');
+    this.isRunning = false;
+    if (this.gameLoop) {
+      this.gameLoop.stop();
+    }
+  }
+
+  public destroy(): void {
+    console.log('[GAME] Destruction du jeu...');
+    this.stop();
+    
+    // Nettoyer les entités
+    this.enemies.forEach(enemy => enemy.eliminate());
+    this.enemies = [];
+    
+    this.projectiles.forEach(projectile => projectile.destroy());
+    this.projectiles = [];
+    
+    this.platforms = [];
+    
+    // Nettoyer les managers
+    if (this.inputManager) {
+      this.inputManager.destroy();
+    }
+    
+    // Nettoyer les timers
+    this.spawnerTimers.clear();
+    
+    console.log('[GAME] Jeu détruit');
+  }
+
+  // Méthode pour mettre à jour les dimensions du viewport
+  public updateViewportSize(width: number, height: number): void {
+    console.log(`[GAME] Updating viewport size to ${width}x${height}`);
+    
+    // NE PAS changer les dimensions du canvas - seulement mettre à jour la caméra
+    // this.canvas.width = width;
+    // this.canvas.height = height;
+    
+    // Mettre à jour la caméra avec les nouvelles dimensions de viewport
+    if (this.camera) {
+      this.camera.setViewportSize(width, height);
+      // Repositionner la caméra sur le joueur pour éviter qu'il sorte de l'écran
+      this.camera.snapToPlayer(this.player);
+    }
+    
+    // NE PAS mettre à jour le renderer - garder le canvas interne stable
+    // if (this.renderer) {
+    //   this.renderer.updateCanvasSize(width, height);
+    // }
+    
+    console.log('[GAME] Viewport size updated successfully');
+  }
 }

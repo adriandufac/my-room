@@ -31,7 +31,6 @@ export default class RoomExperience {
   ambientLight!: THREE.AmbientLight;
   sunCycle!: SunCycle;
 
-
   constructor(canvas?: HTMLCanvasElement) {
     // Singleton
     if (instance) {
@@ -111,8 +110,83 @@ export default class RoomExperience {
       0.1, // Near
       1000 // Far
     );
-    this.camera.position.set(4, 3, 6);
+    this.camera.position.set(-3, 2.3, 1.1);
     this.scene.add(this.camera);
+  }
+
+  setupCameraGUI(): void {
+    const cameraFolder = this.gui.addFolder("Camera");
+
+    // Camera position controls
+    const positionFolder = cameraFolder.addFolder("Position");
+
+    positionFolder
+      .add(this.camera.position, "x", -20, 20, 0.1)
+      .name("Position X")
+      .onChange(() => {
+        this.camera.updateProjectionMatrix();
+      });
+
+    positionFolder
+      .add(this.camera.position, "y", -10, 15, 0.1)
+      .name("Position Y")
+      .onChange(() => {
+        this.camera.updateProjectionMatrix();
+      });
+
+    positionFolder
+      .add(this.camera.position, "z", -20, 20, 0.1)
+      .name("Position Z")
+      .onChange(() => {
+        this.camera.updateProjectionMatrix();
+      });
+
+    // Camera settings
+    const settingsFolder = cameraFolder.addFolder("Settings");
+
+    settingsFolder
+      .add(this.camera, "fov", 30, 120, 1)
+      .name("Field of View")
+      .onChange(() => {
+        this.camera.updateProjectionMatrix();
+      });
+
+    // Controls toggle
+    settingsFolder.add(this.controls, "enabled").name("Enable Controls");
+
+    // Quick actions
+    const actionsFolder = cameraFolder.addFolder("Quick Actions");
+
+    actionsFolder.add(
+      {
+        "Reset Position": () => {
+          this.camera.position.set(4, 3, 6);
+          this.camera.fov = 75;
+          this.camera.updateProjectionMatrix();
+          cameraFolder.updateDisplay();
+        },
+      },
+      "Reset Position"
+    );
+
+    actionsFolder.add(
+      {
+        "Print Position": () => {
+          console.log(
+            `Camera position: (${this.camera.position.x.toFixed(
+              2
+            )}, ${this.camera.position.y.toFixed(
+              2
+            )}, ${this.camera.position.z.toFixed(2)})`
+          );
+          console.log(`Camera FOV: ${this.camera.fov}`);
+        },
+      },
+      "Print Position"
+    );
+
+    cameraFolder.open();
+    positionFolder.open();
   }
 
   setupRenderer(): void {
@@ -141,6 +215,10 @@ export default class RoomExperience {
     this.controls.maxDistance = 20;
     this.controls.maxPolarAngle = Math.PI / 2; // Empêche de passer sous le sol
     this.controls.target.set(0, 1, 0); // Point de focus au centre de la chambre
+    this.controls.enabled = false; // Activer les contrôles
+    
+    // Setup camera GUI controls after controls are initialized
+    this.setupCameraGUI();
   }
 
   resize(): void {

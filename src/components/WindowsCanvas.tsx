@@ -10,12 +10,18 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
   const [lastClickTime, setLastClickTime] = useState<number>(0);
   const [currentTime, setCurrentTime] = useState<string>('');
   const [isGameRunning, setIsGameRunning] = useState<boolean>(false);
+  const [windowDimensions, setWindowDimensions] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight
+  });
 
   // Canvas dimensions: game viewport + window decorations
-  const GAME_WIDTH = 1200;
-  const GAME_HEIGHT = 600;
   const TITLE_BAR_HEIGHT = 30;
   const TASKBAR_HEIGHT = 40;
+  
+  // Calculate game dimensions (leaving some margin)
+  const GAME_WIDTH = Math.min(1200, windowDimensions.width - 40);
+  const GAME_HEIGHT = Math.min(600, windowDimensions.height - TITLE_BAR_HEIGHT - TASKBAR_HEIGHT - 40);
   const CANVAS_WIDTH = GAME_WIDTH;
   const CANVAS_HEIGHT = GAME_HEIGHT + TITLE_BAR_HEIGHT + TASKBAR_HEIGHT;
 
@@ -40,6 +46,48 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
   }, []);
 
   useEffect(() => {
+    // Handle window resize
+    const handleResize = () => {
+      setWindowDimensions({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+      
+      // Si le jeu est en cours, le fermer puis le relancer comme si on cliquait sur close puis double-click
+      if (isGameRunning && gameRef.current) {
+        console.log('[WINDOWS] Window resized while game running - closing and reopening game');
+        
+        // Fermer le jeu (comme si on cliquait sur le bouton close)
+        gameRef.current.stop();
+        gameRef.current.destroy();
+        gameRef.current = null;
+        setIsGameRunning(false);
+        
+        // Relancer le jeu après un court délai (comme si on double-cliquait l'icône)
+        setTimeout(() => {
+          console.log('[WINDOWS] Relaunching game with new dimensions');
+          setIsGameRunning(true);
+        }, 100);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isGameRunning]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (gameRef.current) {
+        console.log('[WINDOWS] Component unmounting, cleaning up game');
+        gameRef.current.stop();
+        gameRef.current.destroy();
+        gameRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -51,8 +99,22 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
     canvas.height = CANVAS_HEIGHT;
 
     if (isGameRunning) {
-      // If game is running, initialize it
-      if (!gameRef.current) {
+      // If game is running, check if we need to recreate it due to size change
+      const needsRecreation = !gameRef.current || 
+        (gameRef.current.getCanvas().width !== GAME_WIDTH || 
+         gameRef.current.getCanvas().height !== GAME_HEIGHT);
+      
+      if (needsRecreation) {
+        console.log('[WINDOWS] Recreating game due to size change');
+        
+        // Clean up existing game if it exists
+        if (gameRef.current) {
+          console.log('[WINDOWS] Stopping and destroying existing game');
+          gameRef.current.stop();
+          gameRef.current.destroy();
+          gameRef.current = null;
+        }
+        
         // Create a virtual canvas for the game that renders into our main canvas
         const gameCanvas = document.createElement('canvas');
         gameCanvas.width = GAME_WIDTH;
@@ -60,13 +122,15 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
         
         gameRef.current = new Game(gameCanvas);
         gameRef.current.start();
+        console.log('[WINDOWS] New game created and started');
       }
+      
       renderGameWindow(ctx);
     } else {
       // Render desktop
       renderDesktop(ctx);
     }
-  }, [selectedIcon, currentTime, isGameRunning]);
+  }, [selectedIcon, currentTime, isGameRunning, windowDimensions]);
 
   // Animation loop for game rendering
   useEffect(() => {
@@ -113,8 +177,8 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
     // Draw taskbar
     drawTaskbar(ctx);
 
-    // Draw instructions
-    drawInstructions(ctx);
+    // Draw instructions - commented out as it's obvious
+    // drawInstructions(ctx);
   };
 
   const renderGameWindow = (ctx: CanvasRenderingContext2D) => {
