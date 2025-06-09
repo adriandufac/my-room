@@ -7,6 +7,7 @@ import { Camera } from "../renderer/Camera";
 import { Player } from "../entities/Player";
 import { Platform } from "../entities/Platform";
 import { FallingPlatform } from "../entities/FallingPlatform";
+import { UppingPlatform } from "../entities/UppingPlatform";
 import { Enemy } from "../entities/Enemy";
 import { Projectile } from "../entities/Projectile";
 import { CollisionDetector } from "./CollisionDetector";
@@ -247,8 +248,8 @@ export class Game {
     // Mise à jour des projectiles
     this.updateProjectiles(deltaTime);
 
-    // Mise à jour des plateformes tombantes
-    this.updateFallingPlatforms(deltaTime);
+    // Mise à jour des plateformes spéciales
+    this.updateSpecialPlatforms(deltaTime);
 
     // Gérer les collisions (qui gèrera isOnGround correctement)
     this.handleCollisions();
@@ -357,9 +358,9 @@ export class Game {
     }
   }
 
-  private updateFallingPlatforms(deltaTime: number): void {
+  private updateSpecialPlatforms(deltaTime: number): void {
     for (const platform of this.platforms) {
-      if (platform instanceof FallingPlatform) {
+      if (platform instanceof FallingPlatform || platform instanceof UppingPlatform) {
         platform.update(deltaTime);
       }
     }
@@ -547,11 +548,13 @@ export class Game {
   }
 
   private handleCollisions(): void {
-    // Check for collision to notify falling platforms of player contact
+    // Check for collision to notify special platforms of player contact
     const collision = CollisionDetector.checkPlayerPlatformCollision(this.player, this.platforms);
     if (collision.hasCollision && collision.platform && collision.side === "top") {
-      // Player is standing on a platform - notify if it's a falling platform
+      // Player is standing on a platform - notify if it's a special platform
       if (collision.platform instanceof FallingPlatform) {
+        collision.platform.onPlayerContact();
+      } else if (collision.platform instanceof UppingPlatform) {
         collision.platform.onPlayerContact();
       }
     }
@@ -592,9 +595,15 @@ export class Game {
       this.player.velocity.x = 0;
     }
 
-    // Chute dans le vide
+    // Chute dans le vide (bas)
     if (this.player.position.y > this.levelHeight + 100) {
       console.log("[GAME] Joueur tombé dans le vide");
+      this.respawnPlayer();
+    }
+    
+    // Sortie par le haut (plateformes pièges)
+    if (this.player.position.y + this.player.size.y < -50) {
+      console.log("[GAME] Joueur emmené hors du niveau par une plateforme piège");
       this.respawnPlayer();
     }
   }
@@ -1244,6 +1253,15 @@ export class Game {
         );
         this.platforms.push(platform);
         console.log(`[LEVEL] Created falling platform at (${platData.position.x}, ${platData.position.y})`);
+      } else if (platData.type === PlatformType.UPPING) {
+        const platform = new UppingPlatform(
+          platData.position.x,
+          platData.position.y,
+          platData.size.x,
+          platData.size.y
+        );
+        this.platforms.push(platform);
+        console.log(`[LEVEL] Created upping platform at (${platData.position.x}, ${platData.position.y})`);
       } else {
         // Default to regular platform for any other type (including undefined)
         const platform = new Platform(
@@ -1256,7 +1274,7 @@ export class Game {
       }
     }
     
-    console.log(`[LEVEL] ${this.platforms.length} platforms loaded (${this.platforms.filter(p => p instanceof FallingPlatform).length} falling)`);
+    console.log(`[LEVEL] ${this.platforms.length} platforms loaded (${this.platforms.filter(p => p instanceof FallingPlatform).length} falling, ${this.platforms.filter(p => p instanceof UppingPlatform).length} upping)`);
   }
 
   private loadEnemiesFromLevel(enemiesData: EnemyData[]): void {

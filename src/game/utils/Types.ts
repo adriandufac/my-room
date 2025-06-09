@@ -29,6 +29,7 @@ export enum PlatformType {
   MOVING = "moving", // Violet - bouge
   BREAKABLE = "breakable", // Jaune - se casse
   FALLING = "falling", // Rouge - s'écroule après contact
+  UPPING = "upping", // Bleu - monte vers le haut après contact
 }
 
 export interface LevelData {
@@ -108,6 +109,7 @@ export enum EditorTool {
   SELECT = "select",
   PLATFORM = "platform",
   FALLING_PLATFORM = "fallingPlatform",
+  UPPING_PLATFORM = "uppingPlatform",
   ENEMY = "enemy",
   PROJECTILE_SPAWNER = "projectileSpawner",
   SPAWN_POINT = "spawnPoint",

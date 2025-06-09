@@ -142,6 +142,7 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
     switch (tool) {
       case EditorTool.PLATFORM:
       case EditorTool.FALLING_PLATFORM:
+      case EditorTool.UPPING_PLATFORM:
         return { x: 120, y: 20 };
       case EditorTool.ENEMY:
         return { x: 30, y: 30 };
@@ -259,6 +260,15 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
             color: "#FF6B4A",
           };
 
+        case EditorTool.UPPING_PLATFORM:
+          return {
+            id: generateId(),
+            position: worldPos,
+            size: { x: 120, y: 20 },
+            type: PlatformType.UPPING,
+            color: "#4A90E2",
+          };
+
         case EditorTool.ENEMY:
           return {
             id: generateId(),
@@ -343,6 +353,7 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
     switch (editorState.currentTool) {
       case EditorTool.PLATFORM:
       case EditorTool.FALLING_PLATFORM:
+      case EditorTool.UPPING_PLATFORM:
         newLevelData.platforms.push(placingObjectData as PlatformData);
         break;
       case EditorTool.ENEMY:
@@ -864,6 +875,7 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
       switch (editorState.currentTool) {
         case EditorTool.PLATFORM:
         case EditorTool.FALLING_PLATFORM:
+        case EditorTool.UPPING_PLATFORM:
           ctx.fillRect(
             placingObjectData.position.x,
             placingObjectData.position.y,
@@ -942,6 +954,7 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
       switch (editorState.currentTool) {
         case EditorTool.PLATFORM:
         case EditorTool.FALLING_PLATFORM:
+        case EditorTool.UPPING_PLATFORM:
           ctx.fillRect(
             mouseWorldPos.x,
             mouseWorldPos.y,
@@ -1092,6 +1105,7 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
             >
               {tool === EditorTool.PLATFORM && "Plateforme"}
               {tool === EditorTool.FALLING_PLATFORM && "Plateforme Tombante"}
+              {tool === EditorTool.UPPING_PLATFORM && "Plateforme Montante"}
               {tool === EditorTool.ENEMY && "Ennemi"}
               {tool === EditorTool.PROJECTILE_SPAWNER && "Projectile"}
               {tool === EditorTool.SPAWN_POINT && "Spawn"}
