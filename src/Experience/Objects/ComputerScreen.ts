@@ -4,11 +4,19 @@ import * as THREE from "three";
 import MaterialFactory from "../Utils/MaterialFactory";
 import ModelLoader from "../Utils/ModelLoader";
 import FurnitureItem, { type FurnitureConfig } from "./FurnitureItem";
+import { createRoot } from 'react-dom/client';
+import React from 'react';
+import { WindowsOverlay } from '../../components/WindowsOverlay';
 
 export default class ComputerScreen extends FurnitureItem {
   // Références pour le halo
   private haloMesh?: THREE.Mesh;
   private screenLight?: THREE.PointLight;
+
+  // Windows overlay
+  private overlayContainer?: HTMLDivElement;
+  private overlayRoot?: any;
+  private isWindowsOverlayVisible: boolean = false;
 
   // Paramètres du halo
   private haloParams = {
@@ -47,6 +55,9 @@ export default class ComputerScreen extends FurnitureItem {
     };
 
     super(config);
+    
+    // Setup Windows overlay
+    this.setupWindowsOverlay();
   }
 
   // Override de la méthode onModelSetup de la classe parent
@@ -357,6 +368,50 @@ export default class ComputerScreen extends FurnitureItem {
     }
   }
 
+  // Setup Windows overlay container
+  private setupWindowsOverlay(): void {
+    // Create overlay container
+    this.overlayContainer = document.createElement('div');
+    this.overlayContainer.id = 'computer-screen-overlay';
+    document.body.appendChild(this.overlayContainer);
+    
+    // Create React root
+    this.overlayRoot = createRoot(this.overlayContainer);
+    
+    // Initial render (hidden)
+    this.renderWindowsOverlay();
+  }
+
+  private showWindowsOverlay(): void {
+    console.log('[COMPUTER] Showing Windows overlay');
+    this.isWindowsOverlayVisible = true;
+    this.renderWindowsOverlay();
+  }
+
+  private hideWindowsOverlay(): void {
+    console.log('[COMPUTER] Hiding Windows overlay');
+    this.isWindowsOverlayVisible = false;
+    this.renderWindowsOverlay();
+  }
+
+  private renderWindowsOverlay(): void {
+    if (this.overlayRoot) {
+      this.overlayRoot.render(
+        React.createElement(WindowsOverlay, {
+          isVisible: this.isWindowsOverlayVisible,
+          onClose: () => this.hideWindowsOverlay()
+        })
+      );
+    }
+  }
+
+  // Override onClick method from FurnitureItem
+  protected onClick(intersect: THREE.Intersection): void {
+    console.log('[COMPUTER] Computer screen clicked!');
+    this.showWindowsOverlay();
+    super.onClick(intersect);
+  }
+
   // Override de la méthode dispose pour nettoyer les ressources du halo
   public dispose(): void {
     if (this.haloMesh) {
@@ -369,6 +424,14 @@ export default class ComputerScreen extends FurnitureItem {
 
     if (this.screenLight) {
       this.scene.remove(this.screenLight);
+    }
+
+    // Clean up Windows overlay
+    if (this.overlayRoot) {
+      this.overlayRoot.unmount();
+    }
+    if (this.overlayContainer && this.overlayContainer.parentNode) {
+      this.overlayContainer.parentNode.removeChild(this.overlayContainer);
     }
 
     // Appeler le dispose de la classe parent

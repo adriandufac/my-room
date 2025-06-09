@@ -12,7 +12,12 @@ import { Enemy } from "../entities/Enemy";
 import { Projectile } from "../entities/Projectile";
 import { CollisionDetector } from "./CollisionDetector";
 import { GAME_CONFIG } from "../utils/Constants";
-import type { LevelData, PlatformData, EnemyData, ProjectileSpawnerData } from "../utils/Types";
+import type {
+  LevelData,
+  PlatformData,
+  EnemyData,
+  ProjectileSpawnerData,
+} from "../utils/Types";
 import { PlatformType } from "../utils/Types";
 import { SpriteLoader } from "../graphics/SpriteLoader";
 import { getSpriteConfig } from "../graphics/SpriteConfigs";
@@ -58,11 +63,11 @@ export class Game {
   private isTransitioning: boolean = false;
   private transitionStartTime: number = 0;
   private readonly TRANSITION_DURATION: number = 1500; // 1.5 secondes
-  private transitionPhase: 'freeze' | 'pixelate' | 'complete' = 'freeze';
+  private transitionPhase: "freeze" | "pixelate" | "complete" = "freeze";
 
   // Niveau personnalisé
   private customLevel: LevelData | null = null;
-  
+
   // Système de progression des niveaux
   private currentLevelIndex: number = 0;
   private levels: LevelData[] = [level1, level2, level3, level4, level5];
@@ -174,7 +179,9 @@ export class Game {
     this.platforms.push(new Platform(1250, 420, 120, 15));
     this.platforms.push(new Platform(1700, 410, 150, 15));
 
-    console.log(`[SUCCESS] Niveau créé avec ${this.platforms.length} plateformes`);
+    console.log(
+      `[SUCCESS] Niveau créé avec ${this.platforms.length} plateformes`
+    );
   }
 
   private createEnemies(): void {
@@ -214,23 +221,70 @@ export class Game {
   private createProjectileSpawners(): void {
     // Initialiser les projectiles (ils seront créés dynamiquement)
     this.projectiles = [];
-    
+
     // Configurer les spawners par défaut pour le niveau original
     this.projectileSpawners = [
-      { id: 'spawner_1', position: { x: 800, y: 380 }, direction: -1, angle: 0, interval: 4000, color: '#FF9800', properties: { speed: 250, lifetime: 3000 } },
-      { id: 'spawner_2', position: { x: 1200, y: 200 }, direction: 1, angle: 0, interval: 4000, color: '#FF9800', properties: { speed: 250, lifetime: 3000 } },
-      { id: 'spawner_3', position: { x: 1600, y: 320 }, direction: -1, angle: -Math.PI/6, interval: 4000, color: '#FF9800', properties: { speed: 250, lifetime: 3000 } },
-      { id: 'spawner_4', position: { x: 500, y: this.levelHeight - 100 }, direction: 1, angle: -Math.PI/4, interval: 4000, color: '#FF9800', properties: { speed: 250, lifetime: 3000 } },
-      { id: 'spawner_5', position: { x: 1800, y: 250 }, direction: -1, angle: Math.PI/6, interval: 4000, color: '#FF9800', properties: { speed: 250, lifetime: 3000 } }
+      {
+        id: "spawner_1",
+        position: { x: 800, y: 380 },
+        direction: -1,
+        angle: 0,
+        interval: 4000,
+        color: "#FF9800",
+        properties: { speed: 250 },
+      },
+      {
+        id: "spawner_2",
+        position: { x: 1200, y: 200 },
+        direction: 1,
+        angle: 0,
+        interval: 4000,
+        color: "#FF9800",
+        properties: { speed: 250 },
+      },
+      {
+        id: "spawner_3",
+        position: { x: 1600, y: 320 },
+        direction: -1,
+        angle: -Math.PI / 6,
+        interval: 4000,
+        color: "#FF9800",
+        properties: { speed: 250 },
+      },
+      {
+        id: "spawner_4",
+        position: { x: 500, y: this.levelHeight - 100 },
+        direction: 1,
+        angle: -Math.PI / 4,
+        interval: 4000,
+        color: "#FF9800",
+        properties: { speed: 250 },
+      },
+      {
+        id: "spawner_5",
+        position: { x: 1800, y: 250 },
+        direction: -1,
+        angle: Math.PI / 6,
+        interval: 4000,
+        color: "#FF9800",
+        properties: { speed: 250 },
+      },
     ];
-    
+
     // Reset des timers
     this.spawnerTimers.clear();
 
-    console.log(`[LEVEL] ${this.projectileSpawners.length} spawners de projectiles configurés`);
+    console.log(
+      `[LEVEL] ${this.projectileSpawners.length} spawners de projectiles configurés`
+    );
   }
 
-  private spawnProjectile(x: number, y: number, direction: number, angle: number = 0): void {
+  private spawnProjectile(
+    x: number,
+    y: number,
+    direction: number,
+    angle: number = 0
+  ): void {
     const projectile = new Projectile(x, y, direction, angle);
     this.projectiles.push(projectile);
   }
@@ -326,7 +380,7 @@ export class Game {
     // Mettre à jour tous les projectiles actifs
     for (let i = this.projectiles.length - 1; i >= 0; i--) {
       const projectile = this.projectiles[i];
-      
+
       if (!projectile.isActive) {
         // Supprimer les projectiles inactifs
         this.projectiles.splice(i, 1);
@@ -367,13 +421,18 @@ export class Game {
       }
 
       // Mettre à jour le timer du spawner
-      const currentTimer = this.spawnerTimers.get(spawner.id)! + deltaTime * 1000; // Convertir en millisecondes
+      const currentTimer =
+        this.spawnerTimers.get(spawner.id)! + deltaTime * 1000; // Convertir en millisecondes
       this.spawnerTimers.set(spawner.id, currentTimer);
 
       // Vérifier si il est temps de spawn
       if (currentTimer >= spawner.interval) {
         this.spawnerTimers.set(spawner.id, 0); // Reset du timer
-        console.log(`[PROJECTILE] Spawning projectile with angle: ${spawner.angle} radians (${(spawner.angle * 180 / Math.PI).toFixed(1)} degrees)`);
+        console.log(
+          `[PROJECTILE] Spawning projectile with angle: ${
+            spawner.angle
+          } radians (${((spawner.angle * 180) / Math.PI).toFixed(1)} degrees)`
+        );
         this.spawnProjectile(
           spawner.position.x,
           spawner.position.y,
@@ -386,7 +445,10 @@ export class Game {
 
   private updateSpecialPlatforms(deltaTime: number): void {
     for (const platform of this.platforms) {
-      if (platform instanceof FallingPlatform || platform instanceof UppingPlatform) {
+      if (
+        platform instanceof FallingPlatform ||
+        platform instanceof UppingPlatform
+      ) {
         platform.update(deltaTime);
       }
     }
@@ -480,7 +542,7 @@ export class Game {
         if (projectile.dealDamage()) {
           console.log("[GAME] Joueur touché par un projectile!");
           this.playerTakesDamage();
-          
+
           // Détruire le projectile après impact
           projectile.destroy();
         }
@@ -558,7 +620,9 @@ export class Game {
 
     // Gestion du saut EN PREMIER
     if (jumpJustPressed) {
-      console.log(`[GAME] Tentative de saut avec direction: ${horizontalInput}`);
+      console.log(
+        `[GAME] Tentative de saut avec direction: ${horizontalInput}`
+      );
       this.player.jump(horizontalInput);
     }
 
@@ -575,8 +639,15 @@ export class Game {
 
   private handleCollisions(): void {
     // Check for collision to notify special platforms of player contact
-    const collision = CollisionDetector.checkPlayerPlatformCollision(this.player, this.platforms);
-    if (collision.hasCollision && collision.platform && collision.side === "top") {
+    const collision = CollisionDetector.checkPlayerPlatformCollision(
+      this.player,
+      this.platforms
+    );
+    if (
+      collision.hasCollision &&
+      collision.platform &&
+      collision.side === "top"
+    ) {
       // Player is standing on a platform - notify if it's a special platform
       if (collision.platform instanceof FallingPlatform) {
         collision.platform.onPlayerContact();
@@ -626,10 +697,12 @@ export class Game {
       console.log("[GAME] Joueur tombé dans le vide");
       this.respawnPlayer();
     }
-    
+
     // Sortie par le haut (plateformes pièges)
     if (this.player.position.y + this.player.size.y < -50) {
-      console.log("[GAME] Joueur emmené hors du niveau par une plateforme piège");
+      console.log(
+        "[GAME] Joueur emmené hors du niveau par une plateforme piège"
+      );
       this.respawnPlayer();
     }
   }
@@ -648,7 +721,7 @@ export class Game {
     ) {
       this.levelCompleted = true;
       console.log(`[SUCCESS] NIVEAU ${this.currentLevelIndex + 1} TERMINÉ !`);
-      
+
       // Démarrer la transition
       this.startTransition();
     }
@@ -686,12 +759,12 @@ export class Game {
   private startTransition(): void {
     this.isTransitioning = true;
     this.transitionStartTime = Date.now();
-    this.transitionPhase = 'freeze';
-    
+    this.transitionPhase = "freeze";
+
     // Arrêter le joueur
     this.player.velocity.x = 0;
     this.player.velocity.y = 0;
-    
+
     console.log("[TRANSITION] Démarrage de la transition");
   }
 
@@ -702,19 +775,19 @@ export class Game {
     if (progress >= 1) {
       // Transition terminée
       this.isTransitioning = false;
-      this.transitionPhase = 'complete';
+      this.transitionPhase = "complete";
       console.log("[TRANSITION] Transition terminée");
       return;
     }
 
     // Phase 1: Freeze (0 à 0.2)
     if (progress < 0.2) {
-      this.transitionPhase = 'freeze';
+      this.transitionPhase = "freeze";
     }
     // Phase 2: Pixelate (0.2 à 1.0)
     else {
-      this.transitionPhase = 'pixelate';
-      
+      this.transitionPhase = "pixelate";
+
       // À mi-transition, charger le niveau suivant
       if (progress >= 0.5 && this.levelCompleted) {
         this.nextLevel();
@@ -729,7 +802,7 @@ export class Game {
       console.log(`[GAME] Ennemi ${enemy.id} tombé dans le vide`);
       enemy.eliminate();
     }
-    
+
     // Si l'ennemi sort par le haut
     if (enemy.position.y + enemy.size.y < -100) {
       console.log(`[GAME] Ennemi ${enemy.id} sorti par le haut`);
@@ -754,10 +827,10 @@ export class Game {
       projectile.destroy();
     }
     this.projectiles = [];
-    
+
     // Réinitialiser les timers de spawn
     this.spawnerTimers.clear();
-    
+
     // Reconfigurer les spawners selon le niveau actuel
     if (this.customLevel) {
       this.loadProjectileSpawnersFromLevel(this.customLevel.projectileSpawners);
@@ -771,7 +844,7 @@ export class Game {
   private initializeFirstLevel(): void {
     console.log("[GAME] Initialisation du premier niveau...");
     this.loadCurrentLevel();
-    
+
     // Centrer la caméra sur le joueur après le chargement
     this.camera.snapToPlayer(this.player);
   }
@@ -780,10 +853,16 @@ export class Game {
     try {
       if (this.currentLevelIndex < this.levels.length) {
         const levelData = this.levels[this.currentLevelIndex];
-        console.log(`[GAME] Chargement du niveau ${this.currentLevelIndex + 1}: ${levelData.name || 'Sans nom'}`);
-        
+        console.log(
+          `[GAME] Chargement du niveau ${this.currentLevelIndex + 1}: ${
+            levelData.name || "Sans nom"
+          }`
+        );
+
         this.loadCustomLevel(levelData);
-        console.log(`[GAME] Niveau ${this.currentLevelIndex + 1} chargé avec succès`);
+        console.log(
+          `[GAME] Niveau ${this.currentLevelIndex + 1} chargé avec succès`
+        );
       } else {
         console.log("[GAME] Tous les niveaux terminés ! Félicitations !");
         // Retour au premier niveau
@@ -791,8 +870,15 @@ export class Game {
         this.loadCurrentLevel();
       }
     } catch (error) {
-      console.error(`[ERROR] Erreur lors du chargement du niveau ${this.currentLevelIndex + 1}:`, error);
-      alert(`Erreur lors du chargement du niveau ${this.currentLevelIndex + 1}`);
+      console.error(
+        `[ERROR] Erreur lors du chargement du niveau ${
+          this.currentLevelIndex + 1
+        }:`,
+        error
+      );
+      alert(
+        `Erreur lors du chargement du niveau ${this.currentLevelIndex + 1}`
+      );
     }
   }
 
@@ -896,7 +982,7 @@ export class Game {
   private renderBackground(): void {
     if (this.backgroundImage) {
       // Utiliser createPattern pour une répétition parfaite
-      const pattern = this.ctx.createPattern(this.backgroundImage, 'repeat');
+      const pattern = this.ctx.createPattern(this.backgroundImage, "repeat");
       if (pattern) {
         this.ctx.fillStyle = pattern;
         this.ctx.fillRect(0, 0, this.levelWidth, this.levelHeight);
@@ -923,7 +1009,7 @@ export class Game {
   private drawBackgroundTiles(): void {
     // Méthode de fallback avec chevauchement d'1px pour éliminer les glitches
     this.ctx.imageSmoothingEnabled = false;
-    
+
     const tilesX = Math.ceil(this.levelWidth / 600);
     const tilesY = Math.ceil(this.levelHeight / 600);
 
@@ -931,10 +1017,10 @@ export class Game {
       for (let y = 0; y < tilesY; y++) {
         const posX = x * 600;
         const posY = y * 600;
-        
+
         // Ajouter 1px de chevauchement sauf pour la première tile
         const overlap = x > 0 ? 1 : 0;
-        
+
         this.ctx.drawImage(
           this.backgroundImage!,
           posX - overlap,
@@ -1151,13 +1237,15 @@ export class Game {
       y
     );
     y += lineHeight;
+    this.ctx.fillText(`Projectiles actifs: ${activeProjectiles}`, 10, y);
+    y += lineHeight;
     this.ctx.fillText(
-      `Projectiles actifs: ${activeProjectiles}`,
+      `Niveau: ${this.currentLevelIndex + 1}/${this.levels.length} (${
+        this.levelWidth
+      }x${this.levelHeight})`,
       10,
       y
     );
-    y += lineHeight;
-    this.ctx.fillText(`Niveau: ${this.currentLevelIndex + 1}/${this.levels.length} (${this.levelWidth}x${this.levelHeight})`, 10, y);
   }
 
   private renderGameInfo(): void {
@@ -1213,11 +1301,15 @@ export class Game {
     y += lineHeight;
     this.ctx.fillText("[WARNING] Évitez ennemis et projectiles orange", 10, y);
     y += lineHeight;
-    this.ctx.fillText("[LEVEL] Objectif : Atteindre la zone dorée (arrivée)", 10, y);
+    this.ctx.fillText(
+      "[LEVEL] Objectif : Atteindre la zone dorée (arrivée)",
+      10,
+      y
+    );
   }
 
   private renderPauseScreen(): void {
-    this.ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+    this.ctx.fillStyle = "rgba(0, 0, 0, 0.9)";
     this.ctx.fillRect(
       0,
       0,
@@ -1225,23 +1317,104 @@ export class Game {
       GAME_CONFIG.CANVAS.HEIGHT
     );
 
+    // Title
     this.ctx.fillStyle = "white";
-    this.ctx.font = "48px Arial";
+    this.ctx.font = "bold 48px monospace";
+    this.ctx.textAlign = "center";
+    this.ctx.fillText("GAME PAUSED", GAME_CONFIG.CANVAS.WIDTH / 2, 120);
+
+    // Subtitle
+    this.ctx.font = "20px monospace";
+    this.ctx.fillStyle = "#CCCCCC";
+    this.ctx.fillText("CONTROLS", GAME_CONFIG.CANVAS.WIDTH / 2, 160);
+
+    // Draw control mappings with pixel art style keys
+    const startY = 200;
+    const lineHeight = 50;
+    const keySize = 32;
+    const centerX = GAME_CONFIG.CANVAS.WIDTH / 2;
+
+    const controls = [
+      { keys: ["Q", "D"], action: "Move Left / Right" },
+      { keys: ["Z", "SPACE"], action: "Jump" },
+      { keys: ["ESC"], action: "Pause / Resume" },
+      { keys: ["F1"], action: "Debug Mode" },
+      { keys: ["R"], action: "Restart Level" },
+    ];
+
+    controls.forEach((control, index) => {
+      const y = startY + index * lineHeight;
+
+      // Draw keys
+      let keyX = centerX - 120;
+      control.keys.forEach((key, keyIndex) => {
+        this.drawPixelArtKey(this.ctx, keyX, y - keySize / 2, keySize, key);
+        keyX += keySize + 10;
+
+        // Draw "+" between multiple keys
+        if (keyIndex < control.keys.length - 1) {
+          this.ctx.fillStyle = "#888888";
+          this.ctx.font = "16px monospace";
+          this.ctx.textAlign = "center";
+          this.ctx.fillText("+", keyX - 5, y + 5);
+          keyX += 10;
+        }
+      });
+
+      // Draw action description
+      this.ctx.fillStyle = "white";
+      this.ctx.font = "18px monospace";
+      this.ctx.textAlign = "left";
+      this.ctx.fillText(control.action, centerX + 20, y + 6);
+    });
+
+    // Resume instruction
+    this.ctx.fillStyle = "#FFFF66";
+    this.ctx.font = "22px monospace";
     this.ctx.textAlign = "center";
     this.ctx.fillText(
-      "PAUSE",
+      "Press ESC to resume",
       GAME_CONFIG.CANVAS.WIDTH / 2,
-      GAME_CONFIG.CANVAS.HEIGHT / 2
-    );
-
-    this.ctx.font = "24px Arial";
-    this.ctx.fillText(
-      "Appuyez sur Échap pour reprendre",
-      GAME_CONFIG.CANVAS.WIDTH / 2,
-      GAME_CONFIG.CANVAS.HEIGHT / 2 + 50
+      GAME_CONFIG.CANVAS.HEIGHT - 60
     );
 
     this.ctx.textAlign = "left";
+  }
+
+  private drawPixelArtKey(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    size: number,
+    keyText: string
+  ): void {
+    // Key background (dark gray)
+    ctx.fillStyle = "#333333";
+    ctx.fillRect(x, y, size, size);
+
+    // Key highlight (top and left edges)
+    ctx.fillStyle = "#666666";
+    ctx.fillRect(x, y, size, 2); // top
+    ctx.fillRect(x, y, 2, size); // left
+
+    // Key shadow (bottom and right edges)
+    ctx.fillStyle = "#111111";
+    ctx.fillRect(x, y + size - 2, size, 2); // bottom
+    ctx.fillRect(x + size - 2, y, 2, size); // right
+
+    // Key inner area
+    ctx.fillStyle = "#444444";
+    ctx.fillRect(x + 2, y + 2, size - 4, size - 4);
+
+    // Key text
+    ctx.fillStyle = "white";
+    ctx.font = keyText.length > 2 ? "10px monospace" : "14px monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(keyText, x + size / 2, y + size / 2);
+
+    // Reset text baseline
+    ctx.textBaseline = "alphabetic";
   }
 
   private renderVictoryOverlay(): void {
@@ -1292,11 +1465,16 @@ export class Game {
     const elapsed = Date.now() - this.transitionStartTime;
     const progress = elapsed / this.TRANSITION_DURATION;
 
-    if (this.transitionPhase === 'freeze') {
+    if (this.transitionPhase === "freeze") {
       // Phase freeze : écran légèrement assombri
       this.ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
-      this.ctx.fillRect(0, 0, GAME_CONFIG.CANVAS.WIDTH, GAME_CONFIG.CANVAS.HEIGHT);
-      
+      this.ctx.fillRect(
+        0,
+        0,
+        GAME_CONFIG.CANVAS.WIDTH,
+        GAME_CONFIG.CANVAS.HEIGHT
+      );
+
       // Texte "NIVEAU TERMINÉ"
       this.ctx.fillStyle = "#000";
       this.ctx.font = "bold 32px Arial";
@@ -1307,17 +1485,16 @@ export class Game {
         GAME_CONFIG.CANVAS.HEIGHT / 2
       );
       this.ctx.textAlign = "left";
-    } 
-    else if (this.transitionPhase === 'pixelate') {
+    } else if (this.transitionPhase === "pixelate") {
       // Phase pixelate : effet de pixelisation progressive
       const pixelProgress = (progress - 0.2) / 0.8; // Normaliser de 0.2-1.0 vers 0-1
       const maxPixelSize = 32;
       const pixelSize = Math.floor(maxPixelSize * pixelProgress);
-      
+
       if (pixelSize > 0) {
         // Créer un effet de pixelisation en dessinant des carrés
         this.ctx.fillStyle = `rgba(0, 0, 0, ${pixelProgress * 0.8})`;
-        
+
         for (let x = 0; x < GAME_CONFIG.CANVAS.WIDTH; x += pixelSize * 2) {
           for (let y = 0; y < GAME_CONFIG.CANVAS.HEIGHT; y += pixelSize * 2) {
             if (Math.random() < pixelProgress) {
@@ -1326,7 +1503,7 @@ export class Game {
           }
         }
       }
-      
+
       // Texte du prochain niveau au milieu de la transition
       if (pixelProgress > 0.5) {
         this.ctx.fillStyle = "#FFF";
@@ -1345,7 +1522,9 @@ export class Game {
   private async loadBackground(): Promise<void> {
     try {
       const spriteLoader = SpriteLoader.getInstance();
-      this.backgroundImage = await spriteLoader.loadImage("/textures/sprites/background.png");
+      this.backgroundImage = await spriteLoader.loadImage(
+        "/textures/sprites/background.png"
+      );
       console.log("[GAME] Background chargé");
     } catch (error) {
       console.error("[ERROR] Erreur lors du chargement du background:", error);
@@ -1421,63 +1600,66 @@ export class Game {
   public getActiveProjectilesCount(): number {
     return this.projectiles.filter((p) => p.isActive).length;
   }
+  public getCanvas(): HTMLCanvasElement {
+    return this.canvas;
+  }
 
   // Charger un niveau personnalisé depuis LevelData
   public loadCustomLevel(levelData: LevelData): void {
     console.log(`[GAME] Chargement du niveau personnalisé: ${levelData.name}`);
-    
+
     this.customLevel = levelData;
-    
+
     // Mettre à jour les dimensions du niveau
     this.levelWidth = levelData.width;
     this.levelHeight = levelData.height;
-    
+
     // Mettre à jour les zones spéciales
-    this.startZone = { 
-      x: levelData.playerStart.x - 50, 
-      y: levelData.playerStart.y - 50, 
-      width: 100, 
-      height: 100 
+    this.startZone = {
+      x: levelData.playerStart.x - 50,
+      y: levelData.playerStart.y - 50,
+      width: 100,
+      height: 100,
     };
-    this.finishZone = { 
-      x: levelData.finishLine.x - 50, 
-      y: levelData.finishLine.y, 
-      width: 100, 
-      height: levelData.height 
+    this.finishZone = {
+      x: levelData.finishLine.x - 50,
+      y: levelData.finishLine.y,
+      width: 100,
+      height: levelData.height,
     };
-    
+
     // Repositionner le joueur au point de spawn (arrondir pour éviter les sub-pixels)
     this.player.position.x = Math.round(levelData.playerStart.x);
     this.player.position.y = Math.round(levelData.playerStart.y);
     this.player.velocity.x = 0;
     this.player.velocity.y = 0;
-    
+
     // Forcer l'état au sol pour éviter que le joueur tombe dans une plateforme
     this.player.isOnGround = false;
     this.player.isJumping = false;
-    
+
     // Charger les plateformes depuis le niveau
     this.loadPlatformsFromLevel(levelData.platforms);
-    
+
     // Charger les ennemis depuis le niveau
     this.loadEnemiesFromLevel(levelData.enemies);
-    
+
     // Charger les spawners de projectiles depuis le niveau
     this.loadProjectileSpawnersFromLevel(levelData.projectileSpawners);
-    
+
     // Forcer une vérification des collisions pour bien positionner le joueur
     CollisionDetector.resolveCollisionsSeparated(this.player, this.platforms);
-    
+
     // Mettre à jour la caméra
     this.camera.updateLevelBounds(this.levelWidth, this.levelHeight);
     this.camera.snapToPlayer(this.player);
-    
+
     // Reset du statut du niveau
     this.levelCompleted = false;
     this.playerLives = 3;
     this.isPlayerInvulnerable = false;
     this.invulnerabilityTime = 0;
-    
+
     console.log(`[SUCCESS] Niveau "${levelData.name}" chargé avec succès!`);
     console.log(`[LEVEL] Dimensions: ${this.levelWidth}x${this.levelHeight}`);
     console.log(`[LEVEL] ${this.platforms.length} plateformes`);
@@ -1487,7 +1669,7 @@ export class Game {
 
   private loadPlatformsFromLevel(platformsData: PlatformData[]): void {
     this.platforms = [];
-    
+
     for (const platData of platformsData) {
       // Create appropriate platform type based on data
       if (platData.type === PlatformType.FALLING) {
@@ -1498,7 +1680,9 @@ export class Game {
           platData.size.y
         );
         this.platforms.push(platform);
-        console.log(`[LEVEL] Created falling platform at (${platData.position.x}, ${platData.position.y})`);
+        console.log(
+          `[LEVEL] Created falling platform at (${platData.position.x}, ${platData.position.y})`
+        );
       } else if (platData.type === PlatformType.UPPING) {
         const platform = new UppingPlatform(
           platData.position.x,
@@ -1507,7 +1691,9 @@ export class Game {
           platData.size.y
         );
         this.platforms.push(platform);
-        console.log(`[LEVEL] Created upping platform at (${platData.position.x}, ${platData.position.y})`);
+        console.log(
+          `[LEVEL] Created upping platform at (${platData.position.x}, ${platData.position.y})`
+        );
       } else {
         // Default to regular platform for any other type (including undefined)
         const platform = new Platform(
@@ -1519,13 +1705,19 @@ export class Game {
         this.platforms.push(platform);
       }
     }
-    
-    console.log(`[LEVEL] ${this.platforms.length} platforms loaded (${this.platforms.filter(p => p instanceof FallingPlatform).length} falling, ${this.platforms.filter(p => p instanceof UppingPlatform).length} upping)`);
+
+    console.log(
+      `[LEVEL] ${this.platforms.length} platforms loaded (${
+        this.platforms.filter((p) => p instanceof FallingPlatform).length
+      } falling, ${
+        this.platforms.filter((p) => p instanceof UppingPlatform).length
+      } upping)`
+    );
   }
 
   private loadEnemiesFromLevel(enemiesData: EnemyData[]): void {
     this.enemies = [];
-    
+
     for (const enemyData of enemiesData) {
       const enemy = new Enemy(
         enemyData.position.x,
@@ -1536,62 +1728,74 @@ export class Game {
     }
   }
 
-  private loadProjectileSpawnersFromLevel(spawnersData: ProjectileSpawnerData[]): void {
+  private loadProjectileSpawnersFromLevel(
+    spawnersData: ProjectileSpawnerData[]
+  ): void {
     // Reset des projectiles existants
     this.projectiles = [];
-    
+
     // Sauvegarder les spawners pour le système périodique
     this.projectileSpawners = [...spawnersData];
-    
+
     // Reset des timers
     this.spawnerTimers.clear();
-    
-    console.log(`[LEVEL] ${spawnersData.length} spawners de projectiles configurés`);
+
+    console.log(
+      `[LEVEL] ${spawnersData.length} spawners de projectiles configurés`
+    );
     spawnersData.forEach((spawner, index) => {
       // Ensure angle exists for backward compatibility
       if (spawner.angle === undefined) {
         spawner.angle = 0;
-        console.log(`[LEVEL] Warning: Spawner ${index} missing angle, defaulting to 0`);
+        console.log(
+          `[LEVEL] Warning: Spawner ${index} missing angle, defaulting to 0`
+        );
       }
-      console.log(`[LEVEL] Spawner ${index}: direction=${spawner.direction}, angle=${spawner.angle} (${(spawner.angle * 180 / Math.PI).toFixed(1)}°), interval=${spawner.interval}`);
+      console.log(
+        `[LEVEL] Spawner ${index}: direction=${spawner.direction}, angle=${
+          spawner.angle
+        } (${((spawner.angle * 180) / Math.PI).toFixed(1)}°), interval=${
+          spawner.interval
+        }`
+      );
     });
   }
 
   // Restaurer le niveau par défaut
   public loadDefaultLevel(): void {
     console.log(`[GAME] Retour au niveau par défaut`);
-    
+
     this.customLevel = null;
-    
+
     // Restaurer les dimensions par défaut
     this.levelWidth = GAME_CONFIG.LEVEL.DEFAULT_WIDTH;
     this.levelHeight = GAME_CONFIG.LEVEL.DEFAULT_HEIGHT;
-    
+
     // Restaurer les zones par défaut
     this.startZone = { x: 0, y: 0, width: 200, height: 600 };
     this.finishZone = { x: 2200, y: 0, width: 200, height: 600 };
-    
+
     // Repositionner le joueur
     this.player.position.x = GAME_CONFIG.PLAYER.STARTING_X;
     this.player.position.y = GAME_CONFIG.PLAYER.STARTING_Y;
     this.player.velocity.x = 0;
     this.player.velocity.y = 0;
-    
+
     // Recharger le niveau par défaut
     this.createExtendedLevel();
     this.createEnemies();
     this.createProjectileSpawners();
-    
+
     // Mettre à jour la caméra
     this.camera.updateLevelBounds(this.levelWidth, this.levelHeight);
     this.camera.snapToPlayer(this.player);
-    
+
     // Reset du statut
     this.levelCompleted = false;
     this.playerLives = 3;
     this.isPlayerInvulnerable = false;
     this.invulnerabilityTime = 0;
-    
+
     console.log(`[SUCCESS] Niveau par défaut restauré`);
   }
 }

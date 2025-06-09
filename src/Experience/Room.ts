@@ -65,5 +65,7 @@ export default class Room {
     this.coffeeCup = new CoffeeCup();
     this.carpet = new Carpet();
     this.cat = new Cat();
+
+    // The computer click handler will be set by RoomExperience after initialization
   }
 }

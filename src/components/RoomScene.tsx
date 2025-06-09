@@ -2,7 +2,7 @@
 import { useRef, useEffect } from "react";
 import RoomExperience from "../Experience/RoomExperience";
 
-const RoomScene = () => {
+const RoomScene: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sceneRef = useRef<RoomExperience | null>(null);
 
@@ -21,8 +21,9 @@ const RoomScene = () => {
   }, []);
 
   return (
-    <div style={{ width: "100%", height: "100vh" }}>
+    <div style={{ width: "100%", height: "100vh", position: "relative" }}>
       <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />
+      {/* The computer overlay will be managed by RoomExperience */}
     </div>
   );
 };

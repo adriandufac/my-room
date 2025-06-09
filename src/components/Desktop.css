@@ -1,0 +1,196 @@
+.desktop {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  cursor: default;
+  user-select: none;
+}
+
+.desktop-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(255,255,255,0.05) 0%, transparent 50%);
+}
+
+.taskbar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  background: linear-gradient(to bottom, #4a5568, #2d3748);
+  border-top: 1px solid #718096;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  box-shadow: 0 -2px 4px rgba(0,0,0,0.3);
+}
+
+.start-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: linear-gradient(to bottom, #68d391, #48bb78);
+  border: 1px solid #38a169;
+  border-radius: 3px;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
+  transition: all 0.1s ease;
+}
+
+.start-button:hover {
+  background: linear-gradient(to bottom, #48bb78, #38a169);
+}
+
+.start-button:active {
+  background: linear-gradient(to bottom, #38a169, #2f855a);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.start-icon {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.taskbar-clock {
+  color: white;
+  font-size: 12px;
+  background: rgba(0,0,0,0.2);
+  padding: 2px 8px;
+  border-radius: 2px;
+}
+
+.desktop-icons {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.desktop-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 80px;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.desktop-icon:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.desktop-icon.selected {
+  background: rgba(0,120,215,0.3);
+  border: 1px dotted rgba(255,255,255,0.6);
+}
+
+.icon-image {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.game-icon {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: 2px solid #4a5568;
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.3),
+    0 2px 4px rgba(0,0,0,0.3);
+  position: relative;
+}
+
+.game-icon-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 2px;
+  width: 20px;
+  height: 20px;
+}
+
+.game-icon-pixel {
+  width: 8px;
+  height: 8px;
+  background: white;
+  border-radius: 1px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.game-icon-pixel:nth-child(1) { background: #ff6b6b; }
+.game-icon-pixel:nth-child(2) { background: #4ecdc4; }
+.game-icon-pixel:nth-child(3) { background: #45b7d1; }
+.game-icon-pixel:nth-child(4) { background: #f9ca24; }
+
+.icon-label {
+  color: white;
+  font-size: 11px;
+  text-align: center;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+  line-height: 1.2;
+  max-width: 80px;
+  word-wrap: break-word;
+}
+
+.desktop-instructions {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-size: 14px;
+  text-align: center;
+  background: rgba(0,0,0,0.6);
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.2);
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .desktop-icon {
+    width: 60px;
+  }
+  
+  .icon-image {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .icon-label {
+    font-size: 10px;
+  }
+  
+  .desktop-instructions {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+}

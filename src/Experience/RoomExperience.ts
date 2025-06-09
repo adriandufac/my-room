@@ -31,6 +31,7 @@ export default class RoomExperience {
   ambientLight!: THREE.AmbientLight;
   sunCycle!: SunCycle;
 
+
   constructor(canvas?: HTMLCanvasElement) {
     // Singleton
     if (instance) {
