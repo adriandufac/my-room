@@ -2,6 +2,8 @@
 
 import { Vector2D } from "../physics/Vector2D";
 import { GAME_CONFIG } from "../utils/Constants";
+import { SpriteRenderer } from "../graphics/SpriteRenderer";
+import { getSpriteConfig } from "../graphics/SpriteConfigs";
 
 export class Projectile {
   public position: Vector2D;
@@ -10,51 +12,71 @@ export class Projectile {
   public color: string;
   public id: string;
 
-  // Propriétés de gameplay
+  // Proprietes de gameplay
   public isActive: boolean = true;
   public canDealDamage: boolean = true;
-  private lifeTime: number = 0;
-  private maxLifeTime: number;
+  private direction: number = 1; // 1 = droite, -1 = gauche (pour le flip du sprite)
 
-  // Propriétés visuelles
-  private rotation: number = 0;
-  private rotationSpeed: number = 5; // radians par seconde
+  // Proprietes visuelles et direction
+  private angle: number = 0; // Angle de tir en radians (0 = horizontal droite)
+  private autoRotate: boolean = false; // Pour les projectiles qui tournent (ex: boomerang)
 
-  constructor(x: number, y: number, direction: number = 1) {
+  // Sprite rendering
+  private spriteRenderer: SpriteRenderer | null = null;
+  private useSprite: boolean = true;
+
+  constructor(x: number, y: number, direction: number = 1, angle: number = 0) {
     this.position = new Vector2D(x, y);
+    this.angle = angle;
+    this.direction = direction;
+    
+    // Calculate velocity based on direction and angle to match editor visualization
+    const speed = GAME_CONFIG.PROJECTILES.SPEED;
+    const finalAngle = direction > 0 ? angle : Math.PI + angle; // Match editor logic
     this.velocity = new Vector2D(
-      direction * GAME_CONFIG.PROJECTILES.SPEED,
-      0
+      speed * Math.cos(finalAngle),
+      speed * Math.sin(finalAngle) // Positive for canvas coordinates (Y increases downward)
     );
     this.size = new Vector2D(
       GAME_CONFIG.PROJECTILES.WIDTH,
       GAME_CONFIG.PROJECTILES.HEIGHT
     );
     this.color = GAME_CONFIG.PROJECTILES.COLOR;
-    this.maxLifeTime = GAME_CONFIG.PROJECTILES.LIFETIME / 1000; // Convertir en secondes
     this.id = `projectile_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+    // Initialize sprite renderer
+    const spriteConfig = getSpriteConfig("projectile");
+    if (spriteConfig) {
+      this.spriteRenderer = new SpriteRenderer(spriteConfig);
+      this.spriteRenderer.setAnimation("default");
+      console.log("[PROJECTILE] Sprite renderer initialized");
+    } else {
+      console.warn("[PROJECTILE] No sprite config found, using fallback rendering");
+      this.useSprite = false;
+    }
+
     console.log(
-      `=€ Projectile créé à (${x}, ${y}) direction: ${direction > 0 ? "DROITE" : "GAUCHE"}`
+      `[PROJECTILE] Created at (${x}, ${y}) direction: ${direction > 0 ? "RIGHT" : "LEFT"}`
     );
   }
 
   public update(deltaTime: number): void {
     if (!this.isActive) return;
 
-    // Mettre à jour le temps de vie
-    this.lifeTime += deltaTime;
-    
-    // Vérifier si le projectile a dépassé sa durée de vie
-    if (this.lifeTime >= this.maxLifeTime) {
-      this.destroy();
-      return;
+    // Update sprite animation
+    if (this.spriteRenderer) {
+      this.spriteRenderer.update(deltaTime);
     }
 
-    // Mettre à jour la rotation pour l'effet visuel
-    this.rotation += this.rotationSpeed * deltaTime;
+    // Note: Projectiles no longer have a lifetime
+    // They only die from collisions or going out of bounds
 
-    // Mettre à jour la position
+    // Optional auto-rotation for special projectiles (disabled by default)
+    if (this.autoRotate) {
+      this.angle += 5 * deltaTime; // 5 radians per second
+    }
+
+    // Mettre a jour la position
     this.position.x += this.velocity.x * deltaTime;
     this.position.y += this.velocity.y * deltaTime;
   }
@@ -68,32 +90,51 @@ export class Projectile {
     // Sauvegarder le contexte pour la rotation
     ctx.save();
 
-    // Translater vers le centre du projectile et appliquer la rotation
+    // Translater vers le centre du projectile et appliquer l'angle
     ctx.translate(centerX, centerY);
-    ctx.rotate(this.rotation);
+    ctx.rotate(this.angle);
 
-    // Dessiner le projectile comme un carré orange rotatif
-    ctx.fillStyle = this.color;
-    ctx.fillRect(
-      -this.size.x / 2,
-      -this.size.y / 2,
-      this.size.x,
-      this.size.y
-    );
+    if (this.useSprite && this.spriteRenderer && this.spriteRenderer.isLoaded()) {
+      // Handle sprite flipping for left-moving projectiles
+      if (this.direction < 0) {
+        // Flip horizontally for left movement
+        ctx.scale(-1, 1);
+        this.spriteRenderer.render(
+          ctx,
+          -this.size.x / 2,
+          -this.size.y / 2,
+          this.size.x,
+          this.size.y
+        );
+      } else {
+        // Normal rendering for right movement
+        this.spriteRenderer.render(
+          ctx,
+          -this.size.x / 2,
+          -this.size.y / 2,
+          this.size.x,
+          this.size.y
+        );
+      }
+    } else {
+      // Fallback: render as colored square
+      ctx.fillStyle = this.color;
+      ctx.fillRect(
+        -this.size.x / 2,
+        -this.size.y / 2,
+        this.size.x,
+        this.size.y
+      );
 
-    // Bordure plus foncée
-    ctx.strokeStyle = "#CC5500";
-    ctx.lineWidth = 1;
-    ctx.strokeRect(
-      -this.size.x / 2,
-      -this.size.y / 2,
-      this.size.x,
-      this.size.y
-    );
-
-    // Petit point central pour l'effet visuel
-    ctx.fillStyle = "#FFAA00";
-    ctx.fillRect(-1, -1, 2, 2);
+      ctx.strokeStyle = "#CC5500";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(
+        -this.size.x / 2,
+        -this.size.y / 2,
+        this.size.x,
+        this.size.y
+      );
+    }
 
     // Restaurer le contexte
     ctx.restore();
@@ -109,12 +150,11 @@ export class Projectile {
         this.size.y
       );
 
-      // Afficher le temps de vie restant
+      // Afficher la direction et l'angle
       ctx.fillStyle = "white";
       ctx.font = "10px Arial";
-      const timeLeft = (this.maxLifeTime - this.lifeTime).toFixed(1);
       ctx.fillText(
-        timeLeft + "s",
+        `Dir: ${this.direction > 0 ? "R" : "L"} Angle: ${(this.angle * 180 / Math.PI).toFixed(0)}Â°`,
         this.position.x,
         this.position.y - 5
       );
@@ -140,19 +180,18 @@ export class Projectile {
   public destroy(): void {
     this.isActive = false;
     this.canDealDamage = false;
-    console.log(`=¥ Projectile ${this.id.slice(-8)} détruit`);
+    console.log(`[PROJECTILE] ${this.id} destroyed`);
   }
 
   public dealDamage(): boolean {
     if (this.canDealDamage && this.isActive) {
-      // Un projectile ne peut infliger des dégâts qu'une seule fois
-      this.canDealDamage = false;
+      this.canDealDamage = false; // Empecher les degats multiples
       return true;
     }
     return false;
   }
 
-  // Vérifier si le projectile est hors des limites du niveau
+  // Methode pour verifier si le projectile est sorti de l'ecran
   public isOutOfBounds(levelWidth: number, levelHeight: number): boolean {
     return (
       this.position.x + this.size.x < 0 ||
@@ -169,14 +208,14 @@ export class Projectile {
     for (const platform of platforms) {
       const platformBounds = platform.getBounds();
 
-      // Vérification AABB simple
+      // Verification AABB simple
       if (
         projectileBounds.x < platformBounds.x + platformBounds.width &&
         projectileBounds.x + projectileBounds.width > platformBounds.x &&
         projectileBounds.y < platformBounds.y + platformBounds.height &&
         projectileBounds.y + projectileBounds.height > platformBounds.y
       ) {
-        console.log(`=¥ Projectile ${this.id.slice(-8)} touché une plateforme`);
+        console.log(`[PROJECTILE] ${this.id.slice(-8)} hit platform`);
         this.destroy();
         return true;
       }
@@ -185,37 +224,51 @@ export class Projectile {
     return false;
   }
 
-  // Informations de debug
-  public getDebugInfo(): string {
-    const timeLeft = (this.maxLifeTime - this.lifeTime).toFixed(1);
-    return `Projectile ${this.id.slice(-8)} - Pos: (${Math.round(
-      this.position.x
-    )}, ${Math.round(this.position.y)}) - Speed: ${Math.round(
-      this.velocity.x
-    )} - Time: ${timeLeft}s - Active: ${this.isActive}`;
+  // Utilitaires pour l'editeur
+  public setPosition(x: number, y: number): void {
+    this.position.set(x, y);
   }
 
-  // Propriétés pour l'accès externe
-  public getLifeTimeProgress(): number {
-    return this.lifeTime / this.maxLifeTime;
-  }
-
-  public getRemainingLifeTime(): number {
-    return Math.max(0, this.maxLifeTime - this.lifeTime);
-  }
-
-  public getDirection(): number {
-    return this.velocity.x > 0 ? 1 : -1;
-  }
-
-  // Méthode pour modifier la vitesse (utile pour des effets spéciaux)
   public setVelocity(x: number, y: number): void {
     this.velocity.set(x, y);
   }
 
-  // Méthode pour ajouter une force (gravité, vent, etc.)
-  public addForce(force: Vector2D, deltaTime: number): void {
-    this.velocity.x += force.x * deltaTime;
-    this.velocity.y += force.y * deltaTime;
+  public setAngle(angle: number): void {
+    this.angle = angle;
+    // Recalculate velocity based on new angle to match editor visualization
+    const speed = Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y);
+    const finalAngle = this.direction > 0 ? angle : Math.PI + angle; // Match editor logic
+    this.velocity.set(
+      speed * Math.cos(finalAngle),
+      speed * Math.sin(finalAngle) // Positive for canvas coordinates (Y increases downward)
+    );
+  }
+
+  public setAutoRotate(enabled: boolean): void {
+    this.autoRotate = enabled;
+  }
+
+  public getAngle(): number {
+    return this.angle;
+  }
+
+  // Methode pour obtenir des informations de debug
+  public getDebugInfo(): string {
+    return `Projectile ${this.id.slice(-8)} - Pos: (${Math.round(
+      this.position.x
+    )}, ${Math.round(this.position.y)}) - Vel: (${Math.round(
+      this.velocity.x
+    )}, ${Math.round(this.velocity.y)}) - Dir: ${this.direction} - Angle: ${(this.angle * 180 / Math.PI).toFixed(0)}Â°`;
+  }
+
+  public dispose(): void {
+    if (this.spriteRenderer) {
+      this.spriteRenderer.dispose();
+      this.spriteRenderer = null;
+    }
+  }
+
+  public isUsingSprite(): boolean {
+    return this.useSprite && this.spriteRenderer !== null && this.spriteRenderer.isLoaded();
   }
 }

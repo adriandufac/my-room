@@ -76,12 +76,14 @@ export interface EnemyData {
 export interface ProjectileSpawnerData {
   id: string;
   position: Vector2D;
-  direction: number;
-  interval: number;
+  direction: number; // 1 = droite, -1 = gauche
+  angle: number; // Angle en radians (0 = horizontal)
+  interval: number; // Interval entre tirs en millisecondes
   color: string;
   properties?: {
     speed?: number;
-    lifetime?: number;
+    autoFire?: boolean; // Tir automatique ou manuel
+    maxProjectiles?: number; // Limite de projectiles simultanes
   };
 }
 

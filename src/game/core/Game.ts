@@ -197,21 +197,21 @@ export class Game {
     
     // Configurer les spawners par défaut pour le niveau original
     this.projectileSpawners = [
-      { id: 'spawner_1', position: { x: 800, y: 380 }, direction: -1, interval: 4000, color: '#FF9800', properties: { speed: 250, lifetime: 3000 } },
-      { id: 'spawner_2', position: { x: 1200, y: 200 }, direction: 1, interval: 4000, color: '#FF9800', properties: { speed: 250, lifetime: 3000 } },
-      { id: 'spawner_3', position: { x: 1600, y: 320 }, direction: -1, interval: 4000, color: '#FF9800', properties: { speed: 250, lifetime: 3000 } },
-      { id: 'spawner_4', position: { x: 500, y: this.levelHeight - 100 }, direction: 1, interval: 4000, color: '#FF9800', properties: { speed: 250, lifetime: 3000 } },
-      { id: 'spawner_5', position: { x: 1800, y: 250 }, direction: -1, interval: 4000, color: '#FF9800', properties: { speed: 250, lifetime: 3000 } }
+      { id: 'spawner_1', position: { x: 800, y: 380 }, direction: -1, angle: 0, interval: 4000, color: '#FF9800', properties: { speed: 250, lifetime: 3000 } },
+      { id: 'spawner_2', position: { x: 1200, y: 200 }, direction: 1, angle: 0, interval: 4000, color: '#FF9800', properties: { speed: 250, lifetime: 3000 } },
+      { id: 'spawner_3', position: { x: 1600, y: 320 }, direction: -1, angle: -Math.PI/6, interval: 4000, color: '#FF9800', properties: { speed: 250, lifetime: 3000 } },
+      { id: 'spawner_4', position: { x: 500, y: this.levelHeight - 100 }, direction: 1, angle: -Math.PI/4, interval: 4000, color: '#FF9800', properties: { speed: 250, lifetime: 3000 } },
+      { id: 'spawner_5', position: { x: 1800, y: 250 }, direction: -1, angle: Math.PI/6, interval: 4000, color: '#FF9800', properties: { speed: 250, lifetime: 3000 } }
     ];
     
-    // Reset du timer
-    this.projectileSpawnTimer = 0;
+    // Reset des timers
+    this.spawnerTimers.clear();
 
     console.log(`[LEVEL] ${this.projectileSpawners.length} spawners de projectiles configurés`);
   }
 
-  private spawnProjectile(x: number, y: number, direction: number): void {
-    const projectile = new Projectile(x, y, direction);
+  private spawnProjectile(x: number, y: number, direction: number, angle: number = 0): void {
+    const projectile = new Projectile(x, y, direction, angle);
     this.projectiles.push(projectile);
   }
 
@@ -318,9 +318,8 @@ export class Game {
     this.handleProjectileSpawning(deltaTime);
   }
 
-  private projectileSpawnTimer: number = 0;
-  private readonly PROJECTILE_SPAWN_INTERVAL = 4.0; // 4 secondes
   private projectileSpawners: ProjectileSpawnerData[] = [];
+  private spawnerTimers: Map<string, number> = new Map();
 
   private handleProjectileSpawning(deltaTime: number): void {
     // Ne spawn que si on a des spawners configurés
@@ -328,17 +327,26 @@ export class Game {
       return;
     }
 
-    this.projectileSpawnTimer += deltaTime;
-    
-    if (this.projectileSpawnTimer >= this.PROJECTILE_SPAWN_INTERVAL) {
-      this.projectileSpawnTimer = 0;
-      
-      // Spawner selon les spawners configurés
-      for (const spawner of this.projectileSpawners) {
+    // Traiter chaque spawner individuellement avec son propre timer
+    for (const spawner of this.projectileSpawners) {
+      // Initialiser le timer s'il n'existe pas
+      if (!this.spawnerTimers.has(spawner.id)) {
+        this.spawnerTimers.set(spawner.id, 0);
+      }
+
+      // Mettre à jour le timer du spawner
+      const currentTimer = this.spawnerTimers.get(spawner.id)! + deltaTime * 1000; // Convertir en millisecondes
+      this.spawnerTimers.set(spawner.id, currentTimer);
+
+      // Vérifier si il est temps de spawn
+      if (currentTimer >= spawner.interval) {
+        this.spawnerTimers.set(spawner.id, 0); // Reset du timer
+        console.log(`[PROJECTILE] Spawning projectile with angle: ${spawner.angle} radians (${(spawner.angle * 180 / Math.PI).toFixed(1)} degrees)`);
         this.spawnProjectile(
           spawner.position.x,
           spawner.position.y,
-          spawner.direction
+          spawner.direction,
+          spawner.angle
         );
       }
     }
@@ -631,8 +639,8 @@ export class Game {
     }
     this.projectiles = [];
     
-    // Réinitialiser le timer de spawn
-    this.projectileSpawnTimer = 0;
+    // Réinitialiser les timers de spawn
+    this.spawnerTimers.clear();
     
     // Reconfigurer les spawners selon le niveau actuel
     if (this.customLevel) {
@@ -1234,10 +1242,18 @@ export class Game {
     // Sauvegarder les spawners pour le système périodique
     this.projectileSpawners = [...spawnersData];
     
-    // Reset du timer
-    this.projectileSpawnTimer = 0;
+    // Reset des timers
+    this.spawnerTimers.clear();
     
     console.log(`[LEVEL] ${spawnersData.length} spawners de projectiles configurés`);
+    spawnersData.forEach((spawner, index) => {
+      // Ensure angle exists for backward compatibility
+      if (spawner.angle === undefined) {
+        spawner.angle = 0;
+        console.log(`[LEVEL] Warning: Spawner ${index} missing angle, defaulting to 0`);
+      }
+      console.log(`[LEVEL] Spawner ${index}: direction=${spawner.direction}, angle=${spawner.angle} (${(spawner.angle * 180 / Math.PI).toFixed(1)}°), interval=${spawner.interval}`);
+    });
   }
 
   // Restaurer le niveau par défaut

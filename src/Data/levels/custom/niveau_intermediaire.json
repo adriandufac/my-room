@@ -264,6 +264,7 @@
         "y": 420
       },
       "direction": 1,
+      "angle": 0,
       "interval": 3000,
       "color": "#FF9800",
       "properties": {
@@ -278,6 +279,7 @@
         "y": 300
       },
       "direction": -1,
+      "angle": -0.3927,
       "interval": 2500,
       "color": "#FF9800",
       "properties": {
@@ -292,6 +294,7 @@
         "y": 250
       },
       "direction": -1,
+      "angle": 0.7854,
       "interval": 3500,
       "color": "#FF9800",
       "properties": {

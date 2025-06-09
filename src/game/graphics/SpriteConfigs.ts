@@ -89,26 +89,17 @@ export const SPRITE_CONFIGS: Record<string, SpriteConfig> = {
 
   // Configuration pour les projectiles
   projectile: {
-    imagePath: "/textures/sprites/projectile_spritesheet.png",
-    frameWidth: 8,
-    frameHeight: 8,
+    imagePath: "/textures/sprites/projectile.png",
+    frameWidth: 684,
+    frameHeight: 332,
     animations: {
       default: {
         name: "default",
         frameCount: 1,
-        frameWidth: 8,
-        frameHeight: 8,
+        frameWidth: 684,
+        frameHeight: 332,
         startFrame: 0,
         duration: 1000,
-        loop: true,
-      },
-      spinning: {
-        name: "spinning",
-        frameCount: 4,
-        frameWidth: 8,
-        frameHeight: 8,
-        startFrame: 0,
-        duration: 400,
         loop: true,
       },
     },

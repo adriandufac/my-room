@@ -352,6 +352,7 @@
         "y": 550
       },
       "direction": 1,
+      "angle": -0.5236,
       "interval": 2000,
       "color": "#FF9800",
       "properties": {
@@ -366,6 +367,7 @@
         "y": 200
       },
       "direction": -1,
+      "angle": 0.7854,
       "interval": 1800,
       "color": "#FF9800",
       "properties": {
@@ -380,6 +382,7 @@
         "y": 100
       },
       "direction": 1,
+      "angle": 0.5236,
       "interval": 2200,
       "color": "#FF9800",
       "properties": {
@@ -394,6 +397,7 @@
         "y": 200
       },
       "direction": -1,
+      "angle": -0.7854,
       "interval": 1600,
       "color": "#FF9800",
       "properties": {
@@ -408,6 +412,7 @@
         "y": 50
       },
       "direction": 1,
+      "angle": 1.0472,
       "interval": 2500,
       "color": "#FF9800",
       "properties": {
@@ -422,6 +427,7 @@
         "y": 500
       },
       "direction": -1,
+      "angle": 0,
       "interval": 1000,
       "color": "#FF9800",
       "properties": {

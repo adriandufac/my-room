@@ -189,6 +189,7 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
           pos.y >= spawner.position.y &&
           pos.y <= spawner.position.y + 20
         ) {
+          console.log("[LEVEL] Found spawner at click position:", spawner.id);
           return { id: spawner.id, type: "spawner" };
         }
       }
@@ -266,12 +267,14 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
           return {
             id: generateId(),
             position: worldPos,
-            direction: 1,
-            interval: 3000,
+            direction: 1, // Par défaut vers la droite
+            angle: 0, // Par défaut horizontal
+            interval: 3000, // 3 secondes entre les tirs
             color: "#FF9800",
             properties: {
-              speed: 100,
-              lifetime: 5000,
+              speed: GAME_CONFIG.PROJECTILES.SPEED,
+              autoFire: true,
+              maxProjectiles: 3,
             },
           };
 
@@ -350,6 +353,13 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
     setLevelData(newLevelData);
     setIsPlacing(false);
     setPlacingObjectData(null);
+    
+    // Auto-select the newly created spawner and switch to select tool
+    if (editorState.currentTool === EditorTool.PROJECTILE_SPAWNER) {
+      setSelectedObjectId(placingObjectData.id);
+      setEditorState(prev => ({ ...prev, currentTool: EditorTool.SELECT }));
+      console.log("[LEVEL] Auto-selected new projectile spawner:", placingObjectData.id);
+    }
   }, [
     isPlacing,
     placingObjectData,
@@ -735,13 +745,44 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
 
       ctx.strokeRect(spawner.position.x, spawner.position.y, 20, 20);
 
-      // Fl�che pour la direction
-      ctx.fillStyle = "#333";
-      ctx.fillText(
-        spawner.direction > 0 ? "�" : "�",
-        spawner.position.x + 6,
-        spawner.position.y + 15
-      );
+      // Draw directional arrow (larger and extending outside hitbox)
+      ctx.fillStyle = "#FF6B00";
+      ctx.strokeStyle = "#FF6B00";
+      ctx.lineWidth = 3;
+      
+      const centerX = spawner.position.x + 10;
+      const centerY = spawner.position.y + 10;
+      const arrowLength = 250; // 10 times larger arrow
+      
+      // Draw arrow based on direction and angle
+      const angle = spawner.angle || 0;
+      const dirAngle = spawner.direction > 0 ? angle : Math.PI + angle;
+      
+      // Arrow line extending outside the spawner box
+      const endX = centerX + Math.cos(dirAngle) * arrowLength;
+      const endY = centerY + Math.sin(dirAngle) * arrowLength;
+      
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+      
+      // Much larger arrow head
+      const headSize = 20;
+      const headAngle1 = dirAngle + Math.PI * 0.75;
+      const headAngle2 = dirAngle - Math.PI * 0.75;
+      
+      ctx.beginPath();
+      ctx.moveTo(endX, endY);
+      ctx.lineTo(endX + Math.cos(headAngle1) * headSize, endY + Math.sin(headAngle1) * headSize);
+      ctx.moveTo(endX, endY);
+      ctx.lineTo(endX + Math.cos(headAngle2) * headSize, endY + Math.sin(headAngle2) * headSize);
+      ctx.stroke();
+      
+      // Add a small circle at the center for better visibility
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, 2, 0, 2 * Math.PI);
+      ctx.fill();
     });
 
     // Dessiner le point de spawn
@@ -1017,7 +1058,7 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
           minHeight: "60px",
         }}
       >
-        <h3 style={{ margin: 0 }}>�diteur de Niveau: {levelData.name}</h3>
+        <h3 style={{ margin: 0 }}>Level Editor: {levelData.name}</h3>
 
         <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
           {Object.values(EditorTool).map((tool) => (
@@ -1145,6 +1186,118 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
         />
 
         {/* Informations de position */}
+        {/* Panneau de propriétés pour projectile spawner */}
+        {selectedObjectId && (() => {
+          const selectedSpawner = levelData.projectileSpawners.find(s => s.id === selectedObjectId);
+          console.log("[LEVEL] Property panel check - selectedObjectId:", selectedObjectId, "foundSpawner:", !!selectedSpawner);
+          if (!selectedSpawner) return null;
+          
+          return (
+            <div
+              style={{
+                position: "absolute",
+                top: "80px",
+                right: "10px",
+                backgroundColor: "rgba(255, 255, 255, 0.95)",
+                padding: "15px",
+                borderRadius: "8px",
+                border: "1px solid #ddd",
+                minWidth: "250px",
+                fontSize: "14px",
+              }}
+            >
+              <h4 style={{ margin: "0 0 10px 0" }}>Projectile Spawner</h4>
+              
+              <div style={{ marginBottom: "10px" }}>
+                <label style={{ display: "block", marginBottom: "5px" }}>
+                  Direction:
+                </label>
+                <select
+                  value={selectedSpawner.direction}
+                  onChange={(e) => {
+                    const newLevelData = { ...levelData };
+                    const spawner = newLevelData.projectileSpawners.find(s => s.id === selectedObjectId);
+                    if (spawner) {
+                      spawner.direction = parseInt(e.target.value);
+                      setLevelData(newLevelData);
+                    }
+                  }}
+                  style={{ width: "100%", padding: "5px" }}
+                >
+                  <option value={1}>Droite →</option>
+                  <option value={-1}>Gauche ←</option>
+                </select>
+              </div>
+              
+              <div style={{ marginBottom: "10px" }}>
+                <label style={{ display: "block", marginBottom: "5px" }}>
+                  Angle: {Math.round((selectedSpawner.angle * 180) / Math.PI)}°
+                </label>
+                <input
+                  type="range"
+                  min={-90}
+                  max={90}
+                  value={(selectedSpawner.angle * 180) / Math.PI}
+                  onChange={(e) => {
+                    const newLevelData = { ...levelData };
+                    const spawner = newLevelData.projectileSpawners.find(s => s.id === selectedObjectId);
+                    if (spawner) {
+                      spawner.angle = (parseFloat(e.target.value) * Math.PI) / 180;
+                      setLevelData(newLevelData);
+                    }
+                  }}
+                  style={{ width: "100%" }}
+                />
+              </div>
+              
+              <div style={{ marginBottom: "10px" }}>
+                <label style={{ display: "block", marginBottom: "5px" }}>
+                  Intervalle (ms):
+                </label>
+                <input
+                  type="number"
+                  min={500}
+                  max={10000}
+                  step={500}
+                  value={selectedSpawner.interval}
+                  onChange={(e) => {
+                    const newLevelData = { ...levelData };
+                    const spawner = newLevelData.projectileSpawners.find(s => s.id === selectedObjectId);
+                    if (spawner) {
+                      spawner.interval = parseInt(e.target.value);
+                      setLevelData(newLevelData);
+                    }
+                  }}
+                  style={{ width: "100%", padding: "5px" }}
+                />
+              </div>
+              
+              <div style={{ marginBottom: "10px" }}>
+                <label style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedSpawner.properties?.autoFire ?? true}
+                    onChange={(e) => {
+                      const newLevelData = { ...levelData };
+                      const spawner = newLevelData.projectileSpawners.find(s => s.id === selectedObjectId);
+                      if (spawner) {
+                        spawner.properties = spawner.properties || {};
+                        spawner.properties.autoFire = e.target.checked;
+                        setLevelData(newLevelData);
+                      }
+                    }}
+                  />
+                  Tir automatique
+                </label>
+              </div>
+
+              <div style={{ fontSize: "12px", color: "#666" }}>
+                Position: ({selectedSpawner.position.x}, {selectedSpawner.position.y})
+              </div>
+            </div>
+          );
+        })()}
+
         <div
           style={{
             position: "absolute",

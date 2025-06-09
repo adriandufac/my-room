@@ -51,8 +51,8 @@ export const GAME_CONFIG = {
 
   PROJECTILES: {
     COLOR: "#FF8800", // Orange
-    WIDTH: 8,
-    HEIGHT: 8,
+    WIDTH: 34, // 684px / 20 = ~34px (taille raisonnable)
+    HEIGHT: 17, // 332px / 20 = ~17px (garde les proportions 2:1)
     SPEED: 250,
     LIFETIME: 3000, // 3 secondes en millisecondes
   },
