@@ -6,11 +6,13 @@ import { Renderer } from "../renderer/Renderer";
 import { Camera } from "../renderer/Camera";
 import { Player } from "../entities/Player";
 import { Platform } from "../entities/Platform";
+import { FallingPlatform } from "../entities/FallingPlatform";
 import { Enemy } from "../entities/Enemy";
 import { Projectile } from "../entities/Projectile";
 import { CollisionDetector } from "./CollisionDetector";
 import { GAME_CONFIG } from "../utils/Constants";
 import type { LevelData, PlatformData, EnemyData, ProjectileSpawnerData } from "../utils/Types";
+import { PlatformType } from "../utils/Types";
 
 export class Game {
   private canvas: HTMLCanvasElement;
@@ -245,6 +247,9 @@ export class Game {
     // Mise à jour des projectiles
     this.updateProjectiles(deltaTime);
 
+    // Mise à jour des plateformes tombantes
+    this.updateFallingPlatforms(deltaTime);
+
     // Gérer les collisions (qui gèrera isOnGround correctement)
     this.handleCollisions();
 
@@ -348,6 +353,14 @@ export class Game {
           spawner.direction,
           spawner.angle
         );
+      }
+    }
+  }
+
+  private updateFallingPlatforms(deltaTime: number): void {
+    for (const platform of this.platforms) {
+      if (platform instanceof FallingPlatform) {
+        platform.update(deltaTime);
       }
     }
   }
@@ -534,6 +547,15 @@ export class Game {
   }
 
   private handleCollisions(): void {
+    // Check for collision to notify falling platforms of player contact
+    const collision = CollisionDetector.checkPlayerPlatformCollision(this.player, this.platforms);
+    if (collision.hasCollision && collision.platform && collision.side === "top") {
+      // Player is standing on a platform - notify if it's a falling platform
+      if (collision.platform instanceof FallingPlatform) {
+        collision.platform.onPlayerContact();
+      }
+    }
+
     // Utiliser la résolution de collision séparée par axes
     CollisionDetector.resolveCollisionsSeparated(this.player, this.platforms);
 
@@ -1212,14 +1234,29 @@ export class Game {
     this.platforms = [];
     
     for (const platData of platformsData) {
-      const platform = new Platform(
-        platData.position.x,
-        platData.position.y,
-        platData.size.x,
-        platData.size.y
-      );
-      this.platforms.push(platform);
+      // Create appropriate platform type based on data
+      if (platData.type === PlatformType.FALLING) {
+        const platform = new FallingPlatform(
+          platData.position.x,
+          platData.position.y,
+          platData.size.x,
+          platData.size.y
+        );
+        this.platforms.push(platform);
+        console.log(`[LEVEL] Created falling platform at (${platData.position.x}, ${platData.position.y})`);
+      } else {
+        // Default to regular platform for any other type (including undefined)
+        const platform = new Platform(
+          platData.position.x,
+          platData.position.y,
+          platData.size.x,
+          platData.size.y
+        );
+        this.platforms.push(platform);
+      }
     }
+    
+    console.log(`[LEVEL] ${this.platforms.length} platforms loaded (${this.platforms.filter(p => p instanceof FallingPlatform).length} falling)`);
   }
 
   private loadEnemiesFromLevel(enemiesData: EnemyData[]): void {

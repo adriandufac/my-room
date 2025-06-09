@@ -28,6 +28,7 @@ export enum PlatformType {
   SPIKE = "spike", // Rouge foncé - fait mal
   MOVING = "moving", // Violet - bouge
   BREAKABLE = "breakable", // Jaune - se casse
+  FALLING = "falling", // Rouge - s'écroule après contact
 }
 
 export interface LevelData {
@@ -106,6 +107,7 @@ export interface EditorState {
 export enum EditorTool {
   SELECT = "select",
   PLATFORM = "platform",
+  FALLING_PLATFORM = "fallingPlatform",
   ENEMY = "enemy",
   PROJECTILE_SPAWNER = "projectileSpawner",
   SPAWN_POINT = "spawnPoint",

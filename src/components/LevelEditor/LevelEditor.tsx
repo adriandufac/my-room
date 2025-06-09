@@ -141,6 +141,7 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
   const getObjectSize = useCallback((tool: EditorTool): Vector2D => {
     switch (tool) {
       case EditorTool.PLATFORM:
+      case EditorTool.FALLING_PLATFORM:
         return { x: 120, y: 20 };
       case EditorTool.ENEMY:
         return { x: 30, y: 30 };
@@ -249,6 +250,15 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
             color: "#4CAF50",
           };
 
+        case EditorTool.FALLING_PLATFORM:
+          return {
+            id: generateId(),
+            position: worldPos,
+            size: { x: 120, y: 20 },
+            type: PlatformType.FALLING,
+            color: "#FF6B4A",
+          };
+
         case EditorTool.ENEMY:
           return {
             id: generateId(),
@@ -332,6 +342,7 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
 
     switch (editorState.currentTool) {
       case EditorTool.PLATFORM:
+      case EditorTool.FALLING_PLATFORM:
         newLevelData.platforms.push(placingObjectData as PlatformData);
         break;
       case EditorTool.ENEMY:
@@ -852,6 +863,7 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
 
       switch (editorState.currentTool) {
         case EditorTool.PLATFORM:
+        case EditorTool.FALLING_PLATFORM:
           ctx.fillRect(
             placingObjectData.position.x,
             placingObjectData.position.y,
@@ -929,6 +941,7 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
 
       switch (editorState.currentTool) {
         case EditorTool.PLATFORM:
+        case EditorTool.FALLING_PLATFORM:
           ctx.fillRect(
             mouseWorldPos.x,
             mouseWorldPos.y,
@@ -1078,6 +1091,7 @@ export const LevelEditor: React.FC<LevelEditorProps> = ({
               }}
             >
               {tool === EditorTool.PLATFORM && "Plateforme"}
+              {tool === EditorTool.FALLING_PLATFORM && "Plateforme Tombante"}
               {tool === EditorTool.ENEMY && "Ennemi"}
               {tool === EditorTool.PROJECTILE_SPAWNER && "Projectile"}
               {tool === EditorTool.SPAWN_POINT && "Spawn"}

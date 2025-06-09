@@ -12,6 +12,11 @@ export class Player {
   public isOnGround: boolean;
   public isJumping: boolean;
 
+  // Coyote time - grace period for jumping after leaving ground
+  private coyoteTime: number = 0;
+  private readonly coyoteTimeMax: number = 0.3; // 0.3 seconds grace period
+  private lastGroundedTime: number = 0;
+
   // Système de sprites
   private spriteManager: SpriteManager;
   private currentAnimationState: string = 'idle';
@@ -39,6 +44,15 @@ export class Player {
   }
 
   public update(deltaTime: number): void {
+    // Update coyote time
+    if (this.isOnGround) {
+      this.lastGroundedTime = 0; // Reset when on ground
+      this.coyoteTime = 0;
+    } else {
+      this.lastGroundedTime += deltaTime;
+      this.coyoteTime = Math.min(this.lastGroundedTime, this.coyoteTimeMax);
+    }
+
     // Appliquer la gravité
     if (!this.isOnGround) {
       this.velocity.y += GAME_CONFIG.PHYSICS.GRAVITY * deltaTime;
@@ -136,14 +150,20 @@ export class Player {
       }, velocity.y: ${this.velocity.y.toFixed(2)}`
     );
 
-    // Vérification plus permissive pour éviter les blocages
-    if (!this.isOnGround) {
-      console.log(`[ERROR] Saut refusé - Pas au sol`);
+    // Vérification avec coyote time - permet de sauter pendant la grâce period
+    const canJump = this.isOnGround || (this.coyoteTime < this.coyoteTimeMax);
+    if (!canJump) {
+      console.log(`[ERROR] Saut refusé - Pas au sol et coyote time expiré (${this.coyoteTime.toFixed(2)}s)`);
       return;
     }
+    
+    // Log coyote time usage
+    if (!this.isOnGround && this.coyoteTime < this.coyoteTimeMax) {
+      console.log(`[COYOTE] Saut avec coyote time! (${this.coyoteTime.toFixed(2)}s après avoir quitté le sol)`);
+    }
 
-    if (this.isJumping && this.velocity.y < -50) {
-      // Seulement si on monte encore
+    // Empêcher les sauts multiples (sauf avec coyote time depuis le sol)
+    if (this.isJumping && this.velocity.y < -50 && this.coyoteTime >= this.coyoteTimeMax) {
       console.log(`[ERROR] Saut refusé - Déjà en train de sauter`);
       return;
     }
@@ -172,6 +192,11 @@ export class Player {
     // Marquer comme en saut
     this.isOnGround = false;
     this.isJumping = true;
+    
+    // Consommer le coyote time si utilisé
+    if (this.coyoteTime > 0) {
+      this.coyoteTime = this.coyoteTimeMax; // Force expiration
+    }
   }
 
   public stopHorizontalMovement(): void {
