@@ -156,7 +156,7 @@ export default class Walls {
     for (let i = 0; i < positions.length; i += 3) {
       const x = positions[i];
       const y = positions[i + 1];
-      const z = positions[i + 2];
+      const _z = positions[i + 2];
 
       const u = (x + outerWidth / 2) / outerWidth;
       const v = y / totalHeight;

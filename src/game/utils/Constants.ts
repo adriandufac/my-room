@@ -169,6 +169,6 @@ export enum EntityType {
 export enum Direction {
   LEFT = -1,
   RIGHT = 1,
-  UP = -1,
-  DOWN = 1,
+  UP = -2,
+  DOWN = 2,
 }

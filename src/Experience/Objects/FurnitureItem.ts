@@ -361,18 +361,15 @@ export default abstract class FurnitureItem {
   }
 
   // Hooks pour personnalisation dans les classes filles
-  protected onModelSetup(model: THREE.Group): void {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected onModelSetup(_model: THREE.Group): void {
     // Override dans les classes filles si nécessaire
   }
 
-  protected onGUISetup(folder: GUI): void {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected onGUISetup(_folder: GUI): void {
     // Override dans les classes filles pour ajouter des contrôles
   }
 
-  protected onClick(intersect: THREE.Intersection): void {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected onClick(_intersect: THREE.Intersection): void {
     console.log(`Clicked on ${this.config.name}`);
     // Override dans les classes filles pour logique spécifique
   }

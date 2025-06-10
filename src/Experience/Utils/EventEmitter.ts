@@ -1,4 +1,4 @@
-type Callback = (...args: any[]) => any;
+type Callback = (...args: unknown[]) => unknown;
 
 interface NamespaceCallbacks {
   [eventName: string]: Callback[];
@@ -113,21 +113,21 @@ export default class EventEmitter {
     return this;
   }
 
-  trigger(_name: string, _args?: any[]): any {
+  trigger(_name: string, _args?: unknown[]): unknown {
     // Errors
     if (typeof _name === "undefined" || _name === "") {
       console.warn("wrong name");
       return false;
     }
 
-    let finalResult: any = null;
-    let result: any = null;
+    let finalResult: unknown = null;
+    let result: unknown = null;
 
     // Default args
     const args = !(_args instanceof Array) ? [] : _args;
 
     // Resolve names (should on have one event)
-    let name = this.resolveNames(_name);
+    const name = this.resolveNames(_name);
 
     // Resolve name
     const resolvedName = this.resolveName(name[0]);

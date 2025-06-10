@@ -14,7 +14,7 @@ const RoomScene: React.FC = () => {
       sceneRef.current = new RoomExperience(canvasRef.current);
       
       // Écouter les événements de chargement
-      const experience = sceneRef.current;
+      const _experience = sceneRef.current;
       
       // Événement de progression du chargement
       const handleProgress = (event: CustomEvent) => {

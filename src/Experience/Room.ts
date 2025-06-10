@@ -92,7 +92,7 @@ export default class Room {
     };
 
     // Charger tous les éléments en parallèle mais tracker la progression
-    const loadPromises = elementsToLoad.map(async (elementInfo, index) => {
+    const loadPromises = elementsToLoad.map(async (elementInfo, _index) => {
       console.log(`[ROOM] Starting to load ${elementInfo.name}...`);
       const element = elementInfo.create();
 

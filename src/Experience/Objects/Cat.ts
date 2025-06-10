@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import type { GLTF } from "three/addons/loaders/GLTFLoader.js";
+import type { GUI } from "dat.gui";
 import FurnitureItem, { type FurnitureConfig } from "./FurnitureItem";
 import ModelLoader, { type ModelWithAnimations } from "../Utils/ModelLoader";
 
@@ -139,7 +139,7 @@ export default class Cat extends FurnitureItem {
     this.currentRotation = this.catPhases[0].position.rotation;
   }
 
-  protected onGUISetup(folder: any): void {
+  protected onGUISetup(folder: GUI): void {
     super.onGUISetup(folder);
     this.setupAnimationGUI(folder);
   }
@@ -164,7 +164,7 @@ export default class Cat extends FurnitureItem {
     this.playAnimation("IdleNorm");
   }
 
-  private setupAnimationGUI(folder: any): void {
+  private setupAnimationGUI(folder: GUI): void {
     // Créer un sous-dossier pour les animations
     const animFolder = folder.addFolder("Cat Animations");
 
@@ -243,7 +243,7 @@ export default class Cat extends FurnitureItem {
       };
 
       Object.entries(quickActions).forEach(([name, actionFn]) => {
-        const animName = actionFn.toString().match(/\"(.+)\"/)?.[1] || "";
+        const animName = actionFn.toString().match(/"(.+)"/)?.[1] || "";
         if (this.animations[animName]) {
           quickFolder.add({ [name]: actionFn }, name);
         }
@@ -326,7 +326,7 @@ export default class Cat extends FurnitureItem {
 
   private handlePhaseAnimation(phase: CatPhase): void {
     switch (phase.animation) {
-      case "StandUp":
+      case "StandUp": {
         // Séquence : StandUp -> IdleNorm
         this.playAnimation("StandUp");
         const standUpAction = this.animations["StandUp"];
@@ -339,6 +339,7 @@ export default class Cat extends FurnitureItem {
           }, duration * 1000);
         }
         break;
+      }
 
       default:
         this.playAnimation(phase.animation);

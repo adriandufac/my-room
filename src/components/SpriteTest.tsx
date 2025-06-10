@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { SpriteManager } from '../game/graphics/SpriteManager';
-import { SPRITE_CONFIGS } from '../game/graphics/SpriteConfigs';
 
 export const SpriteTest: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);

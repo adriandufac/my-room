@@ -36,6 +36,7 @@ export default class RoomExperience {
     if (instance) {
       return instance;
     }
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     instance = this;
     // Le canvas est requis seulement pour la première initialisation
     if (!canvas) {

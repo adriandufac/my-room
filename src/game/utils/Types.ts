@@ -126,7 +126,7 @@ export enum EditorTool {
   ERASE = "erase",
 }
 
-export interface GameState {
+export interface GameStateData {
   currentLevel: number;
   score: number;
   lives: number;
