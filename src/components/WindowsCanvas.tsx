@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Game } from "../game/core/Game";
+import { ContactForm } from "./UI/ContactForm";
 
 interface WindowsCanvasProps {}
 
@@ -10,6 +11,7 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
   const [lastClickTime, setLastClickTime] = useState<number>(0);
   const [currentTime, setCurrentTime] = useState<string>("");
   const [isGameRunning, setIsGameRunning] = useState<boolean>(false);
+  const [isContactFormOpen, setIsContactFormOpen] = useState<boolean>(false);
   const [windowDimensions, setWindowDimensions] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -35,6 +37,15 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
     width: 64,
     height: 64,
     selected: selectedIcon === "game",
+  };
+
+  // Mail icon properties
+  const mailIcon = {
+    x: 150,
+    y: 60,
+    width: 64,
+    height: 64,
+    selected: selectedIcon === "mail",
   };
 
   useEffect(() => {
@@ -186,6 +197,9 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
 
     // Draw game icon
     drawGameIcon(ctx);
+
+    // Draw mail icon
+    drawMailIcon(ctx);
 
     // Draw taskbar
     drawTaskbar(ctx);
@@ -401,6 +415,103 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
     ctx.shadowBlur = 0;
   };
 
+  const drawMailIcon = (ctx: CanvasRenderingContext2D) => {
+    const iconY = mailIcon.y + TITLE_BAR_HEIGHT;
+
+    // Icon selection background
+    if (mailIcon.selected) {
+      ctx.fillStyle = "rgba(0, 120, 215, 0.3)";
+      ctx.fillRect(
+        mailIcon.x - 8,
+        iconY - 8,
+        mailIcon.width + 16,
+        mailIcon.height + 32
+      );
+
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
+      ctx.setLineDash([2, 2]);
+      ctx.strokeRect(
+        mailIcon.x - 8,
+        iconY - 8,
+        mailIcon.width + 16,
+        mailIcon.height + 32
+      );
+      ctx.setLineDash([]);
+    }
+
+    // Icon background (Gmail-style red gradient)
+    const iconGradient = ctx.createLinearGradient(
+      mailIcon.x,
+      iconY,
+      mailIcon.x,
+      iconY + mailIcon.height
+    );
+    iconGradient.addColorStop(0, "#ea4335");
+    iconGradient.addColorStop(1, "#c5221f");
+
+    ctx.fillStyle = iconGradient;
+    ctx.fillRect(mailIcon.x, iconY, mailIcon.width, mailIcon.height);
+
+    // Icon border
+    ctx.strokeStyle = "#4a5568";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(mailIcon.x, iconY, mailIcon.width, mailIcon.height);
+
+    // Icon highlight
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(
+      mailIcon.x + 1,
+      iconY + 1,
+      mailIcon.width - 2,
+      mailIcon.height - 2
+    );
+
+    // Draw envelope shape
+    const envelopeX = mailIcon.x + 8;
+    const envelopeY = iconY + 16;
+    const envelopeWidth = mailIcon.width - 16;
+    const envelopeHeight = mailIcon.height - 32;
+
+    // Envelope body
+    ctx.fillStyle = "white";
+    ctx.fillRect(envelopeX, envelopeY, envelopeWidth, envelopeHeight);
+
+    // Envelope border
+    ctx.strokeStyle = "#d1d5db";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(envelopeX, envelopeY, envelopeWidth, envelopeHeight);
+
+    // Envelope flap (triangle)
+    ctx.fillStyle = "#f3f4f6";
+    ctx.beginPath();
+    ctx.moveTo(envelopeX, envelopeY);
+    ctx.lineTo(envelopeX + envelopeWidth / 2, envelopeY + envelopeHeight / 3);
+    ctx.lineTo(envelopeX + envelopeWidth, envelopeY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // @ symbol in the center
+    ctx.fillStyle = "#ea4335";
+    ctx.font = "bold 16px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("@", mailIcon.x + mailIcon.width / 2, iconY + mailIcon.height / 2 + 5);
+
+    // Icon label
+    ctx.fillStyle = "white";
+    ctx.font = "11px Arial";
+    ctx.textAlign = "center";
+    ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+    ctx.shadowBlur = 2;
+    ctx.fillText(
+      "Contact the dev",
+      mailIcon.x + mailIcon.width / 2,
+      iconY + mailIcon.height + 15
+    );
+    ctx.shadowBlur = 0;
+  };
+
   const drawTaskbar = (ctx: CanvasRenderingContext2D) => {
     const taskbarY = CANVAS_HEIGHT - TASKBAR_HEIGHT;
 
@@ -537,6 +648,26 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
           setSelectedIcon("game");
           setLastClickTime(currentTime);
         }
+      } 
+      // Check if click is on mail icon
+      else if (
+        x >= mailIcon.x &&
+        x <= mailIcon.x + mailIcon.width &&
+        adjustedY >= mailIcon.y &&
+        adjustedY <= mailIcon.y + mailIcon.height
+      ) {
+        const currentTime = Date.now();
+        const timeDiff = currentTime - lastClickTime;
+
+        if (selectedIcon === "mail" && timeDiff < 500) {
+          // Double click detected - open contact form
+          console.log("[WINDOWS] Double-click detected, opening contact form...");
+          setIsContactFormOpen(true);
+        } else {
+          // Single click - select the icon
+          setSelectedIcon("mail");
+          setLastClickTime(currentTime);
+        }
       } else {
         // Click outside icon - deselect
         setSelectedIcon(null);
@@ -584,6 +715,10 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
           boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
           cursor: "default",
         }}
+      />
+      <ContactForm
+        isOpen={isContactFormOpen}
+        onClose={() => setIsContactFormOpen(false)}
       />
     </div>
   );

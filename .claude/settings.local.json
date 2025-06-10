@@ -6,7 +6,8 @@
       "Bash(rg:*)",
       "Bash(npm run lint)",
       "Bash(tsc:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "WebFetch(domain:docs.anthropic.com)"
     ],
     "deny": []
   }
