@@ -3,7 +3,9 @@
     "allow": [
       "Bash(grep:*)",
       "Bash(sed:*)",
-      "Bash(rg:*)"
+      "Bash(rg:*)",
+      "Bash(npm run lint)",
+      "Bash(tsc:*)"
     ],
     "deny": []
   }

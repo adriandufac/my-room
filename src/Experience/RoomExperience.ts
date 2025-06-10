@@ -24,7 +24,7 @@ export default class RoomExperience {
   controls!: OrbitControls;
   renderer!: THREE.WebGLRenderer;
   room!: Room;
-  gui!: GUI;
+  gui?: GUI;
 
   // Ajout du cycle du soleil
   sunLight!: THREE.DirectionalLight;
@@ -50,7 +50,10 @@ export default class RoomExperience {
     this.time = new Time();
     this.scene = new THREE.Scene();
 
-    this.gui = new GUI();
+    // Only create GUI if #debug is in the URL
+    if (window.location.hash === '#debug') {
+      this.gui = new GUI();
+    }
 
     this.setupScene();
     this.setupCamera();
@@ -115,6 +118,7 @@ export default class RoomExperience {
   }
 
   setupCameraGUI(): void {
+    if (!this.gui) return;
     const cameraFolder = this.gui.addFolder("Camera");
 
     // Camera position controls
@@ -218,7 +222,9 @@ export default class RoomExperience {
     this.controls.enabled = false; // Activer les contrôles
     
     // Setup camera GUI controls after controls are initialized
-    this.setupCameraGUI();
+    if (this.gui) {
+      this.setupCameraGUI();
+    }
   }
 
   resize(): void {

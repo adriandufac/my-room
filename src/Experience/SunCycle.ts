@@ -5,7 +5,7 @@ export default class SunCycle {
   private sunLight: THREE.DirectionalLight;
   private ambientLight: THREE.AmbientLight;
   private scene: THREE.Scene;
-  private gui: GUI;
+  private gui?: GUI;
 
   // Helpers pour visualiser la lumière
   lightHelper!: THREE.DirectionalLightHelper;
@@ -65,7 +65,7 @@ export default class SunCycle {
     sunLight: THREE.DirectionalLight,
     ambientLight: THREE.AmbientLight,
     scene: THREE.Scene,
-    gui: GUI
+    gui?: GUI
   ) {
     this.sunLight = sunLight;
     this.ambientLight = ambientLight;
@@ -74,7 +74,9 @@ export default class SunCycle {
 
     this.setupShadowCamera();
     this.setupHelpers(scene);
-    this.setupGUI();
+    if (this.gui) {
+      this.setupGUI();
+    }
     this.initializeSun();
   }
 
@@ -116,6 +118,7 @@ export default class SunCycle {
   }
 
   private setupGUI(): void {
+    if (!this.gui) return;
     const folder = this.gui.addFolder("Sun Cycle");
 
     folder.add(this.cycleSettings, "enabled").name("Enable Cycle");

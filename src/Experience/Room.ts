@@ -28,7 +28,7 @@ export default class Room {
   roof!: Roof;
   desk!: Desk;
   deskLamp!: DeskLamp;
-  gui: GUI;
+  gui?: GUI;
   screen!: ComputerScreen;
   keyboard!: ComputerKeyboard;
   vinyleFurniture!: VinyleFurniture;

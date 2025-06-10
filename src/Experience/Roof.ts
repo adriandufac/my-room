@@ -6,7 +6,7 @@ import MaterialFactory from "./Utils/MaterialFactory";
 export default class Roof {
   experience: RoomExperience;
   scene: THREE.Scene;
-  gui: GUI;
+  gui?: GUI;
   roof!: THREE.Mesh;
   roofMaterial!: THREE.MeshToonMaterial;
 
@@ -20,7 +20,9 @@ export default class Roof {
     this.gui = this.experience.gui;
 
     this.setupRoof();
-    this.setupDebugGUI();
+    if (this.gui) {
+      this.setupDebugGUI();
+    }
   }
 
   setupRoof() {
@@ -45,6 +47,7 @@ export default class Roof {
   }
 
   setupDebugGUI() {
+    if (!this.gui) return;
     // Folder pour les contrôles du toit
     const roofFolder = this.gui.addFolder("Roof");
 

@@ -7,7 +7,7 @@ import coffeeSmokeFragmentShader from "./shaders/fragment.glsl";
 export default class Smoke {
   experience: RoomExperience;
   scene: THREE.Scene;
-  gui: GUI;
+  gui?: GUI;
   textureLoader: THREE.TextureLoader;
   smokeMaterial: THREE.ShaderMaterial | undefined;
   smoke!: THREE.Mesh;
@@ -26,7 +26,9 @@ export default class Smoke {
     this.textureLoader = new THREE.TextureLoader();
 
     this.initSmoke();
-    this.setupGUI();
+    if (this.gui) {
+      this.setupGUI();
+    }
   }
 
   initSmoke() {
@@ -65,6 +67,7 @@ export default class Smoke {
   }
 
   setupGUI() {
+    if (!this.gui) return;
     const smokeFolder = this.gui.addFolder("Smoke");
 
     // Contrôles de position

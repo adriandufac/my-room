@@ -1542,22 +1542,9 @@ export class Game {
     }
   }
 
-  public stop(): void {
-    if (this.isRunning) {
-      this.isRunning = false;
-      this.gameLoop.stop();
-      console.log("[GAME] Jeu arrêté");
-    }
-  }
-
   public togglePause(): void {
     this.isPaused = !this.isPaused;
     console.log(this.isPaused ? "[GAME] Jeu en pause" : "[GAME] Jeu repris");
-  }
-
-  public destroy(): void {
-    this.stop();
-    this.inputManager.destroy();
   }
 
   // Getters

@@ -6,7 +6,7 @@ import MaterialFactory from "./Utils/MaterialFactory";
 export default class Floor {
   experience: RoomExperience;
   scene: THREE.Scene;
-  gui: GUI;
+  gui?: GUI;
   floor!: THREE.Mesh;
   floorMaterial!: THREE.MeshToonMaterial;
 
@@ -22,7 +22,9 @@ export default class Floor {
     this.gui = this.experience.gui;
 
     this.setupFloor();
-    this.setupDebugGUI();
+    if (this.gui) {
+      this.setupDebugGUI();
+    }
   }
 
   setupFloor() {
@@ -54,6 +56,7 @@ export default class Floor {
   }
 
   setupDebugGUI() {
+    if (!this.gui) return;
     // Folder pour les contrôles du sol
     const floorFolder = this.gui.addFolder("Floor");
 

@@ -33,7 +33,7 @@ export interface FurnitureConfig {
 export default abstract class FurnitureItem {
   protected experience: RoomExperience;
   protected scene: THREE.Scene;
-  protected gui: GUI;
+  protected gui?: GUI;
   protected model?: THREE.Group;
   protected params: FurnitureParams;
   protected config: FurnitureConfig;
@@ -74,7 +74,9 @@ export default abstract class FurnitureItem {
       this.setupHoverable(this.model);
     }
 
-    this.setupGUI();
+    if (this.gui) {
+      this.setupGUI();
+    }
   }
 
   protected async loadModel() {
@@ -294,7 +296,7 @@ export default abstract class FurnitureItem {
   }
 
   private setupGUI() {
-    if (!this.model) return;
+    if (!this.model || !this.gui) return;
 
     const folder = this.gui.addFolder(this.config.name);
     const ranges = this.config.guiRanges || {};

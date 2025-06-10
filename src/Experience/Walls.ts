@@ -8,7 +8,7 @@ import { CSG } from "three-csg-ts";
 export default class Walls {
   experience: RoomExperience;
   scene: THREE.Scene;
-  gui: GUI;
+  gui?: GUI;
 
   // Structure unifiée (3 murs + toit avec fenêtre)
   roomStructure!: THREE.Mesh;
@@ -38,7 +38,9 @@ export default class Walls {
     this.gui = this.experience.gui;
 
     this.setupRoomStructure();
-    this.setupDebugGUI();
+    if (this.gui) {
+      this.setupDebugGUI();
+    }
   }
 
   setupRoomStructure() {
@@ -169,6 +171,7 @@ export default class Walls {
   }
 
   setupDebugGUI() {
+    if (!this.gui) return;
     const wallsFolder = this.gui.addFolder("Room Structure");
 
     // Contrôle de couleur
