@@ -1656,7 +1656,6 @@ export class Game {
     
     // Reset player stats
     this.playerLives = 3;
-    this.lastDamageTime = 0;
     
     // Load level 1
     this.loadCurrentLevel();
