@@ -649,7 +649,7 @@ export class Game {
   private handlePlayerMovement(): void {
     // Récupérer l'état des touches
     const leftPressed = this.inputManager.isLeftPressed(this.keyboardLayout);
-    const rightPressed = this.inputManager.isRightPressed(this.keyboardLayout);
+    const rightPressed = this.inputManager.isRightPressed();
     const jumpJustPressed = this.inputManager.isJumpJustPressed(
       this.keyboardLayout
     );
@@ -1797,12 +1797,7 @@ export class Game {
     this.levelHeight = levelData.height;
 
     // Mettre à jour les zones spéciales
-    this.startZone = {
-      x: levelData.playerStart.x - 50,
-      y: levelData.playerStart.y - 50,
-      width: 100,
-      height: 100,
-    };
+
     this.finishZone = {
       x: levelData.finishLine.x - 50,
       y: levelData.finishLine.y,
@@ -1954,7 +1949,7 @@ export class Game {
     this.levelHeight = GAME_CONFIG.LEVEL.DEFAULT_HEIGHT;
 
     // Restaurer les zones par défaut
-    this.startZone = { x: 0, y: 0, width: 200, height: 600 };
+
     this.finishZone = { x: 2200, y: 0, width: 200, height: 600 };
 
     // Repositionner le joueur

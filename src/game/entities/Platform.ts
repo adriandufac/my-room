@@ -32,13 +32,15 @@ export class Platform {
       console.log("[PLATFORM] Sprite image loaded successfully");
     };
     this.spriteImage.onerror = () => {
-      console.warn("[PLATFORM] Failed to load sprite, using fallback rendering");
+      console.warn(
+        "[PLATFORM] Failed to load sprite, using fallback rendering"
+      );
       this.useSprite = false;
     };
     this.spriteImage.src = "/textures/sprites/platform.png";
   }
 
-  public update(deltaTime: number): void {
+  public update(_deltaTime: number): void {
     // Pour l'instant, les plateformes sont statiques
     // Cette méthode sera utilisée plus tard pour les plateformes mobiles
   }

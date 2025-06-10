@@ -6,7 +6,7 @@ export class InputManager {
   private keysReleased: Set<string> = new Set(); // Touches relâchées cette frame
   private previousKeys: Set<string> = new Set(); // État des touches la frame précédente
   private canvas: HTMLCanvasElement;
-  
+
   // Références aux event listeners pour pouvoir les supprimer
   private boundKeyDown: (event: KeyboardEvent) => void;
   private boundKeyUp: (event: KeyboardEvent) => void;
@@ -15,13 +15,13 @@ export class InputManager {
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
-    
+
     // Créer les références aux event listeners
     this.boundKeyDown = this.handleKeyDown.bind(this);
     this.boundKeyUp = this.handleKeyUp.bind(this);
     this.boundPreventDefault = this.handlePreventDefault.bind(this);
     this.boundCanvasClick = this.handleCanvasClick.bind(this);
-    
+
     this.setupEventListeners();
 
     // S'assurer que le canvas peut recevoir le focus
@@ -113,22 +113,28 @@ export class InputManager {
   }
 
   // Méthodes de commodité pour les contrôles du joueur
-  public isLeftPressed(keyboardLayout: "AZERTY" | "QWERTY" = "QWERTY"): boolean {
-    const keys = keyboardLayout === "AZERTY" 
-      ? ["ArrowLeft", "q", "Q"] 
-      : ["ArrowLeft", "a", "A"];
+  public isLeftPressed(
+    keyboardLayout: "AZERTY" | "QWERTY" = "QWERTY"
+  ): boolean {
+    const keys =
+      keyboardLayout === "AZERTY"
+        ? ["ArrowLeft", "q", "Q"]
+        : ["ArrowLeft", "a", "A"];
     return keys.some((key) => this.isKeyPressed(key));
   }
 
-  public isRightPressed(keyboardLayout: "AZERTY" | "QWERTY" = "QWERTY"): boolean {
+  public isRightPressed(): boolean {
     const keys = ["ArrowRight", "d", "D"]; // D is the same for both layouts
     return keys.some((key) => this.isKeyPressed(key));
   }
 
-  public isJumpPressed(keyboardLayout: "AZERTY" | "QWERTY" = "QWERTY"): boolean {
-    const keys = keyboardLayout === "AZERTY" 
-      ? [" ", "ArrowUp", "z", "Z"] 
-      : [" ", "ArrowUp", "w", "W"];
+  public isJumpPressed(
+    keyboardLayout: "AZERTY" | "QWERTY" = "QWERTY"
+  ): boolean {
+    const keys =
+      keyboardLayout === "AZERTY"
+        ? [" ", "ArrowUp", "z", "Z"]
+        : [" ", "ArrowUp", "w", "W"];
     return keys.some((key) => this.isKeyPressed(key));
   }
 
@@ -154,10 +160,13 @@ export class InputManager {
   /**
    * Vérifie si une touche de saut vient d'être pressée
    */
-  public isJumpJustPressed(keyboardLayout: "AZERTY" | "QWERTY" = "QWERTY"): boolean {
-    const keys = keyboardLayout === "AZERTY" 
-      ? [" ", "ArrowUp", "z", "Z"] 
-      : [" ", "ArrowUp", "w", "W"];
+  public isJumpJustPressed(
+    keyboardLayout: "AZERTY" | "QWERTY" = "QWERTY"
+  ): boolean {
+    const keys =
+      keyboardLayout === "AZERTY"
+        ? [" ", "ArrowUp", "z", "Z"]
+        : [" ", "ArrowUp", "w", "W"];
     return keys.some((key) => this.isKeyJustPressed(key));
   }
 
@@ -181,19 +190,19 @@ export class InputManager {
 
   // Nettoyer les event listeners
   public destroy(): void {
-    console.log('[INPUT] Cleaning up event listeners');
+    console.log("[INPUT] Cleaning up event listeners");
     document.removeEventListener("keydown", this.boundKeyDown);
     document.removeEventListener("keyup", this.boundKeyUp);
     document.removeEventListener("keydown", this.boundPreventDefault);
     this.canvas.removeEventListener("click", this.boundCanvasClick);
-    
+
     // Nettoyer les sets
     this.keys.clear();
     this.keysPressed.clear();
     this.keysReleased.clear();
     this.previousKeys.clear();
-    
-    console.log('[INPUT] InputManager destroyed');
+
+    console.log("[INPUT] InputManager destroyed");
   }
 
   // Debug : obtenir toutes les touches pressées

@@ -52,7 +52,7 @@ export default class RoomExperience {
     this.scene = new THREE.Scene();
 
     // Only create GUI if #debug is in the URL
-    if (window.location.hash === '#debug') {
+    if (window.location.hash === "#debug") {
       this.gui = new GUI();
     }
 
@@ -221,7 +221,7 @@ export default class RoomExperience {
     this.controls.maxPolarAngle = Math.PI / 2; // Empêche de passer sous le sol
     this.controls.target.set(0, 1, 0); // Point de focus au centre de la chambre
     this.controls.enabled = false; // Activer les contrôles
-    
+
     // Setup camera GUI controls after controls are initialized
     if (this.gui) {
       this.setupCameraGUI();
@@ -251,7 +251,7 @@ export default class RoomExperience {
       ); // Mettre à jour le chat avec les paramètres du cycle du soleil
     }
     if (this.room.screen && this.time.delta) {
-      this.room.screen.update(this.time.delta / 1000); // Mettre à jour l'écran
+      this.room.screen.update(); // Mettre à jour l'écran
     }
 
     this.controls.update();
