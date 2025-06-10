@@ -97,11 +97,11 @@ export default class Room {
       const element = elementInfo.create();
 
       // Attendre que l'élément soit chargé selon son type
-      if (element && "model" in element) {
+      if (element && "getModel" in element) {
         // Pour les FurnitureItem, attendre que le modèle soit chargé
         await new Promise((resolve) => {
           const checkModel = () => {
-            if (element.model !== undefined) {
+            if (element.getModel() !== undefined) {
               console.log(`[ROOM] ${elementInfo.name} model ready`);
               resolve(undefined);
             } else {
@@ -127,24 +127,22 @@ export default class Room {
     const roomElements = await Promise.all(loadPromises);
 
     // Assigner les éléments
-    [
-      this.floor,
-      this.walls,
-      this.desk,
-      this.vinylePlayer,
-      this.deskLamp,
-      this.screen,
-      this.keyboard,
-      this.vinyleFurniture,
-      this.roomWindow,
-      this.chair,
-      this.switch,
-      this.painting,
-      this.carpet,
-      this.smoke,
-      this.coffeeCup,
-      this.cat,
-    ] = roomElements;
+    this.floor = roomElements[0] as Floor;
+    this.walls = roomElements[1] as Walls;
+    this.desk = roomElements[2] as Desk;
+    this.vinylePlayer = roomElements[3] as VinylePlayer;
+    this.deskLamp = roomElements[4] as DeskLamp;
+    this.screen = roomElements[5] as ComputerScreen;
+    this.keyboard = roomElements[6] as ComputerKeyboard;
+    this.vinyleFurniture = roomElements[7] as VinyleFurniture;
+    this.roomWindow = roomElements[8] as RoomWindow;
+    this.chair = roomElements[9] as Chair;
+    this.switch = roomElements[10] as Switch;
+    this.painting = roomElements[11] as Painting;
+    this.carpet = roomElements[12] as Carpet;
+    this.smoke = roomElements[13] as Smoke;
+    this.coffeeCup = roomElements[14] as CoffeeCup;
+    this.cat = roomElements[15] as Cat;
 
     // Petit délai pour s'assurer que tout est rendu
     setTimeout(() => {
