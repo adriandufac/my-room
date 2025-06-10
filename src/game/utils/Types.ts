@@ -22,6 +22,15 @@ export enum GameObjectType {
   FINISH_LINE = "finishLine",
 }
 
+export enum GameState {
+  START_SCREEN = "startScreen",
+  PLAYING = "playing",
+  PAUSED = "paused",
+  TRANSITIONING = "transitioning",
+  VICTORY = "victory",
+  GAME_OVER = "gameOver",
+}
+
 export enum PlatformType {
   SOLID = "solid", // Vert - plateforme normale
   ICE = "ice", // Bleu clair - glissante

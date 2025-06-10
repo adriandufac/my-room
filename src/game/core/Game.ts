@@ -18,7 +18,7 @@ import type {
   EnemyData,
   ProjectileSpawnerData,
 } from "../utils/Types";
-import { PlatformType } from "../utils/Types";
+import { PlatformType, GameState } from "../utils/Types";
 import { SpriteLoader } from "../graphics/SpriteLoader";
 import { getSpriteConfig } from "../graphics/SpriteConfigs";
 
@@ -43,11 +43,13 @@ export class Game {
   private isRunning: boolean = false;
   private isPaused: boolean = false;
   private currentFPS: number = 0;
+  private gameState: GameState = GameState.START_SCREEN;
+  private keyboardLayout: "AZERTY" | "QWERTY" = "AZERTY";
 
   // Propriétés de gameplay
   private playerLives: number = 3;
   private invulnerabilityTime: number = 0;
-  private readonly INVULNERABILITY_DURATION = 2.0; // 2 secondes
+  private readonly INVULNERABILITY_DURATION = 1.0; // 1 seconde
   private isPlayerInvulnerable: boolean = false;
 
   // Dimensions du niveau étendu
@@ -301,14 +303,19 @@ export class Game {
   }
 
   private update(deltaTime: number): void {
+    // Handle input first (for restart from victory screen)
+    this.handleInput();
+
+    // If we're in start screen or victory state, stop updating game logic
+    if (this.gameState === GameState.START_SCREEN || this.gameState === GameState.VICTORY) {
+      return;
+    }
+
     // Si on est en transition, on freeze le gameplay
     if (this.isTransitioning) {
       this.updateTransition(deltaTime);
       return;
     }
-
-    // Traiter les inputs
-    this.handleInput();
 
     if (this.isPaused) return;
 
@@ -565,6 +572,25 @@ export class Game {
   private handleInput(): void {
     this.inputManager.update();
 
+    // Toggle keyboard layout (available on all screens)
+    if (this.inputManager.isKeyJustPressed('k') || this.inputManager.isKeyJustPressed('K')) {
+      this.toggleKeyboardLayout();
+    }
+
+    // Handle start screen
+    if (this.gameState === GameState.START_SCREEN) {
+      if (this.inputManager.isKeyJustPressed(' ') || this.inputManager.isKeyJustPressed('Enter')) {
+        this.startGame();
+        return;
+      }
+    }
+
+    // Handle restart from victory screen
+    if (this.gameState === GameState.VICTORY && this.inputManager.isKeyJustPressed('r')) {
+      this.restartGame();
+      return;
+    }
+
     // Toggle debug avec F1
     if (this.inputManager.isDebugToggleJustPressed()) {
       this.toggleDebugMode();
@@ -606,9 +632,9 @@ export class Game {
 
   private handlePlayerMovement(): void {
     // Récupérer l'état des touches
-    const leftPressed = this.inputManager.isLeftPressed();
-    const rightPressed = this.inputManager.isRightPressed();
-    const jumpJustPressed = this.inputManager.isJumpJustPressed();
+    const leftPressed = this.inputManager.isLeftPressed(this.keyboardLayout);
+    const rightPressed = this.inputManager.isRightPressed(this.keyboardLayout);
+    const jumpJustPressed = this.inputManager.isJumpJustPressed(this.keyboardLayout);
 
     // Déterminer la direction horizontale pour le saut
     let horizontalInput = 0;
@@ -865,9 +891,8 @@ export class Game {
         );
       } else {
         console.log("[GAME] Tous les niveaux terminés ! Félicitations !");
-        // Retour au premier niveau
-        this.currentLevelIndex = 0;
-        this.loadCurrentLevel();
+        // Show victory screen instead of cycling back to level 1
+        this.showVictoryScreen();
       }
     } catch (error) {
       console.error(
@@ -902,6 +927,18 @@ export class Game {
 
   private render(): void {
     this.renderer.clear();
+
+    // Check if we're in start screen
+    if (this.gameState === GameState.START_SCREEN) {
+      this.renderStartScreen();
+      return;
+    }
+
+    // Check if we're in victory state
+    if (this.gameState === GameState.VICTORY) {
+      this.renderVictoryScreen();
+      return;
+    }
 
     // Appliquer la transformation de la caméra
     this.camera.applyTransform(this.ctx);
@@ -1033,23 +1070,6 @@ export class Game {
   }
 
   private renderSpecialZones(): void {
-    // Zone de départ
-    this.ctx.fillStyle = "rgba(0, 255, 0, 0.2)";
-    this.ctx.fillRect(
-      this.startZone.x,
-      this.startZone.y,
-      this.startZone.width,
-      this.startZone.height
-    );
-    this.ctx.strokeStyle = "rgba(0, 255, 0, 0.8)";
-    this.ctx.lineWidth = 3;
-    this.ctx.strokeRect(
-      this.startZone.x,
-      this.startZone.y,
-      this.startZone.width,
-      this.startZone.height
-    );
-
     // Zone d'arrivée
     this.ctx.fillStyle = this.levelCompleted
       ? "rgba(255, 215, 0, 0.5)"
@@ -1071,18 +1091,13 @@ export class Game {
       this.finishZone.height
     );
 
-    // Texte des zones
+    // Texte de la zone d'arrivée
     this.ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
     this.ctx.font = "bold 24px Arial";
     this.ctx.textAlign = "center";
 
     this.ctx.fillText(
-      "DÉPART",
-      this.startZone.x + this.startZone.width / 2,
-      this.startZone.y + 40
-    );
-    this.ctx.fillText(
-      this.levelCompleted ? "VICTOIRE!" : "ARRIVÉE",
+      this.levelCompleted ? "VICTORY!" : "FINISH",
       this.finishZone.x + this.finishZone.width / 2,
       this.finishZone.y + 40
     );
@@ -1159,6 +1174,9 @@ export class Game {
   }
 
   private renderUI(): void {
+    // Always show player lives
+    this.renderPlayerLives();
+
     if (GAME_CONFIG.DEBUG.SHOW_FPS) {
       this.renderDebugInfo();
       this.renderGameInfo();
@@ -1173,6 +1191,55 @@ export class Game {
     // if (this.levelCompleted) {
     //   this.renderVictoryOverlay();
     // }
+  }
+
+  private renderPlayerLives(): void {
+    // Save current context settings
+    const ctx = this.ctx;
+    ctx.save();
+
+    // Position in top-left corner
+    const x = 20;
+    const y = 30;
+    const heartSize = 24;
+    const spacing = 30;
+
+    // Draw "Lives:" label
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 18px monospace";
+    ctx.textAlign = "left";
+    ctx.fillText("Lives:", x, y);
+
+    // Draw hearts for each life
+    for (let i = 0; i < this.playerLives; i++) {
+      const heartX = x + 60 + (i * spacing);
+      this.drawHeart(ctx, heartX, y - heartSize / 2, heartSize, "#ff4444");
+    }
+
+    // Draw empty hearts for lost lives (up to 3 total)
+    const maxLives = 3;
+    for (let i = this.playerLives; i < maxLives; i++) {
+      const heartX = x + 60 + (i * spacing);
+      this.drawHeart(ctx, heartX, y - heartSize / 2, heartSize, "#444444");
+    }
+
+    ctx.restore();
+  }
+
+  private drawHeart(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, color: string): void {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    
+    // Simple heart shape using path
+    const centerX = x + size / 2;
+    const centerY = y + size / 2;
+    const scale = size / 20;
+    
+    ctx.moveTo(centerX, centerY + 6 * scale);
+    ctx.bezierCurveTo(centerX - 8 * scale, centerY - 2 * scale, centerX - 8 * scale, centerY - 8 * scale, centerX, centerY - 4 * scale);
+    ctx.bezierCurveTo(centerX + 8 * scale, centerY - 8 * scale, centerX + 8 * scale, centerY - 2 * scale, centerX, centerY + 6 * scale);
+    
+    ctx.fill();
   }
 
   private renderDebugInfo(): void {
@@ -1334,12 +1401,16 @@ export class Game {
     const keySize = 32;
     const centerX = GAME_CONFIG.CANVAS.WIDTH / 2;
 
+    const moveKeys = this.keyboardLayout === "AZERTY" ? ["Q", "D"] : ["A", "D"];
+    const jumpKeys = this.keyboardLayout === "AZERTY" ? ["Z", "SPACE"] : ["W", "SPACE"];
+    
     const controls = [
-      { keys: ["Q", "D"], action: "Move Left / Right" },
-      { keys: ["Z", "SPACE"], action: "Jump" },
+      { keys: moveKeys, action: "Move Left / Right" },
+      { keys: jumpKeys, action: "Jump" },
       { keys: ["ESC"], action: "Pause / Resume" },
       { keys: ["F1"], action: "Debug Mode" },
       { keys: ["R"], action: "Restart Level" },
+      { keys: ["K"], action: `Switch to ${this.keyboardLayout === "AZERTY" ? "QWERTY" : "AZERTY"}` },
     ];
 
     controls.forEach((control, index) => {
@@ -1367,6 +1438,16 @@ export class Game {
       this.ctx.textAlign = "left";
       this.ctx.fillText(control.action, centerX + 20, y + 6);
     });
+
+    // Current keyboard layout display
+    this.ctx.fillStyle = "#888888";
+    this.ctx.font = "16px monospace";
+    this.ctx.textAlign = "center";
+    this.ctx.fillText(
+      `Current layout: ${this.keyboardLayout}`,
+      GAME_CONFIG.CANVAS.WIDTH / 2,
+      GAME_CONFIG.CANVAS.HEIGHT - 100
+    );
 
     // Resume instruction
     this.ctx.fillStyle = "#FFFF66";
@@ -1545,6 +1626,105 @@ export class Game {
   public togglePause(): void {
     this.isPaused = !this.isPaused;
     console.log(this.isPaused ? "[GAME] Jeu en pause" : "[GAME] Jeu repris");
+  }
+
+  private toggleKeyboardLayout(): void {
+    this.keyboardLayout = this.keyboardLayout === "QWERTY" ? "AZERTY" : "QWERTY";
+    console.log(`[GAME] Keyboard layout switched to ${this.keyboardLayout}`);
+    console.log(`[DEBUG] Current movement keys: ${this.keyboardLayout === "AZERTY" ? "Q/D for move, Z for jump" : "A/D for move, W for jump"}`);
+  }
+
+  private restartGame(): void {
+    console.log("[GAME] Restarting game from victory screen");
+    this.gameState = GameState.START_SCREEN;
+    this.currentLevelIndex = 0;
+  }
+
+  private startGame(): void {
+    console.log("[GAME] Starting game from start screen");
+    this.gameState = GameState.PLAYING;
+  }
+
+  private renderStartScreen(): void {
+    const ctx = this.ctx;
+    
+    // Clear the screen with a dark background
+    ctx.fillStyle = "#1a1a2e";
+    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // Draw game title
+    this.drawGameTitle(ctx);
+    
+    // Draw controls explanation
+    this.drawControlsExplanation(ctx);
+    
+    // Draw objective
+    this.drawObjective(ctx);
+    
+    // Draw start instruction
+    this.drawStartInstruction(ctx);
+  }
+
+  private drawGameTitle(ctx: CanvasRenderingContext2D): void {
+    ctx.font = "bold 56px monospace";
+    ctx.fillStyle = "#00ff00";
+    ctx.textAlign = "center";
+    ctx.fillText("PLATFORM HERO", this.canvas.width / 2, 120);
+  }
+
+  private drawControlsExplanation(ctx: CanvasRenderingContext2D): void {
+    ctx.font = "bold 28px monospace";
+    ctx.fillStyle = "#ffff00";
+    ctx.textAlign = "center";
+    ctx.fillText("CONTROLS", this.canvas.width / 2, 200);
+    
+    ctx.font = "20px monospace";
+    ctx.fillStyle = "#ffffff";
+    const moveKeys = this.keyboardLayout === "AZERTY" ? "Q/D" : "A/D";
+    const jumpKey = this.keyboardLayout === "AZERTY" ? "Z" : "W";
+    
+    const controls = [
+      `← → Arrow Keys or ${moveKeys}: Move left/right`,
+      `SPACE or ↑ or ${jumpKey}: Jump`,
+      "ESC or P: Pause game",
+      "F1: Toggle debug mode",
+      `K: Switch to ${this.keyboardLayout === "AZERTY" ? "QWERTY" : "AZERTY"}`
+    ];
+    
+    controls.forEach((control, index) => {
+      ctx.fillText(control, this.canvas.width / 2, 240 + (index * 25));
+    });
+    
+    // Display current keyboard layout
+    ctx.font = "16px monospace";
+    ctx.fillStyle = "#888888";
+    ctx.fillText(`Current layout: ${this.keyboardLayout}`, this.canvas.width / 2, 370);
+  }
+
+  private drawObjective(ctx: CanvasRenderingContext2D): void {
+    ctx.font = "bold 28px monospace";
+    ctx.fillStyle = "#ffff00";
+    ctx.textAlign = "center";
+    ctx.fillText("OBJECTIVE", this.canvas.width / 2, 410);
+    
+    ctx.font = "20px monospace";
+    ctx.fillStyle = "#ffffff";
+    const objectives = [
+      "Reach the golden finish zone at the end of each level",
+      "Avoid enemies and projectiles",
+      "Complete all 5 levels to save humanity!"
+    ];
+    
+    objectives.forEach((objective, index) => {
+      ctx.fillText(objective, this.canvas.width / 2, 450 + (index * 30));
+    });
+  }
+
+  private drawStartInstruction(ctx: CanvasRenderingContext2D): void {
+    ctx.font = "24px monospace";
+    ctx.fillStyle = "#888888";
+    ctx.textAlign = "center";
+    ctx.fillText("Press SPACE or ENTER to start", this.canvas.width / 2, this.canvas.height - 50);
   }
 
   // Getters
@@ -1784,6 +1964,63 @@ export class Game {
     this.invulnerabilityTime = 0;
 
     console.log(`[SUCCESS] Niveau par défaut restauré`);
+  }
+
+  // Victory Screen Methods
+  private showVictoryScreen(): void {
+    this.gameState = GameState.VICTORY;
+    console.log("[GAME] Showing victory screen");
+  }
+
+  private renderVictoryScreen(): void {
+    const ctx = this.ctx;
+    
+    // Clear the screen with a dark background
+    ctx.fillStyle = "#1a1a2e";
+    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // Draw congratulations text
+    this.drawVictoryText(ctx);
+    
+    // Draw restart instruction
+    this.drawRestartInstruction(ctx);
+  }
+
+
+  private drawVictoryText(ctx: CanvasRenderingContext2D): void {
+    // Main congratulations title
+    ctx.font = "bold 48px monospace";
+    ctx.fillStyle = "#00ff00";
+    ctx.textAlign = "center";
+    ctx.fillText("CONGRATULATIONS!", this.canvas.width / 2, 200);
+    
+    // Subtitle with humor about saving humanity
+    ctx.font = "bold 32px monospace";
+    ctx.fillStyle = "#ffff00";
+    ctx.fillText("HERO OF HUMANITY!", this.canvas.width / 2, 250);
+    
+    // Humorous message
+    ctx.font = "24px monospace";
+    ctx.fillStyle = "#ffffff";
+    const messages = [
+      "You saved humanity!",
+      "",
+      "Heroic Statistics:",
+      "• Number of jumps: A LOT",
+      "• Enemies avoided: ALL",
+      "• Planet saved: 1"
+    ];
+    
+    messages.forEach((line, index) => {
+      ctx.fillText(line, this.canvas.width / 2, 320 + (index * 30));
+    });
+  }
+
+  private drawRestartInstruction(ctx: CanvasRenderingContext2D): void {
+    ctx.font = "20px monospace";
+    ctx.fillStyle = "#888888";
+    ctx.textAlign = "center";
+    ctx.fillText("Press R to restart the adventure", this.canvas.width / 2, this.canvas.height - 50);
   }
 
   // Méthodes de nettoyage

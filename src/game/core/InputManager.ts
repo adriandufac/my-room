@@ -113,18 +113,23 @@ export class InputManager {
   }
 
   // Méthodes de commodité pour les contrôles du joueur
-  public isLeftPressed(): boolean {
-    return GAME_CONFIG.CONTROLS.MOVE_LEFT.some((key) => this.isKeyPressed(key));
+  public isLeftPressed(keyboardLayout: "AZERTY" | "QWERTY" = "QWERTY"): boolean {
+    const keys = keyboardLayout === "AZERTY" 
+      ? ["ArrowLeft", "q", "Q"] 
+      : ["ArrowLeft", "a", "A"];
+    return keys.some((key) => this.isKeyPressed(key));
   }
 
-  public isRightPressed(): boolean {
-    return GAME_CONFIG.CONTROLS.MOVE_RIGHT.some((key) =>
-      this.isKeyPressed(key)
-    );
+  public isRightPressed(keyboardLayout: "AZERTY" | "QWERTY" = "QWERTY"): boolean {
+    const keys = ["ArrowRight", "d", "D"]; // D is the same for both layouts
+    return keys.some((key) => this.isKeyPressed(key));
   }
 
-  public isJumpPressed(): boolean {
-    return GAME_CONFIG.CONTROLS.JUMP.some((key) => this.isKeyPressed(key));
+  public isJumpPressed(keyboardLayout: "AZERTY" | "QWERTY" = "QWERTY"): boolean {
+    const keys = keyboardLayout === "AZERTY" 
+      ? [" ", "ArrowUp", "z", "Z"] 
+      : [" ", "ArrowUp", "w", "W"];
+    return keys.some((key) => this.isKeyPressed(key));
   }
 
   public isPausePressed(): boolean {
@@ -149,8 +154,11 @@ export class InputManager {
   /**
    * Vérifie si une touche de saut vient d'être pressée
    */
-  public isJumpJustPressed(): boolean {
-    return GAME_CONFIG.CONTROLS.JUMP.some((key) => this.isKeyJustPressed(key));
+  public isJumpJustPressed(keyboardLayout: "AZERTY" | "QWERTY" = "QWERTY"): boolean {
+    const keys = keyboardLayout === "AZERTY" 
+      ? [" ", "ArrowUp", "z", "Z"] 
+      : [" ", "ArrowUp", "w", "W"];
+    return keys.some((key) => this.isKeyJustPressed(key));
   }
 
   /**
