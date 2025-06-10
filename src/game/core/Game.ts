@@ -20,7 +20,6 @@ import type {
 } from "../utils/Types";
 import { PlatformType, GameState } from "../utils/Types";
 import { SpriteLoader } from "../graphics/SpriteLoader";
-import { getSpriteConfig } from "../graphics/SpriteConfigs";
 
 // Import statique des niveaux
 import level1 from "../../Data/levels/level1.json";
@@ -57,7 +56,6 @@ export class Game {
   private levelHeight: number = GAME_CONFIG.LEVEL.DEFAULT_HEIGHT;
 
   // Zones spéciales
-  private startZone = { x: 0, y: 0, width: 200, height: 600 };
   private finishZone = { x: 2200, y: 0, width: 200, height: 600 };
   private levelCompleted: boolean = false;
 
@@ -72,7 +70,13 @@ export class Game {
 
   // Système de progression des niveaux
   private currentLevelIndex: number = 0;
-  private levels: LevelData[] = [level1, level2, level3, level4, level5];
+  private levels: LevelData[] = [
+    level1 as LevelData,
+    level2 as LevelData,
+    level3 as LevelData,
+    level4 as LevelData,
+    level5 as LevelData,
+  ];
 
   // Background sprite
   private backgroundImage: HTMLImageElement | null = null;
@@ -307,13 +311,16 @@ export class Game {
     this.handleInput();
 
     // If we're in start screen or victory state, stop updating game logic
-    if (this.gameState === GameState.START_SCREEN || this.gameState === GameState.VICTORY) {
+    if (
+      this.gameState === GameState.START_SCREEN ||
+      this.gameState === GameState.VICTORY
+    ) {
       return;
     }
 
     // Si on est en transition, on freeze le gameplay
     if (this.isTransitioning) {
-      this.updateTransition(deltaTime);
+      this.updateTransition();
       return;
     }
 
@@ -573,20 +580,29 @@ export class Game {
     this.inputManager.update();
 
     // Toggle keyboard layout (available on all screens)
-    if (this.inputManager.isKeyJustPressed('k') || this.inputManager.isKeyJustPressed('K')) {
+    if (
+      this.inputManager.isKeyJustPressed("k") ||
+      this.inputManager.isKeyJustPressed("K")
+    ) {
       this.toggleKeyboardLayout();
     }
 
     // Handle start screen
     if (this.gameState === GameState.START_SCREEN) {
-      if (this.inputManager.isKeyJustPressed(' ') || this.inputManager.isKeyJustPressed('Enter')) {
+      if (
+        this.inputManager.isKeyJustPressed(" ") ||
+        this.inputManager.isKeyJustPressed("Enter")
+      ) {
         this.startGame();
         return;
       }
     }
 
     // Handle restart from victory screen
-    if (this.gameState === GameState.VICTORY && this.inputManager.isKeyJustPressed('r')) {
+    if (
+      this.gameState === GameState.VICTORY &&
+      this.inputManager.isKeyJustPressed("r")
+    ) {
       this.restartGame();
       return;
     }
@@ -634,7 +650,9 @@ export class Game {
     // Récupérer l'état des touches
     const leftPressed = this.inputManager.isLeftPressed(this.keyboardLayout);
     const rightPressed = this.inputManager.isRightPressed(this.keyboardLayout);
-    const jumpJustPressed = this.inputManager.isJumpJustPressed(this.keyboardLayout);
+    const jumpJustPressed = this.inputManager.isJumpJustPressed(
+      this.keyboardLayout
+    );
 
     // Déterminer la direction horizontale pour le saut
     let horizontalInput = 0;
@@ -794,7 +812,7 @@ export class Game {
     console.log("[TRANSITION] Démarrage de la transition");
   }
 
-  private updateTransition(deltaTime: number): void {
+  private updateTransition(): void {
     const elapsed = Date.now() - this.transitionStartTime;
     const progress = elapsed / this.TRANSITION_DURATION;
 
@@ -1212,33 +1230,53 @@ export class Game {
 
     // Draw hearts for each life
     for (let i = 0; i < this.playerLives; i++) {
-      const heartX = x + 60 + (i * spacing);
+      const heartX = x + 60 + i * spacing;
       this.drawHeart(ctx, heartX, y - heartSize / 2, heartSize, "#ff4444");
     }
 
     // Draw empty hearts for lost lives (up to 3 total)
     const maxLives = 3;
     for (let i = this.playerLives; i < maxLives; i++) {
-      const heartX = x + 60 + (i * spacing);
+      const heartX = x + 60 + i * spacing;
       this.drawHeart(ctx, heartX, y - heartSize / 2, heartSize, "#444444");
     }
 
     ctx.restore();
   }
 
-  private drawHeart(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, color: string): void {
+  private drawHeart(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    size: number,
+    color: string
+  ): void {
     ctx.fillStyle = color;
     ctx.beginPath();
-    
+
     // Simple heart shape using path
     const centerX = x + size / 2;
     const centerY = y + size / 2;
     const scale = size / 20;
-    
+
     ctx.moveTo(centerX, centerY + 6 * scale);
-    ctx.bezierCurveTo(centerX - 8 * scale, centerY - 2 * scale, centerX - 8 * scale, centerY - 8 * scale, centerX, centerY - 4 * scale);
-    ctx.bezierCurveTo(centerX + 8 * scale, centerY - 8 * scale, centerX + 8 * scale, centerY - 2 * scale, centerX, centerY + 6 * scale);
-    
+    ctx.bezierCurveTo(
+      centerX - 8 * scale,
+      centerY - 2 * scale,
+      centerX - 8 * scale,
+      centerY - 8 * scale,
+      centerX,
+      centerY - 4 * scale
+    );
+    ctx.bezierCurveTo(
+      centerX + 8 * scale,
+      centerY - 8 * scale,
+      centerX + 8 * scale,
+      centerY - 2 * scale,
+      centerX,
+      centerY + 6 * scale
+    );
+
     ctx.fill();
   }
 
@@ -1402,15 +1440,21 @@ export class Game {
     const centerX = GAME_CONFIG.CANVAS.WIDTH / 2;
 
     const moveKeys = this.keyboardLayout === "AZERTY" ? ["Q", "D"] : ["A", "D"];
-    const jumpKeys = this.keyboardLayout === "AZERTY" ? ["Z", "SPACE"] : ["W", "SPACE"];
-    
+    const jumpKeys =
+      this.keyboardLayout === "AZERTY" ? ["Z", "SPACE"] : ["W", "SPACE"];
+
     const controls = [
       { keys: moveKeys, action: "Move Left / Right" },
       { keys: jumpKeys, action: "Jump" },
       { keys: ["ESC"], action: "Pause / Resume" },
       { keys: ["F1"], action: "Debug Mode" },
       { keys: ["R"], action: "Restart Level" },
-      { keys: ["K"], action: `Switch to ${this.keyboardLayout === "AZERTY" ? "QWERTY" : "AZERTY"}` },
+      {
+        keys: ["K"],
+        action: `Switch to ${
+          this.keyboardLayout === "AZERTY" ? "QWERTY" : "AZERTY"
+        }`,
+      },
     ];
 
     controls.forEach((control, index) => {
@@ -1496,50 +1540,6 @@ export class Game {
 
     // Reset text baseline
     ctx.textBaseline = "alphabetic";
-  }
-
-  private renderVictoryOverlay(): void {
-    this.ctx.fillStyle = "rgba(255, 215, 0, 0.9)";
-    this.ctx.fillRect(
-      0,
-      0,
-      GAME_CONFIG.CANVAS.WIDTH,
-      GAME_CONFIG.CANVAS.HEIGHT
-    );
-
-    this.ctx.fillStyle = "#333";
-    this.ctx.font = "bold 64px Arial";
-    this.ctx.textAlign = "center";
-    this.ctx.fillText(
-      "VICTOIRE!",
-      GAME_CONFIG.CANVAS.WIDTH / 2,
-      GAME_CONFIG.CANVAS.HEIGHT / 2 - 50
-    );
-
-    this.ctx.font = "32px Arial";
-    this.ctx.fillText(
-      "Niveau Terminé!",
-      GAME_CONFIG.CANVAS.WIDTH / 2,
-      GAME_CONFIG.CANVAS.HEIGHT / 2 + 20
-    );
-
-    const aliveEnemies = this.enemies.filter((e) => e.isAlive).length;
-    const eliminatedEnemies = this.enemies.length - aliveEnemies;
-
-    this.ctx.font = "18px Arial";
-    this.ctx.fillText(
-      `Ennemis éliminés: ${eliminatedEnemies}/${this.enemies.length}`,
-      GAME_CONFIG.CANVAS.WIDTH / 2,
-      GAME_CONFIG.CANVAS.HEIGHT / 2 + 60
-    );
-
-    this.ctx.fillText(
-      "Appuyez sur R pour recommencer",
-      GAME_CONFIG.CANVAS.WIDTH / 2,
-      GAME_CONFIG.CANVAS.HEIGHT / 2 + 100
-    );
-
-    this.ctx.textAlign = "left";
   }
 
   private renderTransition(): void {
@@ -1629,9 +1629,16 @@ export class Game {
   }
 
   private toggleKeyboardLayout(): void {
-    this.keyboardLayout = this.keyboardLayout === "QWERTY" ? "AZERTY" : "QWERTY";
+    this.keyboardLayout =
+      this.keyboardLayout === "QWERTY" ? "AZERTY" : "QWERTY";
     console.log(`[GAME] Keyboard layout switched to ${this.keyboardLayout}`);
-    console.log(`[DEBUG] Current movement keys: ${this.keyboardLayout === "AZERTY" ? "Q/D for move, Z for jump" : "A/D for move, W for jump"}`);
+    console.log(
+      `[DEBUG] Current movement keys: ${
+        this.keyboardLayout === "AZERTY"
+          ? "Q/D for move, Z for jump"
+          : "A/D for move, W for jump"
+      }`
+    );
   }
 
   private restartGame(): void {
@@ -1647,20 +1654,20 @@ export class Game {
 
   private renderStartScreen(): void {
     const ctx = this.ctx;
-    
+
     // Clear the screen with a dark background
     ctx.fillStyle = "#1a1a2e";
     ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    
+
     // Draw game title
     this.drawGameTitle(ctx);
-    
+
     // Draw controls explanation
     this.drawControlsExplanation(ctx);
-    
+
     // Draw objective
     this.drawObjective(ctx);
-    
+
     // Draw start instruction
     this.drawStartInstruction(ctx);
   }
@@ -1677,28 +1684,32 @@ export class Game {
     ctx.fillStyle = "#ffff00";
     ctx.textAlign = "center";
     ctx.fillText("CONTROLS", this.canvas.width / 2, 200);
-    
+
     ctx.font = "20px monospace";
     ctx.fillStyle = "#ffffff";
     const moveKeys = this.keyboardLayout === "AZERTY" ? "Q/D" : "A/D";
     const jumpKey = this.keyboardLayout === "AZERTY" ? "Z" : "W";
-    
+
     const controls = [
       `← → Arrow Keys or ${moveKeys}: Move left/right`,
       `SPACE or ↑ or ${jumpKey}: Jump`,
       "ESC or P: Pause game",
       "F1: Toggle debug mode",
-      `K: Switch to ${this.keyboardLayout === "AZERTY" ? "QWERTY" : "AZERTY"}`
+      `K: Switch to ${this.keyboardLayout === "AZERTY" ? "QWERTY" : "AZERTY"}`,
     ];
-    
+
     controls.forEach((control, index) => {
-      ctx.fillText(control, this.canvas.width / 2, 240 + (index * 25));
+      ctx.fillText(control, this.canvas.width / 2, 240 + index * 25);
     });
-    
+
     // Display current keyboard layout
     ctx.font = "16px monospace";
     ctx.fillStyle = "#888888";
-    ctx.fillText(`Current layout: ${this.keyboardLayout}`, this.canvas.width / 2, 370);
+    ctx.fillText(
+      `Current layout: ${this.keyboardLayout}`,
+      this.canvas.width / 2,
+      370
+    );
   }
 
   private drawObjective(ctx: CanvasRenderingContext2D): void {
@@ -1706,17 +1717,17 @@ export class Game {
     ctx.fillStyle = "#ffff00";
     ctx.textAlign = "center";
     ctx.fillText("OBJECTIVE", this.canvas.width / 2, 410);
-    
+
     ctx.font = "20px monospace";
     ctx.fillStyle = "#ffffff";
     const objectives = [
       "Reach the golden finish zone at the end of each level",
       "Avoid enemies and projectiles",
-      "Complete all 5 levels to save humanity!"
+      "Complete all 5 levels to save humanity!",
     ];
-    
+
     objectives.forEach((objective, index) => {
-      ctx.fillText(objective, this.canvas.width / 2, 450 + (index * 30));
+      ctx.fillText(objective, this.canvas.width / 2, 450 + index * 30);
     });
   }
 
@@ -1724,7 +1735,11 @@ export class Game {
     ctx.font = "24px monospace";
     ctx.fillStyle = "#888888";
     ctx.textAlign = "center";
-    ctx.fillText("Press SPACE or ENTER to start", this.canvas.width / 2, this.canvas.height - 50);
+    ctx.fillText(
+      "Press SPACE or ENTER to start",
+      this.canvas.width / 2,
+      this.canvas.height - 50
+    );
   }
 
   // Getters
@@ -1974,18 +1989,17 @@ export class Game {
 
   private renderVictoryScreen(): void {
     const ctx = this.ctx;
-    
+
     // Clear the screen with a dark background
     ctx.fillStyle = "#1a1a2e";
     ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    
+
     // Draw congratulations text
     this.drawVictoryText(ctx);
-    
+
     // Draw restart instruction
     this.drawRestartInstruction(ctx);
   }
-
 
   private drawVictoryText(ctx: CanvasRenderingContext2D): void {
     // Main congratulations title
@@ -1993,12 +2007,12 @@ export class Game {
     ctx.fillStyle = "#00ff00";
     ctx.textAlign = "center";
     ctx.fillText("CONGRATULATIONS!", this.canvas.width / 2, 200);
-    
+
     // Subtitle with humor about saving humanity
     ctx.font = "bold 32px monospace";
     ctx.fillStyle = "#ffff00";
     ctx.fillText("HERO OF HUMANITY!", this.canvas.width / 2, 250);
-    
+
     // Humorous message
     ctx.font = "24px monospace";
     ctx.fillStyle = "#ffffff";
@@ -2008,11 +2022,11 @@ export class Game {
       "Heroic Statistics:",
       "• Number of jumps: A LOT",
       "• Enemies avoided: ALL",
-      "• Planet saved: 1"
+      "• Planet saved: 1",
     ];
-    
+
     messages.forEach((line, index) => {
-      ctx.fillText(line, this.canvas.width / 2, 320 + (index * 30));
+      ctx.fillText(line, this.canvas.width / 2, 320 + index * 30);
     });
   }
 
@@ -2020,12 +2034,16 @@ export class Game {
     ctx.font = "20px monospace";
     ctx.fillStyle = "#888888";
     ctx.textAlign = "center";
-    ctx.fillText("Press R to restart the adventure", this.canvas.width / 2, this.canvas.height - 50);
+    ctx.fillText(
+      "Press R to restart the adventure",
+      this.canvas.width / 2,
+      this.canvas.height - 50
+    );
   }
 
   // Méthodes de nettoyage
   public stop(): void {
-    console.log('[GAME] Arrêt du jeu...');
+    console.log("[GAME] Arrêt du jeu...");
     this.isRunning = false;
     if (this.gameLoop) {
       this.gameLoop.stop();
@@ -2033,49 +2051,49 @@ export class Game {
   }
 
   public destroy(): void {
-    console.log('[GAME] Destruction du jeu...');
+    console.log("[GAME] Destruction du jeu...");
     this.stop();
-    
+
     // Nettoyer les entités
-    this.enemies.forEach(enemy => enemy.eliminate());
+    this.enemies.forEach((enemy) => enemy.eliminate());
     this.enemies = [];
-    
-    this.projectiles.forEach(projectile => projectile.destroy());
+
+    this.projectiles.forEach((projectile) => projectile.destroy());
     this.projectiles = [];
-    
+
     this.platforms = [];
-    
+
     // Nettoyer les managers
     if (this.inputManager) {
       this.inputManager.destroy();
     }
-    
+
     // Nettoyer les timers
     this.spawnerTimers.clear();
-    
-    console.log('[GAME] Jeu détruit');
+
+    console.log("[GAME] Jeu détruit");
   }
 
   // Méthode pour mettre à jour les dimensions du viewport
   public updateViewportSize(width: number, height: number): void {
     console.log(`[GAME] Updating viewport size to ${width}x${height}`);
-    
+
     // NE PAS changer les dimensions du canvas - seulement mettre à jour la caméra
     // this.canvas.width = width;
     // this.canvas.height = height;
-    
+
     // Mettre à jour la caméra avec les nouvelles dimensions de viewport
     if (this.camera) {
       this.camera.setViewportSize(width, height);
       // Repositionner la caméra sur le joueur pour éviter qu'il sorte de l'écran
       this.camera.snapToPlayer(this.player);
     }
-    
+
     // NE PAS mettre à jour le renderer - garder le canvas interne stable
     // if (this.renderer) {
     //   this.renderer.updateCanvasSize(width, height);
     // }
-    
-    console.log('[GAME] Viewport size updated successfully');
+
+    console.log("[GAME] Viewport size updated successfully");
   }
 }

@@ -86,7 +86,7 @@ const TestPhysicsDemo: React.FC = () => {
   };
 
   const updatePhysics = (deltaTime: number) => {
-    testBodies.current.forEach((body, index) => {
+    testBodies.current.forEach((body) => {
       // Application de la physique
       Physics.applyPhysics(body, deltaTime);
 

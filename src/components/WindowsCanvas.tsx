@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Game } from '../game/core/Game';
+import React, { useEffect, useRef, useState } from "react";
+import { Game } from "../game/core/Game";
 
 interface WindowsCanvasProps {}
 
@@ -8,20 +8,23 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
   const gameRef = useRef<Game | null>(null);
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const [lastClickTime, setLastClickTime] = useState<number>(0);
-  const [currentTime, setCurrentTime] = useState<string>('');
+  const [currentTime, setCurrentTime] = useState<string>("");
   const [isGameRunning, setIsGameRunning] = useState<boolean>(false);
   const [windowDimensions, setWindowDimensions] = useState({
     width: window.innerWidth,
-    height: window.innerHeight
+    height: window.innerHeight,
   });
 
   // Canvas dimensions: game viewport + window decorations
   const TITLE_BAR_HEIGHT = 30;
   const TASKBAR_HEIGHT = 40;
-  
+
   // Calculate game dimensions (leaving some margin)
   const GAME_WIDTH = Math.min(1200, windowDimensions.width - 40);
-  const GAME_HEIGHT = Math.min(600, windowDimensions.height - TITLE_BAR_HEIGHT - TASKBAR_HEIGHT - 40);
+  const GAME_HEIGHT = Math.min(
+    600,
+    windowDimensions.height - TITLE_BAR_HEIGHT - TASKBAR_HEIGHT - 40
+  );
   const CANVAS_WIDTH = GAME_WIDTH;
   const CANVAS_HEIGHT = GAME_HEIGHT + TITLE_BAR_HEIGHT + TASKBAR_HEIGHT;
 
@@ -31,17 +34,24 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
     y: 60,
     width: 64,
     height: 64,
-    selected: selectedIcon === 'game'
+    selected: selectedIcon === "game",
   };
 
   useEffect(() => {
     // Update time every second
     const interval = setInterval(() => {
-      setCurrentTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      setCurrentTime(
+        new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      );
     }, 1000);
-    
-    setCurrentTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-    
+
+    setCurrentTime(
+      new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    );
+
     return () => clearInterval(interval);
   }, []);
 
@@ -50,36 +60,38 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
     const handleResize = () => {
       setWindowDimensions({
         width: window.innerWidth,
-        height: window.innerHeight
+        height: window.innerHeight,
       });
-      
+
       // Si le jeu est en cours, le fermer puis le relancer comme si on cliquait sur close puis double-click
       if (isGameRunning && gameRef.current) {
-        console.log('[WINDOWS] Window resized while game running - closing and reopening game');
-        
+        console.log(
+          "[WINDOWS] Window resized while game running - closing and reopening game"
+        );
+
         // Fermer le jeu (comme si on cliquait sur le bouton close)
         gameRef.current.stop();
         gameRef.current.destroy();
         gameRef.current = null;
         setIsGameRunning(false);
-        
+
         // Relancer le jeu après un court délai (comme si on double-cliquait l'icône)
         setTimeout(() => {
-          console.log('[WINDOWS] Relaunching game with new dimensions');
+          console.log("[WINDOWS] Relaunching game with new dimensions");
           setIsGameRunning(true);
         }, 100);
       }
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [isGameRunning]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (gameRef.current) {
-        console.log('[WINDOWS] Component unmounting, cleaning up game');
+        console.log("[WINDOWS] Component unmounting, cleaning up game");
         gameRef.current.stop();
         gameRef.current.destroy();
         gameRef.current = null;
@@ -91,7 +103,7 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     // Set canvas size
@@ -100,31 +112,32 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
 
     if (isGameRunning) {
       // If game is running, check if we need to recreate it due to size change
-      const needsRecreation = !gameRef.current || 
-        (gameRef.current.getCanvas().width !== GAME_WIDTH || 
-         gameRef.current.getCanvas().height !== GAME_HEIGHT);
-      
+      const needsRecreation =
+        !gameRef.current ||
+        gameRef.current.getCanvas().width !== GAME_WIDTH ||
+        gameRef.current.getCanvas().height !== GAME_HEIGHT;
+
       if (needsRecreation) {
-        console.log('[WINDOWS] Recreating game due to size change');
-        
+        console.log("[WINDOWS] Recreating game due to size change");
+
         // Clean up existing game if it exists
         if (gameRef.current) {
-          console.log('[WINDOWS] Stopping and destroying existing game');
+          console.log("[WINDOWS] Stopping and destroying existing game");
           gameRef.current.stop();
           gameRef.current.destroy();
           gameRef.current = null;
         }
-        
+
         // Create a virtual canvas for the game that renders into our main canvas
-        const gameCanvas = document.createElement('canvas');
+        const gameCanvas = document.createElement("canvas");
         gameCanvas.width = GAME_WIDTH;
         gameCanvas.height = GAME_HEIGHT;
-        
+
         gameRef.current = new Game(gameCanvas);
         gameRef.current.start();
-        console.log('[WINDOWS] New game created and started');
+        console.log("[WINDOWS] New game created and started");
       }
-      
+
       renderGameWindow(ctx);
     } else {
       // Render desktop
@@ -142,18 +155,18 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
       const canvas = canvasRef.current;
       if (!canvas || !isGameRunning) return;
 
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
       renderGameWindow(ctx);
-      
+
       if (isGameRunning) {
         animationId = requestAnimationFrame(animate);
       }
     };
 
     animationId = requestAnimationFrame(animate);
-    
+
     return () => {
       if (animationId) {
         cancelAnimationFrame(animationId);
@@ -166,7 +179,7 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
     // Draw title bar
-    drawTitleBar(ctx, 'Platform Game Desktop');
+    drawTitleBar(ctx, "Platform Game Desktop");
 
     // Draw desktop background
     drawDesktopBackground(ctx);
@@ -192,7 +205,7 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
     // Draw title bar
-    drawTitleBar(ctx, 'Platform Game');
+    drawTitleBar(ctx, "Platform Game");
 
     // Draw game content area
     if (gameRef.current) {
@@ -202,13 +215,17 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
       }
     } else {
       // Fallback if game not loaded
-      ctx.fillStyle = '#000000';
+      ctx.fillStyle = "#000000";
       ctx.fillRect(0, TITLE_BAR_HEIGHT, GAME_WIDTH, GAME_HEIGHT);
-      
-      ctx.fillStyle = 'white';
-      ctx.font = '24px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('Loading Game...', GAME_WIDTH / 2, TITLE_BAR_HEIGHT + GAME_HEIGHT / 2);
+
+      ctx.fillStyle = "white";
+      ctx.font = "24px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText(
+        "Loading Game...",
+        GAME_WIDTH / 2,
+        TITLE_BAR_HEIGHT + GAME_HEIGHT / 2
+      );
     }
 
     // Draw taskbar
@@ -218,21 +235,21 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
   const drawTitleBar = (ctx: CanvasRenderingContext2D, title: string) => {
     // Title bar gradient
     const gradient = ctx.createLinearGradient(0, 0, 0, TITLE_BAR_HEIGHT);
-    gradient.addColorStop(0, '#4a5568');
-    gradient.addColorStop(1, '#2d3748');
-    
+    gradient.addColorStop(0, "#4a5568");
+    gradient.addColorStop(1, "#2d3748");
+
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, CANVAS_WIDTH, TITLE_BAR_HEIGHT);
 
     // Title bar border
-    ctx.strokeStyle = '#718096';
+    ctx.strokeStyle = "#718096";
     ctx.lineWidth = 1;
     ctx.strokeRect(0, 0, CANVAS_WIDTH, TITLE_BAR_HEIGHT);
 
     // Window title
-    ctx.fillStyle = 'white';
-    ctx.font = '12px Arial';
-    ctx.textAlign = 'left';
+    ctx.fillStyle = "white";
+    ctx.font = "12px Arial";
+    ctx.textAlign = "left";
     ctx.fillText(title, 8, 20);
 
     // Close button
@@ -240,15 +257,20 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
     const closeButtonY = 5;
     const closeButtonSize = 20;
 
-    ctx.fillStyle = '#e53e3e';
+    ctx.fillStyle = "#e53e3e";
     ctx.fillRect(closeButtonX, closeButtonY, closeButtonSize, closeButtonSize);
-    
-    ctx.strokeStyle = '#c53030';
+
+    ctx.strokeStyle = "#c53030";
     ctx.lineWidth = 1;
-    ctx.strokeRect(closeButtonX, closeButtonY, closeButtonSize, closeButtonSize);
+    ctx.strokeRect(
+      closeButtonX,
+      closeButtonY,
+      closeButtonSize,
+      closeButtonSize
+    );
 
     // Close button X
-    ctx.strokeStyle = 'white';
+    ctx.strokeStyle = "white";
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(closeButtonX + 6, closeButtonY + 6);
@@ -263,10 +285,15 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
     const desktopHeight = GAME_HEIGHT;
 
     // Desktop gradient background
-    const gradient = ctx.createLinearGradient(0, desktopY, CANVAS_WIDTH, desktopY + desktopHeight);
-    gradient.addColorStop(0, '#1e3c72');
-    gradient.addColorStop(1, '#2a5298');
-    
+    const gradient = ctx.createLinearGradient(
+      0,
+      desktopY,
+      CANVAS_WIDTH,
+      desktopY + desktopHeight
+    );
+    gradient.addColorStop(0, "#1e3c72");
+    gradient.addColorStop(1, "#2a5298");
+
     ctx.fillStyle = gradient;
     ctx.fillRect(0, desktopY, CANVAS_WIDTH, desktopHeight);
 
@@ -276,8 +303,8 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
       const x = Math.random() * CANVAS_WIDTH;
       const y = desktopY + Math.random() * desktopHeight;
       const radius = Math.random() * 3 + 1;
-      
-      ctx.fillStyle = 'white';
+
+      ctx.fillStyle = "white";
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2);
       ctx.fill();
@@ -290,62 +317,87 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
 
     // Icon selection background
     if (gameIcon.selected) {
-      ctx.fillStyle = 'rgba(0, 120, 215, 0.3)';
-      ctx.fillRect(gameIcon.x - 8, iconY - 8, gameIcon.width + 16, gameIcon.height + 32);
-      
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.fillStyle = "rgba(0, 120, 215, 0.3)";
+      ctx.fillRect(
+        gameIcon.x - 8,
+        iconY - 8,
+        gameIcon.width + 16,
+        gameIcon.height + 32
+      );
+
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
       ctx.setLineDash([2, 2]);
-      ctx.strokeRect(gameIcon.x - 8, iconY - 8, gameIcon.width + 16, gameIcon.height + 32);
+      ctx.strokeRect(
+        gameIcon.x - 8,
+        iconY - 8,
+        gameIcon.width + 16,
+        gameIcon.height + 32
+      );
       ctx.setLineDash([]);
     }
 
     // Icon background
-    const iconGradient = ctx.createLinearGradient(gameIcon.x, iconY, gameIcon.x, iconY + gameIcon.height);
-    iconGradient.addColorStop(0, '#667eea');
-    iconGradient.addColorStop(1, '#764ba2');
-    
+    const iconGradient = ctx.createLinearGradient(
+      gameIcon.x,
+      iconY,
+      gameIcon.x,
+      iconY + gameIcon.height
+    );
+    iconGradient.addColorStop(0, "#667eea");
+    iconGradient.addColorStop(1, "#764ba2");
+
     ctx.fillStyle = iconGradient;
     ctx.fillRect(gameIcon.x, iconY, gameIcon.width, gameIcon.height);
 
     // Icon border
-    ctx.strokeStyle = '#4a5568';
+    ctx.strokeStyle = "#4a5568";
     ctx.lineWidth = 2;
     ctx.strokeRect(gameIcon.x, iconY, gameIcon.width, gameIcon.height);
 
     // Icon highlight
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
     ctx.lineWidth = 1;
-    ctx.strokeRect(gameIcon.x + 1, iconY + 1, gameIcon.width - 2, gameIcon.height - 2);
+    ctx.strokeRect(
+      gameIcon.x + 1,
+      iconY + 1,
+      gameIcon.width - 2,
+      gameIcon.height - 2
+    );
 
     // Pixel art content
     const pixelSize = 8;
     const pixelGap = 2;
-    const startX = gameIcon.x + (gameIcon.width - (pixelSize * 2 + pixelGap)) / 2;
+    const startX =
+      gameIcon.x + (gameIcon.width - (pixelSize * 2 + pixelGap)) / 2;
     const startY = iconY + (gameIcon.height - (pixelSize * 2 + pixelGap)) / 2;
 
-    const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24'];
-    
+    const colors = ["#ff6b6b", "#4ecdc4", "#45b7d1", "#f9ca24"];
+
     for (let i = 0; i < 2; i++) {
       for (let j = 0; j < 2; j++) {
         const pixelX = startX + j * (pixelSize + pixelGap);
         const pixelY = startY + i * (pixelSize + pixelGap);
-        
+
         ctx.fillStyle = colors[i * 2 + j];
         ctx.fillRect(pixelX, pixelY, pixelSize, pixelSize);
-        
+
         // Pixel highlight
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
         ctx.fillRect(pixelX, pixelY, pixelSize, 2);
       }
     }
 
     // Icon label
-    ctx.fillStyle = 'white';
-    ctx.font = '11px Arial';
-    ctx.textAlign = 'center';
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+    ctx.fillStyle = "white";
+    ctx.font = "11px Arial";
+    ctx.textAlign = "center";
+    ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
     ctx.shadowBlur = 2;
-    ctx.fillText('Platform Game', gameIcon.x + gameIcon.width / 2, iconY + gameIcon.height + 15);
+    ctx.fillText(
+      "Platform Game",
+      gameIcon.x + gameIcon.width / 2,
+      iconY + gameIcon.height + 15
+    );
     ctx.shadowBlur = 0;
   };
 
@@ -354,14 +406,14 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
 
     // Taskbar gradient
     const gradient = ctx.createLinearGradient(0, taskbarY, 0, CANVAS_HEIGHT);
-    gradient.addColorStop(0, '#4a5568');
-    gradient.addColorStop(1, '#2d3748');
-    
+    gradient.addColorStop(0, "#4a5568");
+    gradient.addColorStop(1, "#2d3748");
+
     ctx.fillStyle = gradient;
     ctx.fillRect(0, taskbarY, CANVAS_WIDTH, TASKBAR_HEIGHT);
 
     // Taskbar border
-    ctx.strokeStyle = '#718096';
+    ctx.strokeStyle = "#718096";
     ctx.lineWidth = 1;
     ctx.strokeRect(0, taskbarY, CANVAS_WIDTH, TASKBAR_HEIGHT);
 
@@ -371,51 +423,52 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
     const startButtonWidth = 60;
     const startButtonHeight = 28;
 
-    const startGradient = ctx.createLinearGradient(startButtonX, startButtonY, startButtonX, startButtonY + startButtonHeight);
-    startGradient.addColorStop(0, '#68d391');
-    startGradient.addColorStop(1, '#48bb78');
-    
-    ctx.fillStyle = startGradient;
-    ctx.fillRect(startButtonX, startButtonY, startButtonWidth, startButtonHeight);
+    const startGradient = ctx.createLinearGradient(
+      startButtonX,
+      startButtonY,
+      startButtonX,
+      startButtonY + startButtonHeight
+    );
+    startGradient.addColorStop(0, "#68d391");
+    startGradient.addColorStop(1, "#48bb78");
 
-    ctx.strokeStyle = '#38a169';
-    ctx.strokeRect(startButtonX, startButtonY, startButtonWidth, startButtonHeight);
+    ctx.fillStyle = startGradient;
+    ctx.fillRect(
+      startButtonX,
+      startButtonY,
+      startButtonWidth,
+      startButtonHeight
+    );
+
+    ctx.strokeStyle = "#38a169";
+    ctx.strokeRect(
+      startButtonX,
+      startButtonY,
+      startButtonWidth,
+      startButtonHeight
+    );
 
     // Start button text
-    ctx.fillStyle = 'white';
-    ctx.font = 'bold 12px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('⊞ Start', startButtonX + startButtonWidth / 2, startButtonY + 18);
+    ctx.fillStyle = "white";
+    ctx.font = "bold 12px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText(
+      "⊞ Start",
+      startButtonX + startButtonWidth / 2,
+      startButtonY + 18
+    );
 
     // Clock
     const clockX = CANVAS_WIDTH - 80;
     const clockY = taskbarY + 6;
 
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+    ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
     ctx.fillRect(clockX, clockY, 70, 28);
 
-    ctx.fillStyle = 'white';
-    ctx.font = '12px Arial';
-    ctx.textAlign = 'center';
+    ctx.fillStyle = "white";
+    ctx.font = "12px Arial";
+    ctx.textAlign = "center";
     ctx.fillText(currentTime, clockX + 35, clockY + 18);
-  };
-
-  const drawInstructions = (ctx: CanvasRenderingContext2D) => {
-    const instructionY = CANVAS_HEIGHT - TASKBAR_HEIGHT - 60;
-    
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-    ctx.fillRect(CANVAS_WIDTH / 2 - 150, instructionY, 300, 40);
-
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-    ctx.strokeRect(CANVAS_WIDTH / 2 - 150, instructionY, 300, 40);
-
-    ctx.fillStyle = 'white';
-    ctx.font = '14px Arial';
-    ctx.textAlign = 'center';
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-    ctx.shadowBlur = 2;
-    ctx.fillText('Double-click the Platform Game icon to start playing', CANVAS_WIDTH / 2, instructionY + 25);
-    ctx.shadowBlur = 0;
   };
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -446,12 +499,12 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
           gameRef.current = null;
         }
         setIsGameRunning(false);
-        console.log('[WINDOWS] Game closed, returning to desktop');
-        
+        console.log("[WINDOWS] Game closed, returning to desktop");
+
         // Immediately render desktop
         const canvas = canvasRef.current;
         if (canvas) {
-          const ctx = canvas.getContext('2d');
+          const ctx = canvas.getContext("2d");
           if (ctx) {
             renderDesktop(ctx);
           }
@@ -475,13 +528,13 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
         const currentTime = Date.now();
         const timeDiff = currentTime - lastClickTime;
 
-        if (selectedIcon === 'game' && timeDiff < 500) {
+        if (selectedIcon === "game" && timeDiff < 500) {
           // Double click detected - launch game
-          console.log('[WINDOWS] Double-click detected, launching game...');
+          console.log("[WINDOWS] Double-click detected, launching game...");
           setIsGameRunning(true);
         } else {
           // Single click - select the icon
-          setSelectedIcon('game');
+          setSelectedIcon("game");
           setLastClickTime(currentTime);
         }
       } else {
@@ -497,10 +550,10 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
           // Create a synthetic mouse event for the game
           const gameCanvas = gameRef.current.getCanvas();
           if (gameCanvas) {
-            const syntheticEvent = new MouseEvent('click', {
+            const syntheticEvent = new MouseEvent("click", {
               clientX: x,
               clientY: gameY,
-              bubbles: true
+              bubbles: true,
             });
             gameCanvas.dispatchEvent(syntheticEvent);
           }
@@ -510,24 +563,26 @@ export const WindowsCanvas: React.FC<WindowsCanvasProps> = () => {
   };
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center', 
-      minHeight: '100vh',
-      backgroundColor: '#1a1a1a',
-      padding: '20px'
-    }}>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+        backgroundColor: "#1a1a1a",
+        padding: "20px",
+      }}
+    >
       <canvas
         ref={canvasRef}
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
         onClick={handleCanvasClick}
         style={{
-          border: '2px solid #4a5568',
-          borderRadius: '8px',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-          cursor: 'default'
+          border: "2px solid #4a5568",
+          borderRadius: "8px",
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
+          cursor: "default",
         }}
       />
     </div>
