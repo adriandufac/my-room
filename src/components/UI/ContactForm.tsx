@@ -32,7 +32,10 @@ export const ContactForm: React.FC<ContactFormProps> = ({ isOpen, onClose }) => 
 
     try {
       // Check if we're in development mode
-      const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const isDevelopment = window.location.hostname === 'localhost' || 
+                           window.location.hostname === '127.0.0.1' ||
+                           window.location.port === '5173' ||
+                           window.location.port === '3000';
       
       if (isDevelopment) {
         // Mock successful submission in development
