@@ -38,7 +38,7 @@ export default class DeskLamp extends FurnitureItem {
     model.add(this.lightHelper);
   }
 
-  protected onClick(intersect: THREE.Intersection): void {
+  protected onClick(): void {
     console.log("Lamp clicked!");
     this.toggleLight();
   }

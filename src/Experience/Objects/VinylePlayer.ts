@@ -99,7 +99,7 @@ export default class VinylePlayer extends FurnitureItem {
     });
   }
 
-  protected onClick(intersect: THREE.Intersection): void {
+  protected onClick(): void {
     console.log("vinyle player clicked!");
     this.toggleVinyle();
   }
@@ -168,9 +168,9 @@ export default class VinylePlayer extends FurnitureItem {
     }
   }
 
-  private getCurrentTrack() {
+  /*   private getCurrentTrack() {
     return this.lofiTracks[this.currentTrackIndex];
-  }
+  } */
 
   private onUIToggle(event: CustomEvent): void {
     const { isPlaying } = event.detail;

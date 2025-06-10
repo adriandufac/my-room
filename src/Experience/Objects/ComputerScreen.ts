@@ -1,12 +1,8 @@
-import type { GUI } from "dat.gui";
-import RoomExperience from "../RoomExperience";
 import * as THREE from "three";
-import MaterialFactory from "../Utils/MaterialFactory";
-import ModelLoader from "../Utils/ModelLoader";
 import FurnitureItem, { type FurnitureConfig } from "./FurnitureItem";
-import { createRoot } from 'react-dom/client';
-import React from 'react';
-import { WindowsOverlay } from '../../components/WindowsOverlay';
+import { createRoot } from "react-dom/client";
+import React from "react";
+import { WindowsOverlay } from "../../components/WindowsOverlay";
 
 export default class ComputerScreen extends FurnitureItem {
   // Références pour le halo
@@ -55,7 +51,7 @@ export default class ComputerScreen extends FurnitureItem {
     };
 
     super(config);
-    
+
     // Setup Windows overlay
     this.setupWindowsOverlay();
   }
@@ -352,7 +348,7 @@ export default class ComputerScreen extends FurnitureItem {
   }
 
   // Méthode d'update pour l'animation de pulsation
-  public update(deltaTime: number): void {
+  public update(): void {
     if (!this.haloParams.enablePulse || !this.haloMesh) return;
 
     // Effet de pulsation
@@ -371,25 +367,25 @@ export default class ComputerScreen extends FurnitureItem {
   // Setup Windows overlay container
   private setupWindowsOverlay(): void {
     // Create overlay container
-    this.overlayContainer = document.createElement('div');
-    this.overlayContainer.id = 'computer-screen-overlay';
+    this.overlayContainer = document.createElement("div");
+    this.overlayContainer.id = "computer-screen-overlay";
     document.body.appendChild(this.overlayContainer);
-    
+
     // Create React root
     this.overlayRoot = createRoot(this.overlayContainer);
-    
+
     // Initial render (hidden)
     this.renderWindowsOverlay();
   }
 
   private showWindowsOverlay(): void {
-    console.log('[COMPUTER] Showing Windows overlay');
+    console.log("[COMPUTER] Showing Windows overlay");
     this.isWindowsOverlayVisible = true;
     this.renderWindowsOverlay();
   }
 
   private hideWindowsOverlay(): void {
-    console.log('[COMPUTER] Hiding Windows overlay');
+    console.log("[COMPUTER] Hiding Windows overlay");
     this.isWindowsOverlayVisible = false;
     this.renderWindowsOverlay();
   }
@@ -399,7 +395,7 @@ export default class ComputerScreen extends FurnitureItem {
       this.overlayRoot.render(
         React.createElement(WindowsOverlay, {
           isVisible: this.isWindowsOverlayVisible,
-          onClose: () => this.hideWindowsOverlay()
+          onClose: () => this.hideWindowsOverlay(),
         })
       );
     }
@@ -407,7 +403,7 @@ export default class ComputerScreen extends FurnitureItem {
 
   // Override onClick method from FurnitureItem
   protected onClick(intersect: THREE.Intersection): void {
-    console.log('[COMPUTER] Computer screen clicked!');
+    console.log("[COMPUTER] Computer screen clicked!");
     this.showWindowsOverlay();
     super.onClick(intersect);
   }

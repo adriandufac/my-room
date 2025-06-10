@@ -31,7 +31,6 @@ export default class Cat extends FurnitureItem {
   private mixer!: THREE.AnimationMixer;
   private animations: { [key: string]: THREE.AnimationAction } = {};
   private currentAnimation: string = "IdleNorm";
-  private gltf?: GLTF;
 
   // Cycle du chat selon le soleil
   private catPhases: CatPhase[] = [
@@ -117,7 +116,6 @@ export default class Cat extends FurnitureItem {
       );
 
       this.model = result.model;
-      this.gltf = result.gltf;
 
       // Setup animations immédiatement après le chargement
       if (result.animations.length > 0) {

@@ -1,5 +1,4 @@
 import FurnitureItem, { type FurnitureConfig } from "./FurnitureItem";
-import * as THREE from "three";
 
 export default class ComputerKeyboard extends FurnitureItem {
   constructor() {
