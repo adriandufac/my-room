@@ -16,6 +16,9 @@ export class Player {
   private coyoteTime: number = 0;
   private readonly coyoteTimeMax: number = 0.3; // 0.3 seconds grace period
   private lastGroundedTime: number = 0;
+  
+  // Jump spam prevention - simple flag approach
+  private hasJumped: boolean = false;
 
   // Système de sprites
   private spriteManager: SpriteManager;
@@ -37,6 +40,7 @@ export class Player {
     this.color = GAME_CONFIG.PLAYER.COLOR;
     this.isOnGround = false;
     this.isJumping = false;
+    this.hasJumped = false;
 
     // Initialiser le système de sprites
     this.spriteManager = new SpriteManager('player');
@@ -147,12 +151,15 @@ export class Player {
   }
 
   public jump(inputDirection: number = 0): void {
-    // Debug : afficher l'état complet
     console.log(
-      `[DEBUG] État du saut - isOnGround: ${this.isOnGround}, isJumping: ${
-        this.isJumping
-      }, velocity.y: ${this.velocity.y.toFixed(2)}`
+      `[JUMP_ATTEMPT] isOnGround: ${this.isOnGround}, hasJumped: ${this.hasJumped}, velocity.y: ${this.velocity.y.toFixed(2)}, coyoteTime: ${this.coyoteTime.toFixed(3)}`
     );
+
+    // Si on a déjà sauté, refuser complètement
+    if (this.hasJumped) {
+      console.log(`[ERROR] Saut refusé - Déjà sauté (flag hasJumped = true)`);
+      return;
+    }
 
     // Vérification avec coyote time - permet de sauter pendant la grâce period
     const canJump = this.isOnGround || (this.coyoteTime < this.coyoteTimeMax);
@@ -164,12 +171,6 @@ export class Player {
     // Log coyote time usage
     if (!this.isOnGround && this.coyoteTime < this.coyoteTimeMax) {
       console.log(`[COYOTE] Saut avec coyote time! (${this.coyoteTime.toFixed(2)}s après avoir quitté le sol)`);
-    }
-
-    // Empêcher les sauts multiples (sauf avec coyote time depuis le sol)
-    if (this.isJumping && this.velocity.y < -50 && this.coyoteTime >= this.coyoteTimeMax) {
-      console.log(`[ERROR] Saut refusé - Déjà en train de sauter`);
-      return;
     }
 
     console.log(`[GAME] Saut autorisé avec direction: ${inputDirection}`);
@@ -196,11 +197,18 @@ export class Player {
     // Marquer comme en saut
     this.isOnGround = false;
     this.isJumping = true;
+    this.hasJumped = true; // Empêcher tout autre saut jusqu'au prochain atterrissage
     
     // Consommer le coyote time si utilisé
     if (this.coyoteTime > 0) {
       this.coyoteTime = this.coyoteTimeMax; // Force expiration
     }
+  }
+
+  public resetJumpFlag(): void {
+    console.log(`[PLAYER] BEFORE reset: hasJumped = ${this.hasJumped}`);
+    this.hasJumped = false;
+    console.log(`[PLAYER] AFTER reset: hasJumped = ${this.hasJumped} - can jump again!`);
   }
 
   public stopHorizontalMovement(): void {

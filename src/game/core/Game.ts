@@ -364,6 +364,7 @@ export class Game {
     // Détection d'atterrissage
     if (!wasOnGround && this.player.isOnGround) {
       console.log("[GAME] Atterrissage détecté");
+      this.player.resetJumpFlag(); // Reset le flag pour permettre de sauter à nouveau
     }
   }
 
@@ -714,7 +715,9 @@ export class Game {
 
     // Si le joueur vient d'atterrir, réinitialiser isJumping
     if (!wasOnGround && this.player.isOnGround) {
+      console.log("[GAME] ⭐ ATTERRISSAGE DÉTECTÉ ! wasOnGround=" + wasOnGround + ", isOnGround=" + this.player.isOnGround);
       this.player.isJumping = false;
+      this.player.resetJumpFlag(); // Permettre de sauter à nouveau
       console.log("[GAME] Atterrissage confirmé par collision");
     }
 
@@ -1643,8 +1646,25 @@ export class Game {
 
   private restartGame(): void {
     console.log("[GAME] Restarting game from victory screen");
-    this.gameState = GameState.START_SCREEN;
+    
+    // Reset game state
     this.currentLevelIndex = 0;
+    this.levelCompleted = false;
+    this.isTransitioning = false;
+    this.transitionPhase = "complete";
+    this.gameState = GameState.PLAYING;
+    
+    // Reset player stats
+    this.playerLives = 3;
+    this.lastDamageTime = 0;
+    
+    // Load level 1
+    this.loadCurrentLevel();
+    
+    // Center camera on player
+    this.camera.snapToPlayer(this.player);
+    
+    console.log("[GAME] Game restarted, returning to level 1");
   }
 
   private startGame(): void {
