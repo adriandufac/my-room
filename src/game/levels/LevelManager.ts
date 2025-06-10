@@ -1,6 +1,6 @@
-import type { LevelData } from '../utils/Types';
-import { LevelGenerator } from './LevelGenerator';
-import { FileSystemLevelService } from './FileSystemLevelService';
+import type { LevelData } from "../utils/Types";
+import { LevelGenerator } from "./LevelGenerator";
+import { FileSystemLevelService } from "./FileSystemLevelService";
 
 /**
  * Gestionnaire central des niveaux - Interface entre le jeu et les différentes sources de niveaux
@@ -33,9 +33,14 @@ export class LevelManager {
       // Charger UNIQUEMENT les niveaux depuis les fichiers JSON
       await this.loadCustomLevels();
 
-      console.log(`[GAME] LevelManager initialisé avec ${this.loadedLevels.size} niveaux depuis Data/levels/custom/`);
+      console.log(
+        `[GAME] LevelManager initialisé avec ${this.loadedLevels.size} niveaux depuis Data/levels/custom/`
+      );
     } catch (error) {
-      console.error('[ERROR] Erreur lors de l\'initialisation des niveaux:', error);
+      console.error(
+        "[ERROR] Erreur lors de l'initialisation des niveaux:",
+        error
+      );
     }
   }
 
@@ -45,19 +50,29 @@ export class LevelManager {
   async loadCustomLevels(): Promise<void> {
     try {
       const customLevels = await FileSystemLevelService.getAllLevels();
-      
+
       for (const [fileName, levelData] of Object.entries(customLevels)) {
         // Vérifier que le niveau est valide
-        const validation = LevelGenerator.validateLevelJSON(JSON.stringify(levelData));
+        const validation = LevelGenerator.validateLevelJSON(
+          JSON.stringify(levelData)
+        );
         if (validation.valid && validation.level) {
           this.loadedLevels.set(levelData.id, validation.level);
-          console.log(`[SUCCESS] Niveau personnalisé chargé: ${levelData.name}`);
+          console.log(
+            `[SUCCESS] Niveau personnalisé chargé: ${levelData.name}`
+          );
         } else {
-          console.warn(`[WARNING] Niveau invalide ignoré: ${fileName}`, validation.errors);
+          console.warn(
+            `[WARNING] Niveau invalide ignoré: ${fileName}`,
+            validation.errors
+          );
         }
       }
     } catch (error) {
-      console.error('[ERROR] Erreur lors du chargement des niveaux personnalisés:', error);
+      console.error(
+        "[ERROR] Erreur lors du chargement des niveaux personnalisés:",
+        error
+      );
     }
   }
 
@@ -99,38 +114,47 @@ export class LevelManager {
    * Filtre les niveaux par critères
    */
   filterLevels(criteria: {
-    difficulty?: 'easy' | 'medium' | 'hard';
+    difficulty?: "easy" | "medium" | "hard";
     hasEnemies?: boolean;
     hasProjectiles?: boolean;
     custom?: boolean;
   }): LevelData[] {
-    return this.getAllLevels().filter(level => {
+    return this.getAllLevels().filter((level) => {
       // Estimer la difficulté basée sur le contenu
       const enemyCount = level.enemies.length;
       const projectileCount = level.projectileSpawners.length;
-      const platformCount = level.platforms.length;
-      
-      let estimatedDifficulty: 'easy' | 'medium' | 'hard' = 'easy';
+
+      let estimatedDifficulty: "easy" | "medium" | "hard" = "easy";
       if (enemyCount > 3 || projectileCount > 2) {
-        estimatedDifficulty = 'hard';
+        estimatedDifficulty = "hard";
       } else if (enemyCount > 1 || projectileCount > 0) {
-        estimatedDifficulty = 'medium';
+        estimatedDifficulty = "medium";
       }
 
       if (criteria.difficulty && estimatedDifficulty !== criteria.difficulty) {
         return false;
       }
 
-      if (criteria.hasEnemies !== undefined && (level.enemies.length > 0) !== criteria.hasEnemies) {
+      if (
+        criteria.hasEnemies !== undefined &&
+        level.enemies.length > 0 !== criteria.hasEnemies
+      ) {
         return false;
       }
 
-      if (criteria.hasProjectiles !== undefined && (level.projectileSpawners.length > 0) !== criteria.hasProjectiles) {
+      if (
+        criteria.hasProjectiles !== undefined &&
+        level.projectileSpawners.length > 0 !== criteria.hasProjectiles
+      ) {
         return false;
       }
 
       if (criteria.custom !== undefined) {
-        const isCustom = !['tutorial_level', 'intermediate_level', 'challenge_level'].includes(level.id);
+        const isCustom = ![
+          "tutorial_level",
+          "intermediate_level",
+          "challenge_level",
+        ].includes(level.id);
         if (isCustom !== criteria.custom) {
           return false;
         }
@@ -165,11 +189,13 @@ export class LevelManager {
   /**
    * Importe un niveau depuis un fichier JSON
    */
-  async importLevel(file: File): Promise<{ success: boolean; level?: LevelData; errors?: string[] }> {
+  async importLevel(
+    file: File
+  ): Promise<{ success: boolean; level?: LevelData; errors?: string[] }> {
     try {
       const jsonString = await file.text();
       const validation = LevelGenerator.validateLevelJSON(jsonString);
-      
+
       if (validation.valid && validation.level) {
         // Générer un nouvel ID pour éviter les conflits
         const importedLevel = {
@@ -178,22 +204,24 @@ export class LevelManager {
           created: new Date().toISOString(),
           modified: new Date().toISOString(),
         };
-        
+
         // Ajouter à la collection
         this.loadedLevels.set(importedLevel.id, importedLevel);
-        
+
         // Sauvegarder via le service de fichiers
         await FileSystemLevelService.saveLevel(importedLevel);
-        
-        console.log(`[SUCCESS] Niveau importé avec succès: ${importedLevel.name}`);
+
+        console.log(
+          `[SUCCESS] Niveau importé avec succès: ${importedLevel.name}`
+        );
         return { success: true, level: importedLevel };
       } else {
-        console.error('[ERROR] Niveau JSON invalide:', validation.errors);
+        console.error("[ERROR] Niveau JSON invalide:", validation.errors);
         return { success: false, errors: validation.errors };
       }
     } catch (error) {
       const errorMsg = `Erreur lors de l'import: ${(error as Error).message}`;
-      console.error('[ERROR]', errorMsg);
+      console.error("[ERROR]", errorMsg);
       return { success: false, errors: [errorMsg] };
     }
   }
@@ -221,8 +249,12 @@ export class LevelManager {
       }
 
       // Ne pas supprimer les niveaux de démonstration
-      if (['tutorial_level', 'intermediate_level', 'challenge_level'].includes(id)) {
-        console.error(`[ERROR] Impossible de supprimer un niveau de démonstration: ${id}`);
+      if (
+        ["tutorial_level", "intermediate_level", "challenge_level"].includes(id)
+      ) {
+        console.error(
+          `[ERROR] Impossible de supprimer un niveau de démonstration: ${id}`
+        );
         return false;
       }
 
@@ -235,7 +267,7 @@ export class LevelManager {
       console.log(`[SUCCESS] Niveau supprimé: ${level.name}`);
       return true;
     } catch (error) {
-      console.error('[ERROR] Erreur lors de la suppression:', error);
+      console.error("[ERROR] Erreur lors de la suppression:", error);
       return false;
     }
   }
@@ -246,9 +278,11 @@ export class LevelManager {
   async addLevel(levelData: LevelData): Promise<boolean> {
     try {
       // Valider le niveau
-      const validation = LevelGenerator.validateLevelJSON(JSON.stringify(levelData));
+      const validation = LevelGenerator.validateLevelJSON(
+        JSON.stringify(levelData)
+      );
       if (!validation.valid) {
-        console.error('[ERROR] Niveau invalide:', validation.errors);
+        console.error("[ERROR] Niveau invalide:", validation.errors);
         return false;
       }
 
@@ -261,7 +295,7 @@ export class LevelManager {
       console.log(`[SUCCESS] Nouveau niveau ajouté: ${levelData.name}`);
       return true;
     } catch (error) {
-      console.error('[ERROR] Erreur lors de l\'ajout du niveau:', error);
+      console.error("[ERROR] Erreur lors de l'ajout du niveau:", error);
       return false;
     }
   }
@@ -272,9 +306,14 @@ export class LevelManager {
   async updateLevel(levelData: LevelData): Promise<boolean> {
     try {
       // Valider le niveau
-      const validation = LevelGenerator.validateLevelJSON(JSON.stringify(levelData));
+      const validation = LevelGenerator.validateLevelJSON(
+        JSON.stringify(levelData)
+      );
       if (!validation.valid) {
-        console.error('[ERROR] Niveau invalide pour mise à jour:', validation.errors);
+        console.error(
+          "[ERROR] Niveau invalide pour mise à jour:",
+          validation.errors
+        );
         return false;
       }
 
@@ -293,7 +332,7 @@ export class LevelManager {
       console.log(`[SUCCESS] Niveau mis à jour: ${updatedLevel.name}`);
       return true;
     } catch (error) {
-      console.error('[ERROR] Erreur lors de la mise à jour du niveau:', error);
+      console.error("[ERROR] Erreur lors de la mise à jour du niveau:", error);
       return false;
     }
   }
@@ -310,15 +349,22 @@ export class LevelManager {
     averagePlatforms: number;
   } {
     const levels = this.getAllLevels();
-    const demoIds = ['tutorial_level', 'intermediate_level', 'challenge_level'];
-    
+    const demoIds = ["tutorial_level", "intermediate_level", "challenge_level"];
+
     return {
       total: levels.length,
-      demo: levels.filter(l => demoIds.includes(l.id)).length,
-      custom: levels.filter(l => !demoIds.includes(l.id)).length,
-      withEnemies: levels.filter(l => l.enemies.length > 0).length,
-      withProjectiles: levels.filter(l => l.projectileSpawners.length > 0).length,
-      averagePlatforms: levels.length > 0 ? Math.round(levels.reduce((sum, l) => sum + l.platforms.length, 0) / levels.length) : 0,
+      demo: levels.filter((l) => demoIds.includes(l.id)).length,
+      custom: levels.filter((l) => !demoIds.includes(l.id)).length,
+      withEnemies: levels.filter((l) => l.enemies.length > 0).length,
+      withProjectiles: levels.filter((l) => l.projectileSpawners.length > 0)
+        .length,
+      averagePlatforms:
+        levels.length > 0
+          ? Math.round(
+              levels.reduce((sum, l) => sum + l.platforms.length, 0) /
+                levels.length
+            )
+          : 0,
     };
   }
 
@@ -327,9 +373,10 @@ export class LevelManager {
    */
   searchLevels(query: string): LevelData[] {
     const searchTerm = query.toLowerCase();
-    return this.getAllLevels().filter(level => 
-      level.name.toLowerCase().includes(searchTerm) ||
-      level.id.toLowerCase().includes(searchTerm)
+    return this.getAllLevels().filter(
+      (level) =>
+        level.name.toLowerCase().includes(searchTerm) ||
+        level.id.toLowerCase().includes(searchTerm)
     );
   }
 

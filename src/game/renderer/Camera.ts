@@ -12,8 +12,7 @@ export class Camera {
   private viewportHeight: number;
   private levelWidth: number;
   private levelHeight: number;
-  private offsetX: number;
-  private offsetY: number;
+
   private boundsMargin: number;
   private zoom: number;
 
@@ -30,8 +29,7 @@ export class Camera {
     this.viewportHeight = viewportHeight;
     this.levelWidth = levelWidth;
     this.levelHeight = levelHeight;
-    this.offsetX = GAME_CONFIG.CAMERA.OFFSET_X;
-    this.offsetY = GAME_CONFIG.CAMERA.OFFSET_Y;
+
     this.boundsMargin = GAME_CONFIG.CAMERA.BOUNDS_MARGIN;
     this.zoom = GAME_CONFIG.CAMERA.ZOOM;
   }
@@ -66,7 +64,6 @@ export class Camera {
     this.target.x = playerCenterX - effectiveViewportWidth / 2;
     this.target.y = playerCenterY - effectiveViewportHeight / 2;
 
-
     // Ajustement vertical dynamique basé sur la vélocité du joueur
     // Si le joueur tombe vite, anticiper légèrement vers le bas
     if (player.velocity.y > 100) {
@@ -96,10 +93,10 @@ export class Camera {
     // Ajuster les limites en fonction du zoom
     const effectiveViewportWidth = this.viewportWidth / this.zoom;
     const effectiveViewportHeight = this.viewportHeight / this.zoom;
-    
+
     // Si le viewport effectif est plus grand que le niveau, centrer le niveau
     let minX, maxX, minY, maxY;
-    
+
     if (effectiveViewportWidth >= this.levelWidth) {
       // Centrer horizontalement si le viewport est plus large que le niveau
       const offset = (effectiveViewportWidth - this.levelWidth) / 2;
@@ -109,7 +106,7 @@ export class Camera {
       minX = 0;
       maxX = this.levelWidth - effectiveViewportWidth;
     }
-    
+
     if (effectiveViewportHeight >= this.levelHeight) {
       // Centrer verticalement si le viewport est plus haut que le niveau
       const offset = (effectiveViewportHeight - this.levelHeight) / 2;
@@ -125,7 +122,6 @@ export class Camera {
 
     const oldY = this.position.y;
     this.position.y = Math.max(minY, Math.min(maxY, this.position.y));
-
   }
 
   /**
@@ -166,11 +162,10 @@ export class Camera {
    */
   public applyTransform(ctx: CanvasRenderingContext2D): void {
     ctx.save();
-    
+
     // Approche simple : scale puis translate
     ctx.scale(this.zoom, this.zoom);
     ctx.translate(-this.position.x, -this.position.y);
-    
   }
 
   /**
@@ -219,14 +214,6 @@ export class Camera {
    */
   public setSmoothness(smoothness: number): void {
     this.smoothness = Math.max(0, Math.min(1, smoothness));
-  }
-
-  /**
-   * Modifie les décalages de la caméra
-   */
-  public setOffset(offsetX: number, offsetY: number): void {
-    this.offsetX = offsetX;
-    this.offsetY = offsetY;
   }
 
   /**
