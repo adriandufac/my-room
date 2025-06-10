@@ -117,10 +117,8 @@ export class Camera {
       maxY = this.levelHeight - effectiveViewportHeight;
     }
 
-    const oldX = this.position.x;
     this.position.x = Math.max(minX, Math.min(maxX, this.position.x));
 
-    const oldY = this.position.y;
     this.position.y = Math.max(minY, Math.min(maxY, this.position.y));
   }
 
